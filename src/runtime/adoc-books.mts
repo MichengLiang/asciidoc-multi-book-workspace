@@ -1,0 +1,443 @@
+#!/usr/bin/env node
+import { createRequire } from "node:module";
+import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const require = createRequire(import.meta.url);
+const DIAGRAM_BLOCK_PATTERN = /^\[(?:actdiag|blockdiag|bpmn|bytefield|c4plantuml|d2|dbml|ditaa|erd|excalidraw|graphviz|mermaid|nomnoml|nwdiag|packetdiag|pikchr|plantuml|rackdiag|seqdiag|svgbob|symbolator|umlet|vega|vegalite|wavedrom|structurizr|diagramsnet|wireviz)(?:,|\])/m;
+const CATALOG_BOOK_XREF_PATTERN = /xref:books\/([^/\]]+)\/book\.adoc(?:#[^\[]+)?\[/g;
+const XREF_PATTERN = /xref:([^\[#]+)(?:#([A-Za-z0-9_-]+))?\[/g;
+const ANCHOR_PATTERN = /^\[#([A-Za-z0-9_-]+)\]$/gm;
+const LOCAL_TARGET_PATTERN = /\b(?:href|src)="([^"]+)"/g;
+const SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
+const HOME_MARKER = "data-multi-book-home";
+const FETCH_DIAGRAMS_ENV = "ADOC_BOOKS_FETCH_DIAGRAMS";
+
+interface BookEntry {
+  bookId: string;
+  bookDir: string;
+  input: string;
+  htmlOutputDir: string;
+}
+
+interface Issue {
+  code: string;
+  detail: string;
+}
+
+async function existsFile(filePath: string): Promise<boolean> {
+  try {
+    const stats = await stat(filePath);
+    return stats.isFile();
+  } catch {
+    return false;
+  }
+}
+
+async function existsDir(dir: string): Promise<boolean> {
+  try {
+    const stats = await stat(dir);
+    return stats.isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+async function collectFiles(dir: string, predicate: (filePath: string) => boolean): Promise<string[]> {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const files: string[] = [];
+  for (const entry of entries) {
+    const entryPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...await collectFiles(entryPath, predicate));
+    } else if (entry.isFile() && predicate(entryPath)) {
+      files.push(entryPath);
+    }
+  }
+  return files.sort();
+}
+
+async function discoverBooks(rootDir: string): Promise<BookEntry[]> {
+  const booksDir = path.join(rootDir, "books");
+  const entries = await readdir(booksDir, { withFileTypes: true });
+  const books: BookEntry[] = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const bookDir = path.join(booksDir, entry.name);
+    const input = path.join(bookDir, "book.adoc");
+    if (await existsFile(input)) {
+      books.push({
+        bookId: entry.name,
+        bookDir,
+        input,
+        htmlOutputDir: path.join(rootDir, "build", "html", "books", entry.name)
+      });
+    }
+  }
+  return books.sort((a, b) => a.bookId.localeCompare(b.bookId));
+}
+
+async function readIfExists(filePath: string): Promise<string> {
+  return await existsFile(filePath) ? readFile(filePath, "utf8") : "";
+}
+
+async function combinedBookSource(bookDir: string): Promise<string> {
+  const files = await collectFiles(bookDir, (filePath) => filePath.endsWith(".adoc"));
+  const sources = [];
+  for (const file of files) sources.push(await readFile(file, "utf8"));
+  return sources.join("\n");
+}
+
+async function workspaceUsesDiagrams(rootDir: string, books: BookEntry[]): Promise<boolean> {
+  const sources = [await readIfExists(path.join(rootDir, "catalog.adoc"))];
+  for (const book of books) sources.push(await combinedBookSource(book.bookDir));
+  return sources.some((source) => DIAGRAM_BLOCK_PATTERN.test(source));
+}
+
+function createAsciidoctor(loadKroki: boolean) {
+  const asciidoctor = require("asciidoctor")();
+  require("@asciidoctor/reducer").register();
+  if (loadKroki) {
+    try {
+      require("asciidoctor-kroki").register(asciidoctor.Extensions);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `current workspace contains diagram blocks, but asciidoctor-kroki could not be loaded: ${message}`
+      );
+    }
+  }
+  return asciidoctor;
+}
+
+function shouldFetchDiagrams(): boolean {
+  const value = process.env[FETCH_DIAGRAMS_ENV];
+  return value === "1" || value === "true";
+}
+
+function reduceAdocSource(asciidoctor: any, input: string): string {
+  const doc = asciidoctor.loadFile(input, { safe: "unsafe" });
+  const source = doc.getSource();
+  if (/^[ \t]*include::/m.test(source)) {
+    throw new Error(`reducer left unresolved include directives in ${input}`);
+  }
+  return source;
+}
+
+async function buildReducedAdoc(rootDir: string, books: BookEntry[], asciidoctor: any): Promise<void> {
+  const adocDir = path.join(rootDir, "build", "adoc");
+  await rm(adocDir, { force: true, recursive: true });
+  await mkdir(path.join(adocDir, "books"), { recursive: true });
+
+  const catalogSource = reduceAdocSource(asciidoctor, path.join(rootDir, "catalog.adoc"));
+  await writeFile(path.join(adocDir, "catalog.adoc"), catalogSource, "utf8");
+
+  for (const book of books) {
+    const source = reduceAdocSource(asciidoctor, book.input);
+    await writeFile(path.join(adocDir, "books", `${book.bookId}.adoc`), source, "utf8");
+  }
+}
+
+async function pruneStaleBookHtmlDirs(rootDir: string, books: BookEntry[]): Promise<void> {
+  const htmlBooksDir = path.join(rootDir, "build", "html", "books");
+  if (!await existsDir(htmlBooksDir)) return;
+
+  const current = new Set(books.map((book) => book.bookId));
+  const entries = await readdir(htmlBooksDir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.isDirectory() && !current.has(entry.name)) {
+      await rm(path.join(htmlBooksDir, entry.name), { force: true, recursive: true });
+    }
+  }
+}
+
+function convertFile(asciidoctor: any, input: string, outputFile: string, baseDir: string, attributes = {}): void {
+  asciidoctor.convertFile(input, {
+    safe: "unsafe",
+    base_dir: baseDir,
+    to_file: outputFile,
+    mkdirs: true,
+    attributes
+  });
+}
+
+async function buildHtml(rootDir: string, books: BookEntry[], asciidoctor: any, useKroki: boolean, fetchDiagrams: boolean): Promise<void> {
+  await mkdir(path.join(rootDir, "build", "html"), { recursive: true });
+  convertFile(
+    asciidoctor,
+    path.join(rootDir, "catalog.adoc"),
+    path.join(rootDir, "build", "html", "catalog.html"),
+    rootDir
+  );
+
+  await pruneStaleBookHtmlDirs(rootDir, books);
+  for (const book of books) {
+    await mkdir(book.htmlOutputDir, { recursive: true });
+    convertFile(asciidoctor, book.input, path.join(book.htmlOutputDir, "book.html"), book.bookDir, {
+      ...(useKroki && fetchDiagrams ? { "kroki-fetch-diagram": "", "kroki-http-method": "post" } : {})
+    });
+  }
+}
+
+async function copyAssets(rootDir: string, books: BookEntry[]): Promise<void> {
+  const sharedImages = path.join(rootDir, "shared", "images");
+  if (await existsDir(sharedImages)) {
+    await rm(path.join(rootDir, "build", "html", "shared", "images"), { force: true, recursive: true });
+    await cp(sharedImages, path.join(rootDir, "build", "html", "shared", "images"), { recursive: true });
+  }
+
+  for (const book of books) {
+    const assetsDir = path.join(book.bookDir, "assets");
+    if (await existsDir(assetsDir)) {
+      await rm(path.join(book.htmlOutputDir, "assets"), { force: true, recursive: true });
+      await cp(assetsDir, path.join(book.htmlOutputDir, "assets"), { recursive: true });
+    }
+  }
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function addHomeLinkToBookHtml(html: string, href: string): string {
+  if (html.includes(HOME_MARKER)) return html;
+  const marker = '<div id="toc" class="toc2">';
+  const index = html.indexOf(marker);
+  if (index === -1) throw new Error("book HTML is missing the left TOC container");
+
+  const insertAt = index + marker.length;
+  const homeBlock = `
+<style>
+.multi-book-home {
+  margin: 0 0 1rem;
+  padding-bottom: .75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+.multi-book-home a {
+  color: #1f2937;
+  display: block;
+  font-weight: 600;
+  line-height: 1.35;
+  text-decoration: none;
+}
+.multi-book-home a:hover {
+  color: #0f766e;
+  text-decoration: underline;
+}
+.multi-book-home span {
+  color: #64748b;
+  display: block;
+  font-size: .78rem;
+  font-weight: 400;
+  margin-top: .15rem;
+}
+</style>
+<div class="multi-book-home" ${HOME_MARKER}>
+  <a href="${escapeHtmlAttribute(href)}">Back to catalog<span>AsciiDoc multi-book workspace</span></a>
+</div>`;
+  return `${html.slice(0, insertAt)}${homeBlock}${html.slice(insertAt)}`;
+}
+
+async function addHomeLinks(rootDir: string, books: BookEntry[]): Promise<void> {
+  const catalog = path.join(rootDir, "build", "html", "catalog.html");
+  for (const book of books) {
+    const htmlFile = path.join(book.htmlOutputDir, "book.html");
+    const html = await readFile(htmlFile, "utf8");
+    const href = path.relative(path.dirname(htmlFile), catalog);
+    await writeFile(htmlFile, addHomeLinkToBookHtml(html, href), "utf8");
+  }
+}
+
+async function writeRootIndex(rootDir: string): Promise<void> {
+  const outputDir = path.join(rootDir, "build", "html");
+  await mkdir(outputDir, { recursive: true });
+  await writeFile(path.join(outputDir, "index.html"), `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="refresh" content="0; url=catalog.html">
+  <title>AsciiDoc Multi-Book Workspace</title>
+</head>
+<body>
+  <p><a href="catalog.html">catalog.html</a></p>
+</body>
+</html>
+`, "utf8");
+}
+
+function extractCatalogBookIds(catalogSource: string): string[] {
+  const ids = new Set<string>();
+  for (const match of catalogSource.matchAll(CATALOG_BOOK_XREF_PATTERN)) ids.add(match[1]);
+  return [...ids].sort((a, b) => a.localeCompare(b));
+}
+
+function explicitAnchors(source: string): Set<string> {
+  const anchors = new Set<string>();
+  for (const match of source.matchAll(ANCHOR_PATTERN)) anchors.add(match[1]);
+  return anchors;
+}
+
+function attributesFromBookSource(bookSource: string): Map<string, string> {
+  const attributes = new Map<string, string>();
+  for (const line of bookSource.split(/\r?\n/)) {
+    const match = line.match(/^:([A-Za-z0-9_-]+):\s+(.+)$/);
+    if (match) attributes.set(match[1], match[2]);
+  }
+  return attributes;
+}
+
+function expandXrefTarget(target: string, attributes: Map<string, string>): string {
+  return target.replaceAll(/\{([A-Za-z0-9_-]+)\}/g, (_, name) => attributes.get(name) ?? `{${name}}`);
+}
+
+function issue(code: string, detail: string): Issue {
+  return { code, detail };
+}
+
+async function workspaceContractIssues(rootDir: string, books: BookEntry[]): Promise<Issue[]> {
+  const issues: Issue[] = [];
+  const catalogSource = await readIfExists(path.join(rootDir, "catalog.adoc"));
+  const catalogBookIds = extractCatalogBookIds(catalogSource);
+  const bookSet = new Set(books.map((book) => book.bookId));
+  const catalogBookSet = new Set(catalogBookIds);
+
+  for (const bookId of catalogBookIds) {
+    if (!bookSet.has(bookId)) issues.push(issue("CATALOG_TARGET_MISSING", bookId));
+  }
+
+  for (const book of books) {
+    if (!catalogBookSet.has(book.bookId)) issues.push(issue("BOOK_MISSING_FROM_CATALOG", book.bookId));
+  }
+
+  for (const book of books) {
+    const bookSource = await readFile(book.input, "utf8");
+    const allSource = await combinedBookSource(book.bookDir);
+    const attributes = attributesFromBookSource(bookSource);
+
+    if (!/^:doctype:\s+book$/m.test(bookSource)) issues.push(issue("MISSING_DOCTYPE", book.bookId));
+
+    for (const match of allSource.matchAll(XREF_PATTERN)) {
+      const [, target, anchor] = match;
+      if (/^https?:/.test(target)) continue;
+      const expandedTarget = expandXrefTarget(target, attributes);
+      if (!expandedTarget.endsWith(".adoc")) continue;
+      const resolved = path.resolve(book.bookDir, expandedTarget);
+      if (!await existsFile(resolved)) {
+        issues.push(issue("XREF_TARGET_MISSING", `${book.bookId} -> ${expandedTarget}`));
+        if (anchor) issues.push(issue("MISSING_ANCHOR", `${book.bookId} -> ${expandedTarget}#${anchor}`));
+        continue;
+      }
+
+      if (anchor) {
+        const targetSource = await combinedBookSource(path.dirname(resolved));
+        if (!explicitAnchors(targetSource).has(anchor)) {
+          issues.push(issue("MISSING_ANCHOR", `${book.bookId} -> ${expandedTarget}#${anchor}`));
+        }
+      }
+    }
+  }
+
+  return issues;
+}
+
+async function collectHtmlFiles(dir: string): Promise<string[]> {
+  return collectFiles(dir, (filePath) => filePath.endsWith(".html"));
+}
+
+function extractLocalTargets(html: string): string[] {
+  const targets: string[] = [];
+  for (const match of html.matchAll(LOCAL_TARGET_PATTERN)) {
+    const rawTarget = match[1];
+    if (rawTarget === "" || rawTarget.startsWith("#") || rawTarget.startsWith("//") || SCHEME_PATTERN.test(rawTarget)) {
+      continue;
+    }
+
+    const targetWithoutFragment = rawTarget.split("#", 1)[0].split("?", 1)[0];
+    if (targetWithoutFragment !== "") targets.push(rawTarget);
+  }
+  return targets;
+}
+
+async function missingLocalResources(rootDir: string): Promise<Issue[]> {
+  const htmlDir = path.join(rootDir, "build", "html");
+  const htmlFiles = await collectHtmlFiles(htmlDir);
+  const issues: Issue[] = [];
+
+  for (const htmlFile of htmlFiles) {
+    const html = await readFile(htmlFile, "utf8");
+    for (const target of extractLocalTargets(html)) {
+      const targetPath = target.split("#", 1)[0].split("?", 1)[0];
+      const resolved = path.resolve(path.dirname(htmlFile), targetPath);
+      if (!await existsFile(resolved)) {
+        issues.push(issue("HTML_RESOURCE_MISSING", `${path.relative(htmlDir, htmlFile)} -> ${target}`));
+      }
+    }
+  }
+  return issues;
+}
+
+async function assertNoIssues(label: string, issues: Issue[]): Promise<void> {
+  if (issues.length === 0) return;
+  for (const entry of issues) console.error(`${entry.code}: ${entry.detail}`);
+  throw new Error(`${label} failed with ${issues.length} issue(s)`);
+}
+
+export async function buildWorkspace(rootDir = process.cwd()): Promise<void> {
+  const catalog = path.join(rootDir, "catalog.adoc");
+  if (!await existsFile(catalog)) throw new Error(`missing catalog.adoc in ${rootDir}`);
+  const books = await discoverBooks(rootDir);
+  if (books.length === 0) throw new Error(`missing book.adoc entries in ${path.join(rootDir, "books")}`);
+
+  const useKroki = await workspaceUsesDiagrams(rootDir, books);
+  const fetchDiagrams = shouldFetchDiagrams();
+  const asciidoctor = createAsciidoctor(useKroki);
+
+  await buildReducedAdoc(rootDir, books, asciidoctor);
+  await buildHtml(rootDir, books, asciidoctor, useKroki, fetchDiagrams);
+  await copyAssets(rootDir, books);
+  await addHomeLinks(rootDir, books);
+  await writeRootIndex(rootDir);
+  await assertNoIssues("HTML local resource check", await missingLocalResources(rootDir));
+  await assertNoIssues("workspace contract check", await workspaceContractIssues(rootDir, books));
+}
+
+export async function checkWorkspace(rootDir = process.cwd()): Promise<void> {
+  await buildWorkspace(rootDir);
+}
+
+export async function cleanWorkspace(rootDir = process.cwd()): Promise<void> {
+  await rm(path.join(rootDir, "build"), { force: true, recursive: true });
+}
+
+async function main(): Promise<void> {
+  const command = process.argv[2];
+  if (command === "build") {
+    await buildWorkspace();
+    return;
+  }
+  if (command === "check") {
+    await checkWorkspace();
+    return;
+  }
+  if (command === "clean") {
+    await cleanWorkspace();
+    return;
+  }
+
+  console.error("Usage: node tools/adoc-books.mjs <build|check|clean>");
+  process.exitCode = 1;
+}
+
+const executedPath = process.argv[1] ? path.resolve(process.argv[1]) : "";
+const modulePath = fileURLToPath(import.meta.url);
+if (executedPath === modulePath) {
+  main().catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  });
+}

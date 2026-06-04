@@ -1,3 +1,0 @@
-== 参考资料
-
-* [[[upper-volume]]] xref:../05-upper-volume/book.adoc[《示例长书：上册》]。

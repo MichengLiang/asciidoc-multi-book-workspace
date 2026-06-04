@@ -1,8 +1,7 @@
 {
-  "name": "asciidoc-multi-book-workspace",
+  "name": "create-asciidoc-multi-book-workspace",
   "version": "0.1.0",
-  "description": "A GitHub template for maintaining multiple independent AsciiDoc books in one pnpm / Asciidoctor workspace.",
-  "private": true,
+  "description": "Create a complete AsciiDoc multi-book workspace.",
   "license": "Apache-2.0",
   "author": {
     "name": "弥澄亮",
@@ -21,36 +20,37 @@
   "keywords": [
     "asciidoc",
     "asciidoctor",
-    "documentation",
     "books",
-    "multi-book",
-    "template",
-    "github-pages",
-    "static-site"
+    "create",
+    "initializer",
+    "multi-book"
+  ],
+  "bin": {
+    "create-asciidoc-multi-book-workspace": "dist/create.js"
+  },
+  "files": [
+    "dist/",
+    "templates/",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=20.19.0"
   },
   "scripts": {
-    "test": "node --test",
-    "build:adoc": "node scripts/build-adoc.mjs",
-    "build:catalog": "asciidoctor catalog.adoc -D build/html",
-    "build:books": "node scripts/build-books.mjs",
-    "copy:assets": "node scripts/copy-assets.mjs",
-    "enhance:html": "node scripts/add-home-links.mjs build/html",
-    "write:index": "node scripts/write-root-index.mjs build/html",
-    "check:html": "node scripts/check-html-local-resources.mjs build/html",
-    "check:contract": "node scripts/check-workspace-contract.mjs",
-    "check:samples": "node scripts/check-sample-contract.mjs",
-    "check:all": "pnpm run check:contract && pnpm run check:samples",
-    "build": "pnpm run build:adoc && pnpm run build:catalog && pnpm run build:books && pnpm run copy:assets && pnpm run enhance:html && pnpm run write:index && pnpm run check:html && pnpm run check:contract",
-    "check": "pnpm run test && pnpm run build && pnpm run check:samples",
-    "clean": "rm -rf build"
+    "build": "tsc -p tsconfig.json",
+    "test": "pnpm run build && node --test test/*.test.mjs",
+    "pack:check": "pnpm pack --dry-run",
+    "check": "pnpm run test && pnpm run pack:check",
+    "clean": "rm -rf dist build"
   },
   "devDependencies": {
     "@asciidoctor/reducer": "1.1.2",
+    "@types/node": "24.10.1",
     "asciidoctor": "2.2.9",
-    "asciidoctor-kroki": "0.18.1"
+    "asciidoctor-kroki": "0.18.1",
+    "typescript": "5.9.3"
   }
 }

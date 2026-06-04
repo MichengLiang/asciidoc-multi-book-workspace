@@ -1,3 +1,0 @@
-== 参考资料
-
-* [[[starter-anatomy]]] xref:../00-book-anatomy/book.adoc[完整书籍结构标本]。

@@ -32,9 +32,14 @@ jobs:
           enablement: true
       - run: pnpm install --frozen-lockfile
       - run: pnpm run check
+      - run: node dist/create.js tmp/pages-workspace
+      - run: pnpm install
+        working-directory: tmp/pages-workspace
+      - run: pnpm run build
+        working-directory: tmp/pages-workspace
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: build/html
+          path: tmp/pages-workspace/build/html
 
   deploy:
     environment:
