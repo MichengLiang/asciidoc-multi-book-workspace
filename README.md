@@ -19,6 +19,10 @@ npm users can run:
 npm create asciidoc-multi-book-workspace@latest my-books
 ```
 
+```bash
+npx create-asciidoc-multi-book-workspace@latest my-books
+```
+
 The generated workspace contains:
 
 ```text
