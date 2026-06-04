@@ -4,15 +4,21 @@
 |===
 |写法 |含义
 
-|`= 书名`
-|document title。
-
-|`= 第一部`
-|book doctype 中的 part。
+|`= 书名或文档名`
+|Document title（文档标题，Level 0）。在 book 文档类型中也可作为 Part（部）。
 
 |`== 章`
-|chapter。
+|Level 1 Section（一级章节）。在 book 文档类型中通常作为 Chapter（章）。
 
 |`=== 节`
-|section。
+|Level 2 Section（二级章节 / 节）。
+
+|`==== 小节`
+|Level 3 Section（三级章节 / 小节）。
+
+|`===== 次小节`
+|Level 4 Section（四级章节）。
+
+|`====== 最底层级`
+|Level 5 Section（五级章节）。AsciiDoc 支持的最深层级。
 |===
