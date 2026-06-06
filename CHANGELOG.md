@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.4 - 2026-06-06
+
+### Added
+
+- Add `07-structured-writing-conventions`, a default workspace sample book for structured writing conventions.
+- Document how headings, stable IDs, role tokens, xrefs, rel predicates, and named attributes form a readable and projection-friendly source surface.
+- Add sample contract coverage for the structured writing conventions book.
+
+### Changed
+
+- Update the default workspace catalog and README to include structured writing conventions without tying README wording to a fixed sample count.
+
 ## 0.1.3 - 2026-06-06
 
 ### Added

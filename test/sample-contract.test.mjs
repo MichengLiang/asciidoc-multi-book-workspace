@@ -12,7 +12,8 @@ const expectedBooks = [
   "03-technical-book-workflow",
   "04-reference-manual",
   "05-upper-volume",
-  "06-lower-volume"
+  "06-lower-volume",
+  "07-structured-writing-conventions"
 ];
 
 const requiredResources = new Map([
@@ -73,7 +74,30 @@ const requiredPatterns = new Map([
     ]
   ],
   ["01-starter-book", ["[preface]", "[appendix]", "[bibliography]"]],
-  ["04-reference-manual", ["[discrete]", "[glossary]"]]
+  ["04-reference-manual", ["[discrete]", "[glossary]"]],
+  [
+    "07-structured-writing-conventions",
+    [
+      "结构化书写约定标本",
+      "普通标题可以不写 role",
+      "role 是标题身份",
+      "没有 `rel` 的 xref",
+      "普通引用",
+      "references",
+      "强关系才写 `rel`",
+      "named attributes",
+      "附加字段",
+      "字段含义由书稿自己的约定负责",
+      "indexterm2:[role]",
+      "indexterm:[relation predicate]",
+      "xref:stable-heading[稳定标题]",
+      "xref:stable-heading[稳定标题, rel=depends-on, weight=strong]",
+      "aat:references",
+      "rel:depends-on",
+      "[.concept]",
+      "[.rule]"
+    ]
+  ]
 ]);
 
 async function existsFile(filePath) {
@@ -118,7 +142,7 @@ function partCount(bookSource) {
   return count;
 }
 
-test("default workspace template keeps the seven official sample books", async () => {
+test("default workspace template keeps the official sample books", async () => {
   const books = await readdir(path.join(templateRoot, "books"));
   assert.deepEqual(books.sort(), expectedBooks);
 });

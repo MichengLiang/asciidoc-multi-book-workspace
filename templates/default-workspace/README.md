@@ -1,6 +1,6 @@
 # My Books
 
-This is an AsciiDoc multi-book workspace. It starts with seven sample books that show common ways to organize independent books, multipart books, technical books, reference material, and split volumes.
+This is an AsciiDoc multi-book workspace. It starts with sample books that show common ways to organize independent books, multipart books, technical books, reference material, split volumes, and structured writing conventions.
 
 ## Install
 

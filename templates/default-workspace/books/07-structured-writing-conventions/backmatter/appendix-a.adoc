@@ -1,0 +1,32 @@
+= 附录 A：结构化写法速查
+
+[cols="1,2", options="header"]
+|===
+|写法 |含义
+
+|`== 标题`
+|创建书稿结构单位。普通标题可以不写 role。
+
+|`[#stable-id]`
+|为重要标题声明稳定 ID。
+
+|`[#stable-id.concept]`
+|同时声明稳定 ID 和 role。
+
+|`xref:stable-id[显示文本]`
+|普通引用；默认语义为 references。
+
+|`xref:stable-id[显示文本, rel=depends-on]`
+|显式关系引用；`rel` 选择关系谓词。
+
+|`[#example.example, owner=writing-team]`
+|role 声明标题身份；named attributes 保留附加字段。
+
+|`indexterm2:[role]`
+|正文可见索引词。
+
+|`indexterm:[relation predicate]`
+|正文隐藏索引词。
+|===
+
+role 描述标题身份。rel 描述 xref 边上的关系谓词。named attributes 是附加字段。

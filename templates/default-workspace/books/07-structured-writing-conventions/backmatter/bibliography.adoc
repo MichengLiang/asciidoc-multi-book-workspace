@@ -1,0 +1,8 @@
+= 参考坐标
+
+以下资料提供 AsciiDoc 结构、交叉引用和投影语义的参考坐标。
+
+* [[[asciidoctor-xref]]] Asciidoctor Docs, Cross References, https://docs.asciidoctor.org/asciidoc/latest/macros/xref/
+* [[[asciidoctor-attributes]]] Asciidoctor Docs, Element Attributes, https://docs.asciidoctor.org/asciidoc/latest/attributes/element-attributes/
+* [[[asciidoc-abundant-tree-projection]]] `asciidoc-abundant-tree`，AsciiDoc 标题切片到 RDF 1.2 投影规约。
+* [[[gtp-relation-vocabulary]]] GraphTextProjection，GTP Core 关系谓词受控词表。

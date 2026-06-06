@@ -14,7 +14,8 @@ const expectedBooks = [
   "03-technical-book-workflow",
   "04-reference-manual",
   "05-upper-volume",
-  "06-lower-volume"
+  "06-lower-volume",
+  "07-structured-writing-conventions"
 ];
 
 async function exists(filePath) {

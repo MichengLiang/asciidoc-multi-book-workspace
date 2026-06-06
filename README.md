@@ -2,7 +2,7 @@
 
 `create-asciidoc-multi-book-workspace` is an npm initializer for a complete AsciiDoc multi-book workspace.
 
-It creates a user-owned workspace with seven sample books, a catalog, shared assets, explicit AsciiDoc dependencies, and one local build script at `tools/adoc-books.mjs`.
+It creates a user-owned workspace with sample books, a catalog, shared assets, explicit AsciiDoc dependencies, and one local build script at `tools/adoc-books.mjs`.
 
 ## Usage
 
@@ -51,6 +51,7 @@ books/03-technical-book-workflow
 books/04-reference-manual
 books/05-upper-volume
 books/06-lower-volume
+books/07-structured-writing-conventions
 shared/attributes.adoc
 shared/images/workspace-map.svg
 ```
@@ -85,7 +86,7 @@ DESIGN.adoc                  # maintainer design specification
 .github/                     # maintainer CI
 ```
 
-The seven sample books live only under `templates/default-workspace/books/`.
+The sample books live only under `templates/default-workspace/books/`.
 
 ## Maintainer Commands
 

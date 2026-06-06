@@ -1,0 +1,33 @@
+[#role-identity]
+== role 身份
+
+indexterm2:[role] 是标题节点的身份标记。作者使用标题 attrlist 中的点号 token 声明该标题在书稿中的角色。
+
+role 是标题身份。普通标题可以不写 role；只有当身份需要被读者或工具明确识别时，作者才需要写 role。
+
+[source,asciidoc]
+----
+[#stable-heading.concept]
+== 稳定标题
+
+[#xref-rule.rule]
+== 引用规则
+----
+
+`.concept` 和 `.rule` 是 role。它们帮助读者和工具判断标题承担的身份，但它们不是标题成立条件。
+
+[cols="1,2", options="header"]
+|===
+|role 示例 |作用
+
+|`[.concept]`
+|标记概念说明。
+
+|`[.rule]`
+|标记规则说明。
+
+|`[.example]`
+|标记示例。
+|===
+
+同一本书应保留小型、稳定的 role 集。role 用于标题身份，不用于表达标题之间的关系。

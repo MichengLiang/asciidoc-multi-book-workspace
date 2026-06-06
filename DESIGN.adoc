@@ -11,7 +11,7 @@
 == Abstract
 
 `create-asciidoc-multi-book-workspace` is an npm initializer for complete AsciiDoc multi-book workspaces.
-The initializer creates a user-owned workspace with seven sample books, a catalog, shared assets, explicit AsciiDoc dependencies, and one editable local build script.
+The initializer creates a user-owned workspace with official sample books, a catalog, shared assets, explicit AsciiDoc dependencies, and one editable local build script.
 
 This repository is the maintainer source for that initializer.
 It contains TypeScript initializer source, user runtime source, the default workspace template, maintainer tests, the sample contract, and release-boundary checks.
@@ -123,7 +123,7 @@ The TypeScript build emits `dist/runtime/adoc-books.mjs`, and the initializer co
 === Template Source
 
 `templates/default-workspace/` is a complete user workspace template.
-It contains the seven sample books, `catalog.adoc`, shared assets, the user README, `package.json.template`, and `gitignore.template`.
+It contains the official sample books, `catalog.adoc`, shared assets, the user README, `package.json.template`, and `gitignore.template`.
 
 `package.json.template` renders to the generated `package.json`.
 `gitignore.template` renders to `.gitignore`.
@@ -152,7 +152,7 @@ The generated `package.json` directly lists the AsciiDoc toolchain:
 The initializer package is not listed in the generated workspace.
 The user can inspect and manage the AsciiDoc dependencies directly.
 
-=== Seven Sample Books
+=== Official Sample Books
 
 The default workspace contains these sample books:
 
@@ -176,6 +176,9 @@ The default workspace contains these sample books:
 
 `06-lower-volume`::
   An independent lower volume that demonstrates cross-volume writing conventions by literal example.
+
+`07-structured-writing-conventions`::
+  A structured writing conventions specimen covering headings, stable IDs, role tokens, xrefs, rel predicates, and named attributes as source surfaces.
 
 === Sample Independence
 
@@ -305,8 +308,8 @@ It validates:
 * Executable xrefs with anchors point to explicit anchors.
 * Generated HTML local `href` and `src` resources exist.
 
-The runtime does not require all seven official sample books to remain present.
-The official seven-book requirement belongs to maintainer tests only.
+The runtime does not require all official sample books to remain present.
+The official sample-book set requirement belongs to maintainer tests only.
 
 === Cheap Performance Rules
 
@@ -334,7 +337,7 @@ The test suite covers:
 * Generated `package.json` scripts and dependency visibility.
 * Non-empty target rejection and safe `--force` behavior.
 * Runtime build outputs and copied assets.
-* Removal of each of the seven sample books followed by catalog entry removal.
+* Removal of each official sample book followed by catalog entry removal.
 * Failure on a user-authored real cross-book xref to a missing book.
 * Stale HTML directory removal only for books no longer present.
 * Runtime clean behavior.
@@ -342,7 +345,7 @@ The test suite covers:
 * npm package boundary content.
 
 The sample contract applies only to `templates/default-workspace/books`.
-It verifies that the seven official samples remain present and retain their assigned teaching roles.
+It verifies that the official samples remain present and retain their assigned teaching roles.
 It does not apply to generated user workspaces.
 
 == Package Boundary
@@ -439,7 +442,7 @@ The Pages workflow does not treat the maintainer repository root as a user works
 The design is satisfied when these statements are true:
 
 * `pnpm create asciidoc-multi-book-workspace my-books` creates a complete user workspace.
-* The generated workspace contains the seven sample books by default.
+* The generated workspace contains the official sample books by default.
 * The generated workspace does not contain maintainer assets.
 * The generated `package.json` directly lists `asciidoctor`, `@asciidoctor/reducer`, and `asciidoctor-kroki`.
 * The generated workspace builds with `pnpm install` followed by `pnpm run build`.

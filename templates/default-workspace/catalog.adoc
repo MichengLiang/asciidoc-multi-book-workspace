@@ -43,6 +43,10 @@ v0.1, 2026-05
 |组织可独立发布的下册
 |xref:books/06-lower-volume/book.adoc[06 下册]
 |它用文本示例说明跨卷引用写法，但不真实依赖上册。
+
+|让源书稿保持可读，同时保留可被工具链读取的结构关系
+|xref:books/07-structured-writing-conventions/book.adoc[07 结构化书写约定标本]
+|它展示标题、稳定 ID、role、xref、rel 和附加字段如何形成结构化书稿表面。
 |===
 
 == 样本书
@@ -54,6 +58,7 @@ v0.1, 2026-05
 * xref:books/04-reference-manual/book.adoc[04 参考手册]：结构选择、路径规则和引用模式。
 * xref:books/05-upper-volume/book.adoc[05 上册]：独立分卷的上册。
 * xref:books/06-lower-volume/book.adoc[06 下册]：独立分卷的下册，并用示例说明跨卷引用写法。
+* xref:books/07-structured-writing-conventions/book.adoc[07 结构化书写约定标本]：标题、稳定 ID、role、xref、rel 和附加字段的结构化写法。
 
 == 工作区地图
 
@@ -66,3 +71,4 @@ image::shared/images/workspace-map.svg[多书工作区结构]
 * 下册需要说明跨卷引用写法但不制造默认依赖：看 xref:books/06-lower-volume/book.adoc[06 下册]。
 * 新增一本普通书：从 xref:books/01-starter-book/book.adoc[01 日常独立单书] 开始。
 * 查路径、引用和增长规则：看 xref:books/04-reference-manual/book.adoc[04 参考手册]。
+* 写需要被读者和工具同时理解的结构化源文本：看 xref:books/07-structured-writing-conventions/book.adoc[07 结构化书写约定标本]。
