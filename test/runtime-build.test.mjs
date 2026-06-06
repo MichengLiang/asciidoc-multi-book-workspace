@@ -71,6 +71,15 @@ test("runtime build creates ADOC, HTML, assets, home links, and root index", asy
   assert.match(technical, /https:\/\/kroki\.io\/mermaid\/svg\//);
   const technicalFiles = await readdir(technicalDir);
   assert.equal(technicalFiles.some((file) => /^technical-resource-flow-.*\.svg$/.test(file)), false);
+
+  const structuredWriting = await readFile(
+    path.join(target, "build", "html", "books", "07-structured-writing-conventions", "book.html"),
+    "utf8"
+  );
+  assert.match(structuredWriting, /<h1 id="从源文档看结构" class="sect0">Part I: 从源文档看结构<\/h1>/);
+  assert.match(structuredWriting, /<h1 id="给标题和引用加意图" class="sect0">Part II: 给标题和引用加意图<\/h1>/);
+  assert.match(structuredWriting, /<h1 id="字段索引与术语" class="sect0">Part III: 字段、索引与术语<\/h1>/);
+  assert.match(structuredWriting, /<a href="#从源文档看结构">Part I: 从源文档看结构<\/a>/);
 });
 
 test("runtime check passes after deleting any one sample and removing its catalog entries", async () => {

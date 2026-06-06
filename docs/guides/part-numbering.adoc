@@ -1,0 +1,171 @@
+= Book Part Numbering
+:toc: left
+:toclevels: 3
+:sectnums:
+
+== Purpose
+
+This guide records how book part numbering is configured in this workspace.
+It separates Asciidoctor's built-in numbering attributes from workspace-specific authoring choices so future template changes do not require rediscovering the same behavior.
+
+== Structural Boundary
+
+In `:doctype: book`, the document title is the first level 0 title.
+Each later level 0 title is a book part when the book contains parts.
+Level 1 titles under a part are chapters.
+
+[source,asciidoc]
+----
+= Book Title
+:doctype: book
+
+= Source Surface
+
+== Source and Projection
+----
+
+`Source Surface` is a part.
+`Source and Projection` is a chapter.
+The source directory layout may place chapter files under `parts/<part-id>/`, but the part itself is declared by the level 0 title in `book.adoc`.
+
+== Native Numbering Attributes
+
+`sectnums` controls section numbering.
+In a book, it numbers chapter and section titles, starting at level 1.
+It does not number part titles.
+
+[source,asciidoc]
+----
+:sectnums:
+----
+
+`partnums` controls book part numbering.
+It must be set in a book document to number part titles.
+Asciidoctor renders part numbers as Roman numerals.
+
+[source,asciidoc]
+----
+:partnums:
+----
+
+`part-signifier` controls the prefix that appears before the generated Roman numeral.
+The current template uses an explicit signifier when it needs stable `Part I` output across Asciidoctor versions.
+
+[source,asciidoc]
+----
+:partnums:
+:part-signifier: Part
+----
+
+The expected HTML heading surface is:
+
+[source,text]
+----
+Part I: Source Surface
+Part II: Identity and Relation
+----
+
+== Workspace Choice
+
+The default workspace uses Asciidoctor's native `partnums` mechanism for automatic part numbering.
+The template does not post-process HTML part titles.
+This keeps the source document, table of contents, and generated heading text aligned through the converter.
+
+Use this configuration when a multipart sample should show automatic part numbers:
+
+[source,asciidoc]
+----
+:sectnums:
+:partnums:
+:part-signifier: Part
+----
+
+Use semantic part titles in the body:
+
+[source,asciidoc]
+----
+= Source Surface
+= Identity and Relation
+= Fields and Lookup
+----
+
+Do not write `Part I` into the title when `partnums` is enabled.
+The generated number belongs to the converter output, not to the authored heading text.
+
+== Display Variants
+
+The native converter supports simple prefix changes through `part-signifier`.
+
+[cols="1,2", options="header"]
+|===
+|Configuration |Typical output
+
+|`:partnums:`
+|`I: Source Surface`
+
+|`:partnums:` with `:part-signifier: Part`
+|`Part I: Source Surface`
+
+|`:partnums:` with `:part-signifier: Component`
+|`Component I: Source Surface`
+|===
+
+The native attribute does not generate Chinese ordinal forms such as `第一部`.
+That surface requires either hand-authored titles or a separate output customization.
+Use hand-authored Chinese part titles only when the title text itself must contain the ordinal.
+
+== Current Template Example
+
+`templates/default-workspace/books/07-structured-writing-conventions/book.adoc` uses:
+
+[source,asciidoc]
+----
+:sectnums:
+:partnums:
+:part-signifier: Part
+----
+
+The source titles remain semantic:
+
+[source,asciidoc]
+----
+= 从源文档看结构
+= 给标题和引用加意图
+= 字段、索引与术语
+----
+
+The generated HTML shows:
+
+[source,text]
+----
+Part I: 从源文档看结构
+Part II: 给标题和引用加意图
+Part III: 字段、索引与术语
+----
+
+The table of contents receives the same generated part labels because both the body headings and the TOC are produced by Asciidoctor from the same document model.
+
+== Verification
+
+Run the runtime build test after changing part numbering configuration:
+
+[source,bash]
+----
+pnpm run build && node --test test/runtime-build.test.mjs
+----
+
+Run the full project check before publishing template changes:
+
+[source,bash]
+----
+pnpm run check
+----
+
+The preview build writes the rendered sample book to:
+
+[source,text]
+----
+build/template-preview/workspace/build/html/books/07-structured-writing-conventions/book.html
+----
+
+The heading and TOC entries for the three parts should contain `Part I`, `Part II`, and `Part III`.

@@ -79,6 +79,8 @@ const requiredPatterns = new Map([
     "07-structured-writing-conventions",
     [
       "结构化书写约定标本",
+      ":partnums:",
+      ":part-signifier: Part",
       "按写作目的选择这些写法",
       "从源文档看结构",
       "长期引用的标题使用稳定 ID",

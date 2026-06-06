@@ -5,6 +5,8 @@ v0.1, 2026-05
 :toc: left
 :toclevels: 3
 :sectnums:
+:partnums:
+:part-signifier: Part
 :icons: font
 :experimental:
 :idprefix:

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.5 - 2026-06-07
+
+### Added
+
+- Add a maintainer guide for Asciidoctor book part numbering, including the boundary between `sectnums`, `partnums`, and `part-signifier`.
+- Add runtime and sample contract coverage for the structured writing conventions book's generated part labels.
+
+### Changed
+
+- Enable native `Part I` style part numbering in `07-structured-writing-conventions`.
+- Expand the structured writing conventions sample text with additional reader-facing context.
+
 ## 0.1.4 - 2026-06-06
 
 ### Added
