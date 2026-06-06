@@ -1,7 +1,7 @@
 [#surface-fields]
 == 附加字段
 
-named attributes 是源文档表面字段。标题 attrlist 和 xref attribute 可以携带 named attributes；工具链可以保留这些字段。
+named attributes 是写在源文档表面的字段。
 
 [source,asciidoc]
 ----
@@ -13,4 +13,6 @@ named attributes 是源文档表面字段。标题 attrlist 和 xref attribute �
 
 `.example` 是 role。`owner=writing-team` 是标题附加字段。`weight=strong` 是 xref 边证据上的附加字段。
 
-字段名和字段值应来自本书自己的约定。同一本书使用附加字段时，应保持字段写法和字段含义稳定。
+`owner=writing-team` 写在标题 attrlist 中，投影时成为标题字段。`weight=strong` 写在 xref 中，投影时成为边证据字段。
+
+字段名和字段值来自本书自己的约定。同一本书使用附加字段时，应保持字段写法和字段含义稳定。

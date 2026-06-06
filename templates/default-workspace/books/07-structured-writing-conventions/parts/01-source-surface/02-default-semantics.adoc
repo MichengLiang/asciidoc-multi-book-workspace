@@ -1,7 +1,7 @@
 [#heading-and-xref]
 == 标题与引用
 
-标题使用等号声明。重要标题可以添加稳定 ID。需要标明标题身份时，可以在标题 attrlist 中添加 role。
+等号行是标题。标题前一行的 attrlist 承载地址和 role。
 
 [source,asciidoc]
 ----
@@ -9,7 +9,7 @@
 == 稳定标题
 ----
 
-这一段中，`#stable-heading` 是稳定 ID，`.concept` 是 role，`稳定标题` 是标题文本。
+`#stable-heading` 给标题一个稳定地址；`.concept` 标明标题身份；`稳定标题` 是读者看到的标题文本。
 
 [source,asciidoc]
 ----

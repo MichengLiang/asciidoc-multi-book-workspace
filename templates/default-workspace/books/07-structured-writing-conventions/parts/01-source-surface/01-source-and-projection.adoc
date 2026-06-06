@@ -1,7 +1,7 @@
 [#source-and-projection]
 == 源文本与投影
 
-本章用一段短源文档展示结构化书写约定。示例只展示关键投影事实；完整投影还会保留 raw、路径、行号和边证据。
+本章用一段短源文档展示结构化书写约定。Turtle 片段列出关键投影事实；完整投影还会保留 raw、路径、行号和边证据。
 
 [source,asciidoc]
 ----
@@ -19,7 +19,7 @@
 引用规则依赖 xref:stable-heading[稳定标题, rel=depends-on, weight=strong]。
 ----
 
-这段源文档写下了两个标题、两个稳定 ID、两个 role、一个普通 xref 和一个显式关系 xref。
+源文档把 `稳定标题` 写成可引用的阅读单位，把 `引用规则` 写成规则说明，并在正文里写出参见和依赖两种引用。
 
 [source,turtle]
 ----
@@ -40,4 +40,4 @@
   aat:weight "strong" .
 ----
 
-读者直接阅读源文档时，可以看出 [.concept]#稳定标题# 是被引用的阅读单位， [.rule]#引用规则# 描述引用写法。工具链读取同一份源文档时，可以读出 `aat:Heading`、`aat:addressLabel`、`aat:role`、`aat:references` 和 `rel:depends-on`。
+读者看源文档，能直接看到 [.concept]#稳定标题# 是被引用的阅读单位， [.rule]#引用规则# 说明引用写法。投影读取同一份源文档，得到 `aat:Heading`、`aat:addressLabel`、`aat:role`、`aat:references` 和 `rel:depends-on`。

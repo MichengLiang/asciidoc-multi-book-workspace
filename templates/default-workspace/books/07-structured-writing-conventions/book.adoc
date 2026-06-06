@@ -27,7 +27,7 @@ include::frontmatter/preface.adoc[]
 [acknowledgments]
 include::frontmatter/acknowledgments.adoc[]
 
-= 第一部：源文本表面
+= 第一部：从源文档看结构
 
 [partintro]
 include::parts/01-source-surface/_partintro.adoc[]
@@ -36,7 +36,7 @@ include::parts/01-source-surface/01-source-and-projection.adoc[]
 
 include::parts/01-source-surface/02-default-semantics.adoc[]
 
-= 第二部：显式身份与关系
+= 第二部：给标题和引用加意图
 
 [partintro]
 include::parts/02-identity-and-relation/_partintro.adoc[]
@@ -45,7 +45,7 @@ include::parts/02-identity-and-relation/01-role-identity.adoc[]
 
 include::parts/02-identity-and-relation/02-relation-predicate.adoc[]
 
-= 第三部：附加字段与检索入口
+= 第三部：字段、索引与术语
 
 [partintro]
 include::parts/03-fields-and-lookup/_partintro.adoc[]

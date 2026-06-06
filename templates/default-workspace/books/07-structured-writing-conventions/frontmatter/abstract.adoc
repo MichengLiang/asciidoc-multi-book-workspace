@@ -1,5 +1,5 @@
 == 摘要
 
-本书展示标题、稳定 ID、role、xref、rel 和 named attributes 如何形成可读、可维护、可投影的书稿表面。
+本书展示标题、稳定 ID、role、xref、rel 和 named attributes 如何形成可读、可维护、可投影的源文档。
 
-本书用于观察结构化写法，不作为每本书的必选清单。
+实际书稿按写作目的选择其中写法。

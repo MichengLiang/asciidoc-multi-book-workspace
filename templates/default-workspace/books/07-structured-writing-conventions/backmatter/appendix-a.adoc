@@ -14,10 +14,10 @@
 |声明稳定 ID，并用 role 标明标题身份。
 
 |`xref:stable-id[显示文本]`
-|普通引用；默认语义为 references。
+|显示为链接，投影为 references。
 
 |`xref:stable-id[显示文本, rel=depends-on]`
-|显式关系引用；`rel` 选择关系谓词。
+|显示为链接，同时声明 depends-on 关系。
 
 |`[#example.example, owner=writing-team]`
 |role 声明标题身份；named attributes 保留附加字段。
