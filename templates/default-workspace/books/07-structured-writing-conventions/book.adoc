@@ -27,32 +27,34 @@ include::frontmatter/preface.adoc[]
 [acknowledgments]
 include::frontmatter/acknowledgments.adoc[]
 
-= 第一部：从源文档看结构
+= 从源文档看结构
 
 [partintro]
-include::parts/01-source-surface/_partintro.adoc[]
+include::parts/100-source-surface/_partintro.adoc[]
 
-include::parts/01-source-surface/01-source-and-projection.adoc[]
+include::parts/100-source-surface/010-source-and-projection.adoc[]
 
-include::parts/01-source-surface/02-default-semantics.adoc[]
+include::parts/100-source-surface/020-default-semantics.adoc[]
 
-= 第二部：给标题和引用加意图
+include::parts/100-source-surface/030-source-order-notation.adoc[]
 
-[partintro]
-include::parts/02-identity-and-relation/_partintro.adoc[]
-
-include::parts/02-identity-and-relation/01-role-identity.adoc[]
-
-include::parts/02-identity-and-relation/02-relation-predicate.adoc[]
-
-= 第三部：字段、索引与术语
+= 给标题和引用加意图
 
 [partintro]
-include::parts/03-fields-and-lookup/_partintro.adoc[]
+include::parts/200-identity-and-relation/_partintro.adoc[]
 
-include::parts/03-fields-and-lookup/01-surface-fields.adoc[]
+include::parts/200-identity-and-relation/010-role-identity.adoc[]
 
-include::parts/03-fields-and-lookup/02-index-and-glossary.adoc[]
+include::parts/200-identity-and-relation/020-relation-predicate.adoc[]
+
+= 字段、索引与术语
+
+[partintro]
+include::parts/300-fields-and-lookup/_partintro.adoc[]
+
+include::parts/300-fields-and-lookup/010-surface-fields.adoc[]
+
+include::parts/300-fields-and-lookup/020-index-and-glossary.adoc[]
 
 [appendix]
 include::backmatter/appendix-a.adoc[]

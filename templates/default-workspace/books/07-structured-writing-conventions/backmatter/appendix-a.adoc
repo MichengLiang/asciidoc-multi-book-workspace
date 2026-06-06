@@ -7,6 +7,12 @@
 |`== 标题`
 |创建书稿阅读结构。
 
+|`parts/100-topic/`
+|part 目录的源文件编排号。
+
+|`010-opening.adoc`
+|chapter 文件的源文件编排号。
+
 |`[#stable-id]`
 |为重要标题声明稳定 ID。
 

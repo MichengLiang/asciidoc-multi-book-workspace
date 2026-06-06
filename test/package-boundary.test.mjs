@@ -28,7 +28,7 @@ test("pnpm pack dry-run contains release assets and excludes maintainer-only fil
     "templates/default-workspace/books/00-book-anatomy/parts/02-body-structure/02-inline-structure.adoc",
     "templates/default-workspace/books/06-lower-volume/book.adoc",
     "templates/default-workspace/books/07-structured-writing-conventions/book.adoc",
-    "templates/default-workspace/books/07-structured-writing-conventions/parts/01-source-surface/01-source-and-projection.adoc",
+    "templates/default-workspace/books/07-structured-writing-conventions/parts/100-source-surface/010-source-and-projection.adoc",
     "templates/default-workspace/shared/images/workspace-map.svg",
     "README.md",
     "CHANGELOG.md",
