@@ -14,8 +14,12 @@ test("pnpm pack dry-run contains release assets and excludes maintainer-only fil
   for (const required of [
     "dist/build-template-preview.js",
     "dist/create.js",
+    "dist/index.d.ts",
+    "dist/index.js",
+    "dist/init-workspace.d.ts",
     "dist/init-workspace.js",
     "dist/runtime/adoc-books.mjs",
+    "dist/template-manifest.d.ts",
     "dist/template-manifest.js",
     "templates/default-workspace/package.json.template",
     "templates/default-workspace/gitignore.template",

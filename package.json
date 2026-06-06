@@ -1,6 +1,6 @@
 {
   "name": "create-asciidoc-multi-book-workspace",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Create a complete AsciiDoc multi-book workspace.",
   "license": "Apache-2.0",
   "author": {
@@ -17,6 +17,13 @@
   },
   "homepage": "https://michengliang.github.io/asciidoc-multi-book-workspace/",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
   "keywords": [
     "asciidoc",
     "asciidoctor",
@@ -30,7 +37,9 @@
   },
   "files": [
     "dist/build-template-preview.js",
+    "dist/*.d.ts",
     "dist/create.js",
+    "dist/index.js",
     "dist/init-workspace.js",
     "dist/runtime/adoc-books.mjs",
     "dist/template-manifest.js",

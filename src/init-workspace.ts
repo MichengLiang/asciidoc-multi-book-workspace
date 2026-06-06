@@ -12,6 +12,11 @@ export interface InitWorkspaceOptions {
   force?: boolean;
 }
 
+export interface InitWorkspaceResult {
+  targetDir: string;
+  packageName: string;
+}
+
 const sourceDir = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(sourceDir, "..");
 const templateRoot = path.join(packageRoot, "templates", defaultWorkspaceTemplate);
@@ -51,7 +56,7 @@ async function copyTemplatePath(name: string, targetDir: string): Promise<void> 
   });
 }
 
-export async function initWorkspace(options: InitWorkspaceOptions): Promise<string> {
+export async function initWorkspace(options: InitWorkspaceOptions): Promise<InitWorkspaceResult> {
   const targetDir = path.resolve(options.targetDir);
   const targetExists = await exists(targetDir);
 
@@ -81,5 +86,5 @@ export async function initWorkspace(options: InitWorkspaceOptions): Promise<stri
 
   await mkdir(path.join(targetDir, "tools"), { recursive: true });
   await cp(runtimeScript, path.join(targetDir, "tools", "adoc-books.mjs"), { force: true });
-  return targetDir;
+  return { targetDir, packageName };
 }

@@ -28,8 +28,8 @@ async function main(): Promise<void> {
     return;
   }
 
-  const created = await initWorkspace({ targetDir: target, force: args.includes("--force") });
-  const displayTarget = path.relative(process.cwd(), created) || ".";
+  const result = await initWorkspace({ targetDir: target, force: args.includes("--force") });
+  const displayTarget = path.relative(process.cwd(), result.targetDir) || ".";
   console.log(`Created AsciiDoc multi-book workspace in ${displayTarget}`);
   console.log("");
   console.log("Next:");

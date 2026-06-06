@@ -23,6 +23,19 @@ npm create asciidoc-multi-book-workspace@latest my-books
 npx create-asciidoc-multi-book-workspace@latest my-books
 ```
 
+## Library API
+
+Host CLIs can create the same workspace through the package entrypoint:
+
+```ts
+import { initWorkspace } from "create-asciidoc-multi-book-workspace";
+
+const result = await initWorkspace({ targetDir: "my-books", force: false });
+console.log(result.targetDir);
+```
+
+The host CLI owns command parsing and user-facing output. This package owns the workspace files it creates.
+
 The generated workspace contains:
 
 ```text

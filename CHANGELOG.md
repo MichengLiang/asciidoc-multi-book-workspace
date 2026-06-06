@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.2 - 2026-06-06
+
+### Added
+
+- Export the workspace initializer from the package root for host CLI integration.
+- Publish TypeScript declaration files for the public initializer API.
+
+### Changed
+
+- Return the resolved target directory and generated package name from `initWorkspace`.
+- Document the library entrypoint while keeping command parsing and user-facing output owned by host CLIs.
+
 ## 0.1.1 - 2026-06-06
 
 ### Added

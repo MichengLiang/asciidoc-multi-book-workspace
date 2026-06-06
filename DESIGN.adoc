@@ -38,6 +38,22 @@ npm create asciidoc-multi-book-workspace@latest my-books
 The package is an initializer.
 It creates files in the target directory and does not remain as a dependency of the generated workspace.
 
+=== Library Entrypoint
+
+Host CLIs can import the package root and call `initWorkspace`.
+The host CLI owns command parsing, command names, prompts, logging, and user-facing output.
+This package owns the generated workspace files and the target-directory safety rules.
+
+[source,typescript]
+----
+import { initWorkspace } from "create-asciidoc-multi-book-workspace";
+
+const result = await initWorkspace({ targetDir: "my-books", force: false });
+----
+
+`initWorkspace` returns the resolved target directory and the generated package name.
+It creates the same default workspace as the published CLI command.
+
 === Generated Workspace
 
 The generated workspace is a standalone AsciiDoc multi-book project.
@@ -336,7 +352,13 @@ The npm package `files` field limits the published package to:
 [source,json]
 ----
 [
-  "dist/",
+  "dist/*.d.ts",
+  "dist/build-template-preview.js",
+  "dist/create.js",
+  "dist/index.js",
+  "dist/init-workspace.js",
+  "dist/runtime/adoc-books.mjs",
+  "dist/template-manifest.js",
   "templates/",
   "README.md",
   "CHANGELOG.md",
@@ -347,8 +369,12 @@ The npm package `files` field limits the published package to:
 The package must include:
 
 * `dist/create.js`
+* `dist/index.js`
+* `dist/index.d.ts`
 * `dist/init-workspace.js`
+* `dist/init-workspace.d.ts`
 * `dist/template-manifest.js`
+* `dist/template-manifest.d.ts`
 * `dist/runtime/adoc-books.mjs`
 * `templates/default-workspace/package.json.template`
 * `templates/default-workspace/gitignore.template`

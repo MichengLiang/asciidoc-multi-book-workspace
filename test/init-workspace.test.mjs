@@ -29,8 +29,12 @@ async function exists(filePath) {
 test("initWorkspace creates the complete default user workspace", async () => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `init-complete-${randomUUID()}`);
 
-  await initWorkspace({ targetDir: target });
+  const result = await initWorkspace({ targetDir: target });
 
+  assert.deepEqual(result, {
+    targetDir: target,
+    packageName: path.basename(target)
+  });
   assert.equal(await exists(path.join(target, "README.md")), true);
   assert.equal(await exists(path.join(target, "catalog.adoc")), true);
   assert.equal(await exists(path.join(target, "package.json")), true);
@@ -89,4 +93,17 @@ test("initWorkspace refuses a non-empty target unless force is enabled", async (
   await writeFile(path.join(target, "notes.txt"), "keep me", "utf8");
   await initWorkspace({ targetDir: target, force: true });
   assert.equal(await readFile(path.join(target, "notes.txt"), "utf8"), "keep me");
+});
+
+test("package root exports the workspace initializer API", async () => {
+  const api = await import("create-asciidoc-multi-book-workspace");
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `init-public-api-${randomUUID()}`);
+
+  const result = await api.initWorkspace({ targetDir: target });
+
+  assert.deepEqual(result, {
+    targetDir: target,
+    packageName: path.basename(target)
+  });
+  assert.equal(await exists(path.join(target, "tools", "adoc-books.mjs")), true);
 });
