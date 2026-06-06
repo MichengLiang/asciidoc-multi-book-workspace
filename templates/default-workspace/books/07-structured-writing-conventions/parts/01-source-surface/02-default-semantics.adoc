@@ -1,10 +1,26 @@
-[#default-semantics]
-== 默认语义
+[#heading-and-xref]
+== 标题与引用
 
-等号标题默认形成书稿结构单位。普通标题可以不写 role；不写 role 时，标题仍然可以被阅读、编号、引用和投影为 heading node。
+标题使用等号声明。重要标题可以添加稳定 ID。需要标明标题身份时，可以在标题 attrlist 中添加 role。
 
-重要标题可以补充稳定 ID。稳定 ID 是作者声明的引用地址，适合长期引用、跨章节引用和工具链回源。
+[source,asciidoc]
+----
+[#stable-heading.concept]
+== 稳定标题
+----
 
-没有 `rel` 的 xref 表示普通引用。普通引用适合参见、导航和弱提及；它不是缺少关系，而是默认 references。
+这一段中，`#stable-heading` 是稳定 ID，`.concept` 是 role，`稳定标题` 是标题文本。
 
-显式 `rel` 用于可说明的强关系。作者写下 `rel` 时，也写下了关系谓词的解释责任。
+[source,asciidoc]
+----
+引用规则参见 xref:stable-heading[稳定标题]。
+----
+
+这条 xref 表示参见目标标题。投影时，这条引用使用默认谓词 `aat:references`。
+
+[source,asciidoc]
+----
+引用规则依赖 xref:stable-heading[稳定标题, rel=depends-on]。
+----
+
+写入 `rel=depends-on` 时，作者声明当前标题到目标标题的依赖关系。投影时，这条关系使用 `rel:depends-on`。

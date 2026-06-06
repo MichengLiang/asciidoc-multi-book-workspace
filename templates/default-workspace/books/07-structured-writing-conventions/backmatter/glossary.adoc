@@ -5,7 +5,7 @@
 heading:: 使用等号标题创建的书稿结构单位。
 stable ID:: 作者声明的稳定引用地址，例如 `#stable-heading`。
 role:: 标题身份标记，例如 `.concept` 或 `.rule`。
-ordinary reference:: 没有 `rel` 的 xref；默认表达 references。
+ordinary reference:: 普通 xref。投影时使用默认谓词 `aat:references`。
 relation predicate:: xref `rel` 字段选择的边谓词。
 source heading:: xref 所在的标题。
 target heading:: xref selector 指向的标题。

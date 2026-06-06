@@ -5,13 +5,13 @@
 |写法 |含义
 
 |`== 标题`
-|创建书稿结构单位。普通标题可以不写 role。
+|创建书稿阅读结构。
 
 |`[#stable-id]`
 |为重要标题声明稳定 ID。
 
 |`[#stable-id.concept]`
-|同时声明稳定 ID 和 role。
+|声明稳定 ID，并用 role 标明标题身份。
 
 |`xref:stable-id[显示文本]`
 |普通引用；默认语义为 references。
