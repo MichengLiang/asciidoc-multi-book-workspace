@@ -1,9 +1,9 @@
 [#role-identity]
 == role 身份
 
-indexterm2:[role] 标明标题身份。作者使用标题 attrlist 中的点号 token 声明该标题在书稿中的角色。
+`[#xref-rule.rule]` 里的 `.rule` 是 indexterm2:[role]。它把这个标题标成规则说明。
 
-需要标明标题身份时，可以把 role 写在稳定 ID 后面。
+role 写在标题 attrlist 的点号 token 位置。
 
 [source,asciidoc]
 ----
@@ -14,11 +14,11 @@ indexterm2:[role] 标明标题身份。作者使用标题 attrlist 中的点号 
 == 引用规则
 ----
 
-`#stable-heading` 和 `#xref-rule` 是稳定 ID。`.concept` 和 `.rule` 是 role。role 帮助读者和工具判断标题承担的身份。
+`#stable-heading` 和 `#xref-rule` 是稳定 ID。`.concept` 和 `.rule` 标明标题身份。
 
 [cols="1,2", options="header"]
 |===
-|role 示例 |作用
+|写法 |读者看到的身份
 
 |`[.concept]`
 |标记概念说明。
@@ -30,4 +30,4 @@ indexterm2:[role] 标明标题身份。作者使用标题 attrlist 中的点号 
 |标记示例。
 |===
 
-同一本书使用 role 时，应保留小型、稳定、可读的 role 集。role 用于标题身份；标题之间的关系由 xref 和 rel 表达。
+同一本书里的 role 名称宜少而稳定。读者多次看到 `.rule`，应形成同一种理解。
