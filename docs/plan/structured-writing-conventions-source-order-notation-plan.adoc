@@ -1,0 +1,341 @@
+= 结构化书写约定书源文件编排号迁移计划
+:toc: left
+:toclevels: 3
+:sectnums:
+:sectnumlevels: 3
+:doctype: article
+:encoding: utf-8
+
+== 计划边界
+
+本计划执行 `docs/design/source-order-notation-design.adoc` 定义的源文件编排号制度。
+
+迁移对象是：
+
+[source,text]
+----
+templates/default-workspace/books/07-structured-writing-conventions/
+----
+
+本计划处理该书内部的 part 目录、chapter 文件、`book.adoc` include 清单、书内制度说明和相关测试契约。
+
+本计划不迁移其他样本书。
+
+本计划不改变 catalog 中的书籍编号。
+
+本计划不改变构建 runtime。
+
+本计划不改变既有 stable anchor 的语义 ID。
+
+== 当前状态
+
+当前书稿存在三种连续序号表面：
+
+* `book.adoc` 中的 part 标题写有 `第一部`、`第二部`、`第三部`。
+* part 目录使用 `01-`、`02-`、`03-` 前缀。
+* chapter 文件使用 `01-`、`02-` 前缀。
+
+该状态能表达初始顺序，但在中间插入 part 或 chapter 时会触发后续同级文件重命名。
+
+当前书稿已有健康资产：
+
+* chapter 使用语义 stable anchor，例如 `#source-and-projection`、`#role-identity`、`#relation-predicate`。
+* `book.adoc` 显式列出 include 顺序。
+* `_partintro.adoc` 没有参与 chapter 编号。
+
+迁移应保留这些资产。
+
+== 目标状态
+
+=== part 目录映射
+
+[cols="1,1", options="header"]
+|===
+|当前路径 |目标路径
+
+|`parts/01-source-surface/`
+|`parts/100-source-surface/`
+
+|`parts/02-identity-and-relation/`
+|`parts/200-identity-and-relation/`
+
+|`parts/03-fields-and-lookup/`
+|`parts/300-fields-and-lookup/`
+|===
+
+=== chapter 文件映射
+
+[cols="1,1", options="header"]
+|===
+|当前路径 |目标路径
+
+|`parts/01-source-surface/01-source-and-projection.adoc`
+|`parts/100-source-surface/010-source-and-projection.adoc`
+
+|`parts/01-source-surface/02-default-semantics.adoc`
+|`parts/100-source-surface/020-default-semantics.adoc`
+
+|`parts/02-identity-and-relation/01-role-identity.adoc`
+|`parts/200-identity-and-relation/010-role-identity.adoc`
+
+|`parts/02-identity-and-relation/02-relation-predicate.adoc`
+|`parts/200-identity-and-relation/020-relation-predicate.adoc`
+
+|`parts/03-fields-and-lookup/01-surface-fields.adoc`
+|`parts/300-fields-and-lookup/010-surface-fields.adoc`
+
+|`parts/03-fields-and-lookup/02-index-and-glossary.adoc`
+|`parts/300-fields-and-lookup/020-index-and-glossary.adoc`
+|===
+
+=== 辅助文件
+
+`_partintro.adoc` 保持文件名不变，只随所在 part 目录移动。
+
+[cols="1,1", options="header"]
+|===
+|当前路径 |目标路径
+
+|`parts/01-source-surface/_partintro.adoc`
+|`parts/100-source-surface/_partintro.adoc`
+
+|`parts/02-identity-and-relation/_partintro.adoc`
+|`parts/200-identity-and-relation/_partintro.adoc`
+
+|`parts/03-fields-and-lookup/_partintro.adoc`
+|`parts/300-fields-and-lookup/_partintro.adoc`
+|===
+
+=== part 标题
+
+[cols="1,1", options="header"]
+|===
+|当前标题 |目标标题
+
+|`= 第一部：从源文档看结构`
+|`= 从源文档看结构`
+
+|`= 第二部：给标题和引用加意图`
+|`= 给标题和引用加意图`
+
+|`= 第三部：字段、索引与术语`
+|`= 字段、索引与术语`
+|===
+
+=== 新增章节
+
+新增章节：
+
+[source,text]
+----
+templates/default-workspace/books/07-structured-writing-conventions/parts/100-source-surface/030-source-order-notation.adoc
+----
+
+该章节定义本书采用的源文件编排号。章节位置放在第一部，因为第一部处理源文本表面和投影结构。
+
+新增章节 stable anchor：
+
+[source,asciidoc]
+----
+[#source-order-notation]
+== 源文件编排号
+----
+
+新增章节不得把编排号写入 anchor。
+
+== 书内内容调整
+
+=== `book.adoc`
+
+`book.adoc` 需要完成以下调整：
+
+* 更新 part 标题，移除中文自然序数。
+* 更新所有 include 路径到 `100-`、`200-`、`300-` 目录。
+* 更新所有 chapter include 到 `010-`、`020-` 文件。
+* 在第一部现有两个 chapter 之后 include `030-source-order-notation.adoc`。
+
+第一部目标 include 形态：
+
+[source,asciidoc]
+----
+= 从源文档看结构
+
+[partintro]
+\include::parts/100-source-surface/_partintro.adoc[]
+
+\include::parts/100-source-surface/010-source-and-projection.adoc[]
+
+\include::parts/100-source-surface/020-default-semantics.adoc[]
+
+\include::parts/100-source-surface/030-source-order-notation.adoc[]
+----
+
+=== 新增章节内容
+
+新增章节应包含以下内容职责：
+
+* 定义源文件编排号。
+* 说明它服务维护排序。
+* 说明它不进入显示标题。
+* 说明它不作为 stable anchor。
+* 说明 part 目录使用 `100-`、`200-`、`300-`。
+* 说明 chapter 文件在所属 part 内使用 `010-`、`020-`、`030-`。
+* 说明中间插入使用空位，例如 `150-` 或 `015-`。
+
+新增章节应保持短而硬，不写成通用文件管理教程。
+
+=== 术语表
+
+`backmatter/glossary.adoc` 增加术语：
+
+[source,asciidoc]
+----
+source-order notation:: 写在源文件路径表面的内部排序 notation，服务作者和维护者观察、插入和局部调整源文件。
+----
+
+该术语与设计文档中的定义保持一致。
+
+=== 索引
+
+若新增章节正文出现 `source-order notation` 或“源文件编排号”，正文中使用索引词标记。索引章节可补充该示例。
+
+索引词只服务读者检索，不替代术语定义。
+
+== 测试契约调整
+
+`test/sample-contract.test.mjs` 当前对 07 书稿包含旧文本契约。迁移后应调整 required patterns，使测试检查新制度已经进入书内投影。
+
+应加入或替换的关键模式包括：
+
+* `源文件编排号`
+* `source-order notation`
+* `内部排序 notation`
+* `不进入读者可见标题`
+* `不作为 xref 目标`
+* `include::parts/100-source-surface/030-source-order-notation.adoc[]`
+
+测试契约不应要求旧路径：
+
+* `parts/01-source-surface/`
+* `parts/02-identity-and-relation/`
+* `parts/03-fields-and-lookup/`
+
+测试契约不应要求旧 part 标题：
+
+* `第一部`
+* `第二部`
+* `第三部`
+
+== 执行步骤
+
+按以下顺序执行迁移：
+
+1. 读取当前 `07-structured-writing-conventions` 文件树和 `book.adoc` include 清单。
+2. 移动 `parts/01-source-surface/` 到 `parts/100-source-surface/`。
+3. 移动 `parts/02-identity-and-relation/` 到 `parts/200-identity-and-relation/`。
+4. 移动 `parts/03-fields-and-lookup/` 到 `parts/300-fields-and-lookup/`。
+5. 在每个 part 内移动 chapter 文件到 `010-`、`020-` 前缀。
+6. 新增 `parts/100-source-surface/030-source-order-notation.adoc`。
+7. 更新 `book.adoc` 的 part 标题和 include 路径。
+8. 更新 `backmatter/glossary.adoc`。
+9. 视正文索引词情况更新 `backmatter/index.adoc`。
+10. 更新 `test/sample-contract.test.mjs` 中的 07 契约。
+11. 搜索旧路径、旧标题和旧编号残留。
+12. 运行项目检查。
+13. 检查 git diff，确认改动范围符合本计划。
+
+== 风险与控制
+
+include 路径断裂::
+  控制动作：迁移后运行 `pnpm run check`，并搜索 `include::parts/01-`、`include::parts/02-`、`include::parts/03-`。
+
+stable anchor 被误改::
+  控制动作：迁移前后搜索 `^\[#`，确认既有 anchor 仍为语义 ID。
+
+新增章节写成教程::
+  控制动作：章节只定义制度、规则和边界，不讲通用文件管理背景。
+
+测试契约保留旧文本::
+  控制动作：更新 `test/sample-contract.test.mjs` 的 07 required patterns，并运行完整检查。
+
+Git diff 过大导致审查困难::
+  控制动作：只迁移 07、相关测试和本次新增文档；不碰其他样本书。
+
+路径变化被外部引用依赖::
+  控制动作：本书 cross reference 使用 stable anchor；计划不引入内部路径作为公共引用目标。
+
+== 验收标准
+
+迁移完成后应满足以下标准：
+
+* `pnpm run check` 通过。
+* `book.adoc` 不再出现 `第一部`、`第二部`、`第三部`。
+* `book.adoc` 使用 `parts/100-`、`parts/200-`、`parts/300-` include 路径。
+* 07 的 chapter 文件使用 `010-`、`020-`、`030-` 局部编排号。
+* 新增章节存在 `[#source-order-notation]` anchor。
+* 既有 stable anchor 不加入数字编排号。
+* `rg 'parts/0[1-3]-' templates/default-workspace/books/07-structured-writing-conventions test/sample-contract.test.mjs` 无旧路径残留。
+* `git diff --name-status` 只显示本计划范围内的路径。
+
+== 验证命令
+
+在项目根目录运行：
+
+[source,bash]
+----
+pnpm run check
+----
+
+搜索旧路径残留：
+
+[source,bash]
+----
+rg 'parts/0[1-3]-' templates/default-workspace/books/07-structured-writing-conventions test/sample-contract.test.mjs
+----
+
+搜索旧 part 标题残留：
+
+[source,bash]
+----
+rg '第一部|第二部|第三部' templates/default-workspace/books/07-structured-writing-conventions
+----
+
+检查 anchor：
+
+[source,bash]
+----
+rg '^\\[#' templates/default-workspace/books/07-structured-writing-conventions
+----
+
+检查 diff 范围：
+
+[source,bash]
+----
+git diff --name-status
+----
+
+== 提交策略
+
+若迁移实施后需要提交，先确认新文件已被 Git 跟踪，再使用 `git commit --only` 限定提交路径，避免混入同仓其他项目改动。
+
+提交路径应包含：
+
+* `docs/design/source-order-notation-design.adoc`
+* `docs/plan/structured-writing-conventions-source-order-notation-plan.adoc`
+* `templates/default-workspace/books/07-structured-writing-conventions/book.adoc`
+* `templates/default-workspace/books/07-structured-writing-conventions/parts/`
+* `templates/default-workspace/books/07-structured-writing-conventions/backmatter/glossary.adoc`
+* `templates/default-workspace/books/07-structured-writing-conventions/backmatter/index.adoc`
+* `test/sample-contract.test.mjs`
+
+提交说明应描述制度理由：
+
+[source,text]
+----
+Adopt source-order notation for structured writing sample
+
+Separate local maintenance order from reader-visible numbering and stable anchors.
+Use sparse source-order notation for part and chapter files so mid-sequence
+insertions do not force unrelated renames. Document the convention in the
+structured writing sample and update the sample contract accordingly.
+----
