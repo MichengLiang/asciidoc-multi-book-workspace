@@ -1,6 +1,6 @@
 {
   "name": "create-asciidoc-multi-book-workspace",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Create a complete AsciiDoc multi-book workspace.",
   "license": "Apache-2.0",
   "author": {

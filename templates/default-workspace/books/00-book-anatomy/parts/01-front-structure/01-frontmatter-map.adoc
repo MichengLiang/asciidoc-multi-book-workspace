@@ -3,6 +3,8 @@
 
 前置内容用于建立读者进入正文之前需要知道的说明、来源和阅读位置。
 
+方括号中的名称是 section style。它作用于紧随其后的 section；当下一行是 include 指令时，style 作用于被 include 文件中的 section 标题。
+
 [cols="1,2", options="header"]
 |===
 |结构 |职责

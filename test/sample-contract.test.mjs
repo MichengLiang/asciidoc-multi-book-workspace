@@ -40,7 +40,36 @@ const requiredPatterns = new Map([
       "[appendix]",
       "[glossary]",
       "[bibliography]",
-      "[index]"
+      "[index]",
+      "indexterm2:[section]",
+      "indexterm:[section, hierarchy]",
+      "indexterm:[heading, discrete]",
+      "indexterm2:[<primary>]",
+      "indexterm:[<primary>, <secondary>, <tertiary>]",
+      "正文中已经出现该词时",
+      "正文没有出现该词",
+      "HTML5",
+      "section style",
+      "Document title",
+      "Part（部）",
+      "不创建 section",
+      "观察结构位置",
+      "结构清单由",
+      "写作目标",
+      "读者任务",
+      "发布边界",
+      "不作为必选清单",
+      "include::parts/02-body-structure/02-inline-structure.adoc[]",
+      "parts/<part-id>/",
+      "目录约定服务维护边界",
+      "连续 chapter 编号",
+      "[#inline-structure-map]",
+      "[.term]#inline role#",
+      "[.path]`parts/02-body-structure/`",
+      "xref:#body-map[正文结构地图]",
+      "{series-name}",
+      "语义身份",
+      "具体视觉效果取决于输出样式"
     ]
   ],
   ["01-starter-book", ["[preface]", "[appendix]", "[bibliography]"]],
@@ -109,6 +138,9 @@ test("default workspace template satisfies the official sample contract", async 
     }
 
     if (bookId === "01-starter-book") assert.equal(partCount(bookSource), 0);
+    if (bookId === "00-book-anatomy") {
+      assert.doesNotMatch(allSource, /\(\([^)]*\)\)/);
+    }
     if (bookId === "02-multipart-monograph") {
       assert.equal(partCount(bookSource) >= 2, true);
       assert.equal((allSource.match(/\[partintro\]/g) ?? []).length >= 2, true);

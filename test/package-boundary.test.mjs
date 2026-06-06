@@ -25,6 +25,7 @@ test("pnpm pack dry-run contains release assets and excludes maintainer-only fil
     "templates/default-workspace/gitignore.template",
     "templates/default-workspace/catalog.adoc",
     "templates/default-workspace/books/00-book-anatomy/book.adoc",
+    "templates/default-workspace/books/00-book-anatomy/parts/02-body-structure/02-inline-structure.adoc",
     "templates/default-workspace/books/06-lower-volume/book.adoc",
     "templates/default-workspace/shared/images/workspace-map.svg",
     "README.md",
@@ -44,7 +45,10 @@ test("pnpm pack dry-run contains release assets and excludes maintainer-only fil
     "scripts/",
     ".github/workflows/",
     "release-please-config.json",
-    ".release-please-manifest.json"
+    ".release-please-manifest.json",
+    ".turbo/",
+    "build/html/",
+    "templates/default-workspace/build/"
   ]) {
     assert.equal(stdout.includes(forbidden), false, forbidden);
   }

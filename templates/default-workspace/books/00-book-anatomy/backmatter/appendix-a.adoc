@@ -4,8 +4,11 @@
 |===
 |写法 |含义
 
-|`= 书名或文档名`
-|Document title（文档标题，Level 0）。在 book 文档类型中也可作为 Part（部）。
+|`= 书名`
+|Document title（文档标题）。在 book 文档类型中作为整本书标题。
+
+|`= 部标题`
+|Document title 之后的 Level 0 Section。在 book 文档类型中可作为 Part（部）。
 
 |`== 章`
 |Level 1 Section（一级章节）。在 book 文档类型中通常作为 Chapter（章）。
@@ -22,3 +25,5 @@
 |`====== 最底层级`
 |Level 5 Section（五级章节）。AsciiDoc 支持的最深层级。
 |===
+
+`[appendix]`、`[glossary]`、`[bibliography]` 和 `[index]` 是 section style。它们改变紧随其后 section 的语义；标题层级仍由 `=` 数量决定。

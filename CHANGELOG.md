@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.3 - 2026-06-06
+
+### Added
+
+- Expand the book anatomy sample with part directory guidance, chapter numbering notes, and inline structure markers.
+- Add sample contract checks for semantic inline roles, path roles, explicit anchors, xrefs, and index term macro usage.
+- Guard the npm package boundary against generated HTML output entering the published template.
+
+### Changed
+
+- Clarify that the anatomy sample shows structure positions and combinations, not a required checklist for every book.
+- Use explicit `indexterm2` and `indexterm` macro syntax in the anatomy sample.
+
 ## 0.1.2 - 2026-06-06
 
 ### Added

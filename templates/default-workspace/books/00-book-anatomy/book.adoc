@@ -41,6 +41,8 @@ include::parts/02-body-structure/_partintro.adoc[]
 
 include::parts/02-body-structure/01-body-map.adoc[]
 
+include::parts/02-body-structure/02-inline-structure.adoc[]
+
 [appendix]
 include::backmatter/appendix-a.adoc[]
 
