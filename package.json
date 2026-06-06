@@ -1,6 +1,6 @@
 {
   "name": "create-asciidoc-multi-book-workspace",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Create a complete AsciiDoc multi-book workspace.",
   "license": "Apache-2.0",
   "author": {
@@ -29,7 +29,11 @@
     "create-asciidoc-multi-book-workspace": "dist/create.js"
   },
   "files": [
-    "dist/",
+    "dist/build-template-preview.js",
+    "dist/create.js",
+    "dist/init-workspace.js",
+    "dist/runtime/adoc-books.mjs",
+    "dist/template-manifest.js",
     "templates/",
     "README.md",
     "CHANGELOG.md",
@@ -41,6 +45,8 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "preview:build": "node dist/build-template-preview.js",
+    "preview:fresh": "pnpm run build && node dist/build-template-preview.js --fresh",
     "test": "pnpm run build && node --test test/*.test.mjs",
     "pack:check": "pnpm pack --dry-run",
     "check": "pnpm run test && pnpm run pack:check",

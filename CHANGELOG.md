@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.1 - 2026-06-06
+
+### Added
+
+- Add maintainer preview commands for rebuilding the default sample workspace locally.
+- Keep routine template previews fast by using the maintainer AsciiDoc toolchain, while `preview:fresh` still verifies the generated workspace's own dependency installation.
+
+### Changed
+
+- Use `build/template-preview/workspace/build/html/index.html` as the single preview HTML output path.
+- Keep preview source and tests out of the npm package boundary while publishing the compiled script referenced by maintainer commands.
+
 ## 0.1.0 - 2026-06-04
 
 ### Added

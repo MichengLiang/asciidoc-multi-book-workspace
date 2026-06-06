@@ -79,12 +79,22 @@ The seven sample books live only under `templates/default-workspace/books/`.
 ```bash
 pnpm install
 pnpm run build
+pnpm run preview:build
+pnpm run preview:fresh
 pnpm run test
 pnpm run check
 pnpm pack --dry-run
 ```
 
 `pnpm run check` builds TypeScript, runs maintainer tests, and checks the npm package boundary.
+
+`pnpm run preview:build` updates a generated sample workspace under `build/template-preview/workspace`,
+builds the sample books with the maintainer repository's installed AsciiDoc toolchain, and writes HTML to
+`build/template-preview/workspace/build/html/index.html`.
+
+`pnpm run preview:fresh` recompiles the maintainer runtime and recreates the preview workspace from scratch.
+It installs the generated workspace's own dependencies, so use it after changing `src/`, dependency declarations,
+or the initializer contract. Use `pnpm run preview:build` for normal template edits under `templates/default-workspace/`.
 
 ## Releases
 
