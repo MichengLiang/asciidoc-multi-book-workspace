@@ -56,3 +56,7 @@
 role 描述标题身份。rel 描述 xref 边上的关系谓词。named attributes 是附加字段。
 
 `[appendix]`、`[glossary]`、`[bibliography]` 和 `[index]` 是 section style。它们改变紧随其后 section 的语义；标题层级仍由 `=` 数量决定。
+
+对于跨文件的交叉引用，为了避免重复编写相对路径，你可以在文档的头部（Header）定义一个文档属性（Document Attribute）来存储这个基础路径。
+
+你可以在主文档的开头定义一个变量（比如 `:book-b-dir:`），后续引用时通过 `{book-b-dir}` 来调用它。
