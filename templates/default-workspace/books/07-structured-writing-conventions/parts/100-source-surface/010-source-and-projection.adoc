@@ -1,7 +1,7 @@
 [#source-and-projection]
 == 源文本与投影
 
-本章用一段短源文档展示结构化书写约定。Turtle 片段列出关键投影事实；完整投影还会保留 raw、路径、行号和边证据。
+本章用一段示例展示结构化书写约定。Turtle 片段列出关键投影事实；完整投影还会保留 raw、路径、行号和边证据。
 希望你能通过本章节的演示来理解你写下的文字能够给未来的你提供稳定的查询与导航结构。
 
 [source,asciidoc]
@@ -41,4 +41,4 @@
   aat:weight "strong" .
 ----
 
-读者看源文档，能直接看到 [.concept]#稳定标题# 是被引用的阅读单位， [.rule]#引用规则# 说明引用写法。投影读取同一份源文档，得到 `aat:Heading`、`aat:addressLabel`、`aat:role`、`aat:references` 和 `rel:depends-on`。
+读者看源文档，能直接看到 [.concept]#稳定标题# 是被引用的阅读单位， [.rule]#引用规则# 说明引用写法。下游投影工具链读取同一份源文档，得到 `aat:Heading`、`aat:addressLabel`、`aat:role`、`aat:references` 和 `rel:depends-on`。
