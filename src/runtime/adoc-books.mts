@@ -8,7 +8,7 @@ const require = createRequire(import.meta.url);
 const DIAGRAM_BLOCK_PATTERN = /^\[(?:actdiag|blockdiag|bpmn|bytefield|c4plantuml|d2|dbml|ditaa|erd|excalidraw|graphviz|mermaid|nomnoml|nwdiag|packetdiag|pikchr|plantuml|rackdiag|seqdiag|svgbob|symbolator|umlet|vega|vegalite|wavedrom|structurizr|diagramsnet|wireviz)(?:,|\])/m;
 const CATALOG_BOOK_XREF_PATTERN = /xref:books\/([^/\]]+)\/book\.adoc(?:#[^\[]+)?\[/g;
 const XREF_PATTERN = /xref:([^\[#]+)(?:#([A-Za-z0-9_-]+))?\[/g;
-const ANCHOR_PATTERN = /^\[#([A-Za-z0-9_-]+)\]$/gm;
+const ANCHOR_PATTERN = /^\[#([A-Za-z0-9_-]+)(?:[.,][^\]]*)?\]$/gm;
 const LOCAL_TARGET_PATTERN = /\b(?:href|src)="([^"]+)"/g;
 const SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
 const HOME_MARKER = "data-multi-book-home";

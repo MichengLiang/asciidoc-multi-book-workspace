@@ -114,6 +114,34 @@ test("runtime check still fails for a user-authored real cross-book xref to a mi
   );
 });
 
+test("runtime check accepts typed explicit anchors in user-authored xrefs", async () => {
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-typed-anchor-${randomUUID()}`);
+  await initWorkspace({ targetDir: target });
+  const targetChapterPath = path.join(
+    target,
+    "books",
+    "02-multipart-monograph",
+    "parts",
+    "01-domain",
+    "01-problem-world.adoc"
+  );
+  const targetChapter = await readFile(targetChapterPath, "utf8");
+  await writeFile(
+    targetChapterPath,
+    `[#typed-anchor.contract-object, owner=sample]\n${targetChapter}`,
+    "utf8"
+  );
+  const sourceChapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  const sourceChapter = await readFile(sourceChapterPath, "utf8");
+  await writeFile(
+    sourceChapterPath,
+    `${sourceChapter}\n\nSee xref:../02-multipart-monograph/book.adoc#typed-anchor[typed anchor].\n`,
+    "utf8"
+  );
+
+  await checkWorkspace(target);
+});
+
 test("runtime removes stale HTML only for books that no longer exist", async () => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-stale-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
