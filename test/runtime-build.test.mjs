@@ -82,6 +82,36 @@ test("runtime build creates ADOC, HTML, assets, home links, and root index", asy
   assert.match(structuredWriting, /<a href="#从源文档看结构">Part I: 从源文档看结构<\/a>/);
 });
 
+test("runtime build applies optional user workspace navigation config", async () => {
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-nav-config-${randomUUID()}`);
+  await initWorkspace({ targetDir: target });
+  await writeFile(
+    path.join(target, "adoc-books.config.mjs"),
+    `export default {
+  rootIndex: {
+    redirectTo: "books/01-starter-book/book.html",
+    title: "Configured Books"
+  },
+  homeLink: {
+    label: "返回目录",
+    subtitle: "自定义书架"
+  }
+};
+`,
+    "utf8"
+  );
+
+  await buildWorkspace(target);
+
+  const index = await readFile(path.join(target, "build", "html", "index.html"), "utf8");
+  assert.match(index, /url=books\/01-starter-book\/book\.html/);
+  assert.match(index, /<title>Configured Books<\/title>/);
+
+  const starter = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
+  assert.match(starter, /返回目录/);
+  assert.match(starter, /自定义书架/);
+});
+
 test("runtime check passes after deleting any one sample and removing its catalog entries", async () => {
   for (const bookId of expectedBooks) {
     const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-delete-${bookId}-${randomUUID()}`);

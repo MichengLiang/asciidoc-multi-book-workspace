@@ -2,7 +2,7 @@
 import { createRequire } from "node:module";
 import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const require = createRequire(import.meta.url);
 const DIAGRAM_BLOCK_PATTERN = /^\[(?:actdiag|blockdiag|bpmn|bytefield|c4plantuml|d2|dbml|ditaa|erd|excalidraw|graphviz|mermaid|nomnoml|nwdiag|packetdiag|pikchr|plantuml|rackdiag|seqdiag|svgbob|symbolator|umlet|vega|vegalite|wavedrom|structurizr|diagramsnet|wireviz)(?:,|\])/m;
@@ -13,6 +13,33 @@ const LOCAL_TARGET_PATTERN = /\b(?:href|src)="([^"]+)"/g;
 const SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
 const HOME_MARKER = "data-multi-book-home";
 const FETCH_DIAGRAMS_ENV = "ADOC_BOOKS_FETCH_DIAGRAMS";
+const CONFIG_FILE = "adoc-books.config.mjs";
+
+interface RootIndexConfig {
+  redirectTo: string;
+  title: string;
+}
+
+interface HomeLinkConfig {
+  label: string;
+  subtitle: string;
+}
+
+interface RuntimeConfig {
+  rootIndex: RootIndexConfig;
+  homeLink: HomeLinkConfig;
+}
+
+const DEFAULT_CONFIG: RuntimeConfig = {
+  rootIndex: {
+    redirectTo: "catalog.html",
+    title: "AsciiDoc Multi-Book Workspace"
+  },
+  homeLink: {
+    label: "Back to catalog",
+    subtitle: "AsciiDoc multi-book workspace"
+  }
+};
 
 interface BookEntry {
   bookId: string;
@@ -24,6 +51,37 @@ interface BookEntry {
 interface Issue {
   code: string;
   detail: string;
+}
+
+function objectValue(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null ? value as Record<string, unknown> : {};
+}
+
+function stringValue(value: unknown, fallback: string): string {
+  return typeof value === "string" && value.trim() !== "" ? value : fallback;
+}
+
+async function loadRuntimeConfig(rootDir: string): Promise<RuntimeConfig> {
+  const configPath = path.join(rootDir, CONFIG_FILE);
+  if (!await existsFile(configPath)) return DEFAULT_CONFIG;
+
+  const configUrl = pathToFileURL(configPath);
+  configUrl.search = `mtime=${(await stat(configPath)).mtimeMs}`;
+  const module = await import(configUrl.href);
+  const rawConfig = objectValue(module.default ?? module);
+  const rawRootIndex = objectValue(rawConfig.rootIndex);
+  const rawHomeLink = objectValue(rawConfig.homeLink);
+
+  return {
+    rootIndex: {
+      redirectTo: stringValue(rawRootIndex.redirectTo, DEFAULT_CONFIG.rootIndex.redirectTo),
+      title: stringValue(rawRootIndex.title, DEFAULT_CONFIG.rootIndex.title)
+    },
+    homeLink: {
+      label: stringValue(rawHomeLink.label, DEFAULT_CONFIG.homeLink.label),
+      subtitle: stringValue(rawHomeLink.subtitle, DEFAULT_CONFIG.homeLink.subtitle)
+    }
+  };
 }
 
 async function existsFile(filePath: string): Promise<boolean> {
@@ -204,7 +262,7 @@ function escapeHtmlAttribute(value: string): string {
     .replaceAll(">", "&gt;");
 }
 
-function addHomeLinkToBookHtml(html: string, href: string): string {
+function addHomeLinkToBookHtml(html: string, href: string, homeLink: HomeLinkConfig): string {
   if (html.includes(HOME_MARKER)) return html;
   const marker = '<div id="toc" class="toc2">';
   const index = html.indexOf(marker);
@@ -238,33 +296,34 @@ function addHomeLinkToBookHtml(html: string, href: string): string {
 }
 </style>
 <div class="multi-book-home" ${HOME_MARKER}>
-  <a href="${escapeHtmlAttribute(href)}">Back to catalog<span>AsciiDoc multi-book workspace</span></a>
+  <a href="${escapeHtmlAttribute(href)}">${escapeHtmlAttribute(homeLink.label)}<span>${escapeHtmlAttribute(homeLink.subtitle)}</span></a>
 </div>`;
   return `${html.slice(0, insertAt)}${homeBlock}${html.slice(insertAt)}`;
 }
 
-async function addHomeLinks(rootDir: string, books: BookEntry[]): Promise<void> {
+async function addHomeLinks(rootDir: string, books: BookEntry[], homeLink: HomeLinkConfig): Promise<void> {
   const catalog = path.join(rootDir, "build", "html", "catalog.html");
   for (const book of books) {
     const htmlFile = path.join(book.htmlOutputDir, "book.html");
     const html = await readFile(htmlFile, "utf8");
     const href = path.relative(path.dirname(htmlFile), catalog);
-    await writeFile(htmlFile, addHomeLinkToBookHtml(html, href), "utf8");
+    await writeFile(htmlFile, addHomeLinkToBookHtml(html, href, homeLink), "utf8");
   }
 }
 
-async function writeRootIndex(rootDir: string): Promise<void> {
+async function writeRootIndex(rootDir: string, rootIndex: RootIndexConfig): Promise<void> {
   const outputDir = path.join(rootDir, "build", "html");
   await mkdir(outputDir, { recursive: true });
+  const redirectTo = rootIndex.redirectTo;
   await writeFile(path.join(outputDir, "index.html"), `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="refresh" content="0; url=catalog.html">
-  <title>AsciiDoc Multi-Book Workspace</title>
+  <meta http-equiv="refresh" content="0; url=${escapeHtmlAttribute(redirectTo)}">
+  <title>${escapeHtmlAttribute(rootIndex.title)}</title>
 </head>
 <body>
-  <p><a href="catalog.html">catalog.html</a></p>
+  <p><a href="${escapeHtmlAttribute(redirectTo)}">${escapeHtmlAttribute(redirectTo)}</a></p>
 </body>
 </html>
 `, "utf8");
@@ -393,6 +452,7 @@ export async function buildWorkspace(rootDir = process.cwd()): Promise<void> {
   const books = await discoverBooks(rootDir);
   if (books.length === 0) throw new Error(`missing book.adoc entries in ${path.join(rootDir, "books")}`);
 
+  const config = await loadRuntimeConfig(rootDir);
   const useKroki = await workspaceUsesDiagrams(rootDir, books);
   const fetchDiagrams = shouldFetchDiagrams();
   const asciidoctor = createAsciidoctor(useKroki);
@@ -400,8 +460,8 @@ export async function buildWorkspace(rootDir = process.cwd()): Promise<void> {
   await buildReducedAdoc(rootDir, books, asciidoctor);
   await buildHtml(rootDir, books, asciidoctor, useKroki, fetchDiagrams);
   await copyAssets(rootDir, books);
-  await addHomeLinks(rootDir, books);
-  await writeRootIndex(rootDir);
+  await addHomeLinks(rootDir, books, config.homeLink);
+  await writeRootIndex(rootDir, config.rootIndex);
   await assertNoIssues("HTML local resource check", await missingLocalResources(rootDir));
   await assertNoIssues("workspace contract check", await workspaceContractIssues(rootDir, books));
 }
