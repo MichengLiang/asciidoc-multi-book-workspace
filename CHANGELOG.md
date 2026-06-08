@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.6 - 2026-06-09
+
+### Added
+
+- Accept typed explicit anchors such as `[#id.role, key=value]` when validating user-authored xrefs.
+- Add optional `adoc-books.config.mjs` support so generated workspaces can customize the root redirect and book home-link copy.
+- Add a structured writing conventions reference document and expand the generated sample's appendix with cross-file xref path guidance.
+
+### Changed
+
+- Keep generated workspaces catalog-oriented by default while allowing user-owned navigation semantics through configuration.
+
 ## 0.1.5 - 2026-06-07
 
 ### Added
