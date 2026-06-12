@@ -65,12 +65,29 @@ test("runtime build creates ADOC, HTML, assets, home links, and root index", asy
   const starter = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
   assert.match(starter, /data-multi-book-home/);
   assert.equal(await existsFile(path.join(target, "build", "html", "books", "01-starter-book", "assets", "images", "starter-map.svg")), true);
+  assert.match(starter, /data-multi-book-controls/);
+  assert.match(starter, /data-multi-book-source-copy/);
+  assert.match(starter, /复制本书为纯文本/);
+  assert.match(starter, /已尝试打开纯文本页；如果没有出现，请允许弹出窗口后再试/);
+  assert.match(starter, /navigator\.clipboard\.writeText/);
+  assert.match(starter, /text\/plain;charset=utf-8/);
+
+  const starterSourceMatch = starter.match(/<script type="application\/json" id="multi-book-source-data">([\s\S]*?)<\/script>/);
+  assert.notEqual(starterSourceMatch, null);
+  const starterEmbeddedSource = JSON.parse(starterSourceMatch[1]);
+  const starterReducedSource = await readFile(path.join(target, "build", "adoc", "books", "01-starter-book.adoc"), "utf8");
+  assert.equal(starterEmbeddedSource, starterReducedSource);
+  assert.doesNotMatch(starterEmbeddedSource, /^[ \t]*include::/m);
 
   const technicalDir = path.join(target, "build", "html", "books", "03-technical-book-workflow");
   const technical = await readFile(path.join(technicalDir, "book.html"), "utf8");
   assert.match(technical, /https:\/\/kroki\.io\/mermaid\/svg\//);
   const technicalFiles = await readdir(technicalDir);
   assert.equal(technicalFiles.some((file) => /^technical-resource-flow-.*\.svg$/.test(file)), false);
+  const technicalSourceMatch = technical.match(/<script type="application\/json" id="multi-book-source-data">([\s\S]*?)<\/script>/);
+  assert.notEqual(technicalSourceMatch, null);
+  const technicalEmbeddedSource = JSON.parse(technicalSourceMatch[1]);
+  assert.match(technicalEmbeddedSource, /export function describeBook\(id\)/);
 
   const structuredWriting = await readFile(
     path.join(target, "build", "html", "books", "07-structured-writing-conventions", "book.html"),

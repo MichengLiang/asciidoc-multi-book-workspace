@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.7 - 2026-06-13
+
+### Added
+
+- Add a `复制本书为纯文本` control to each generated book page so readers can copy the expanded single-file book text for saving, note-taking, or model analysis.
+- Add a browser fallback that opens the expanded book text as a UTF-8 plain-text page when clipboard access is unavailable.
+
+### Changed
+
+- Keep the generated book page controls self-contained by embedding the already-reduced book text in the HTML instead of adding another published source file.
+
 ## 0.1.6 - 2026-06-09
 
 ### Added
