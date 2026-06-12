@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.0](https://github.com/MichengLiang/asciidoc-multi-book-workspace/compare/create-asciidoc-multi-book-workspace-v0.1.7...create-asciidoc-multi-book-workspace-v0.2.0) (2026-06-12)
+
+
+### Features
+
+* add maintainer template preview build ([975ff07](https://github.com/MichengLiang/asciidoc-multi-book-workspace/commit/975ff071172b7f766ea99fbe9bdf7fba394bbf0d))
+* expose workspace initializer API ([3304f51](https://github.com/MichengLiang/asciidoc-multi-book-workspace/commit/3304f51d85970dbab4238843089e3aa1a259a4d8))
+* publish asciidoc multi-book workspace template ([2ae401f](https://github.com/MichengLiang/asciidoc-multi-book-workspace/commit/2ae401f5c480d531544c9f21cd414791e130ad3b))
+* ship npm workspace initializer ([d39504e](https://github.com/MichengLiang/asciidoc-multi-book-workspace/commit/d39504e7d10a306b80d8c5bfb3b57f983da8c184))
+
+
+### Bug Fixes
+
+* enable github pages bootstrap ([860cda1](https://github.com/MichengLiang/asciidoc-multi-book-workspace/commit/860cda1a32947b39ee639c07e4f9b4f57ff5a39e))
+
 ## 0.1.7 - 2026-06-13
 
 ### Added
