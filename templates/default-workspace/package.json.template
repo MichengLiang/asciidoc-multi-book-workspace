@@ -12,8 +12,8 @@
     "clean": "node tools/adoc-books.mjs clean"
   },
   "devDependencies": {
+    "@asciidoctor/core": "3.0.4",
     "asciidoc-abundant-tree": "0.1.14",
-    "asciidoctor": "3.0.4",
     "asciidoctor-kroki": "0.18.1"
   }
 }

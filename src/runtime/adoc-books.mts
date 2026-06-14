@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import asciidoctorFactory from "@asciidoctor/core";
 import { parseAbundantTree } from "asciidoc-abundant-tree";
 
 const require = createRequire(import.meta.url);
@@ -231,7 +232,7 @@ async function workspaceUsesDiagrams(rootDir: string, books: BookEntry[]): Promi
 }
 
 function createAsciidoctor(loadKroki: boolean) {
-  const asciidoctor = require("asciidoctor")();
+  const asciidoctor = asciidoctorFactory();
   if (loadKroki) {
     try {
       require("asciidoctor-kroki").register(asciidoctor.Extensions);

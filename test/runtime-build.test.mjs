@@ -56,6 +56,20 @@ async function assertHiddenText(page, selector, text) {
   assert.equal(visible, false, `${text} should be hidden inside ${selector}`);
 }
 
+async function captureConsoleWarn(run) {
+  const warnings = [];
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    warnings.push(args.map(String).join(" "));
+  };
+  try {
+    await run();
+  } finally {
+    console.warn = originalWarn;
+  }
+  return warnings;
+}
+
 function removeSampleFromCatalog(catalog, bookId) {
   const lines = catalog.split(/\r?\n/);
   const updated = [];
@@ -78,7 +92,8 @@ test("runtime build creates HTML, assets, home links, source bundles, and root i
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-build-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
 
-  await buildWorkspace(target);
+  const warnings = await captureConsoleWarn(() => buildWorkspace(target));
+  assert.equal(warnings.some((warning) => warning.includes("Opal already loaded")), false);
 
   assert.equal(await existsFile(path.join(target, "build", "adoc", "catalog.adoc")), false);
   assert.equal(await existsFile(path.join(target, "build", "html", "catalog.html")), true);
