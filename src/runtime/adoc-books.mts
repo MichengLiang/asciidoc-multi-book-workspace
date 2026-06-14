@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { parseAbundantTree } from "asciidoc-abundant-tree";
 
 const require = createRequire(import.meta.url);
 const DIAGRAM_BLOCK_PATTERN = /^\[(?:actdiag|blockdiag|bpmn|bytefield|c4plantuml|d2|dbml|ditaa|erd|excalidraw|graphviz|mermaid|nomnoml|nwdiag|packetdiag|pikchr|plantuml|rackdiag|seqdiag|svgbob|symbolator|umlet|vega|vegalite|wavedrom|structurizr|diagramsnet|wireviz)(?:,|\])/m;
@@ -52,6 +53,77 @@ interface BookEntry {
 interface Issue {
   code: string;
   detail: string;
+}
+
+type ReaderPageKind =
+  | "cover"
+  | "frontmatter"
+  | "part"
+  | "chapter"
+  | "appendix"
+  | "glossary"
+  | "bibliography"
+  | "index";
+
+interface ReaderBookInfo {
+  id: string;
+  title: string;
+  entry: string;
+}
+
+interface ReaderSourceSpan {
+  relativePath: string;
+  startLine?: number;
+  endLine?: number;
+}
+
+interface ReaderTocItem {
+  title: string;
+  anchor: string;
+  depth: number;
+}
+
+interface ReaderPage {
+  id: string;
+  kind: ReaderPageKind;
+  title: string;
+  anchors: string[];
+  toc: ReaderTocItem[];
+  source?: ReaderSourceSpan;
+  parentPageId?: string;
+  childPageIds?: string[];
+}
+
+interface ReaderPageMap {
+  version: 1;
+  book: ReaderBookInfo;
+  pages: ReaderPage[];
+}
+
+interface ReaderBookData {
+  pageMap: ReaderPageMap;
+  sourceBundle: string;
+}
+
+interface AbundantSection {
+  kind: string;
+  level?: number;
+  ids?: string[];
+  title?: string;
+  metadata?: Array<{ attributes?: Record<string, unknown> }>;
+  source?: {
+    relativePath?: string;
+    span?: {
+      startLine?: number;
+      endLine?: number;
+    };
+  };
+  children?: AbundantSection[];
+}
+
+interface AbundantSourceFile {
+  relativePath?: string;
+  raw?: string;
 }
 
 function objectValue(value: unknown): Record<string, unknown> {
@@ -142,9 +214,13 @@ async function readIfExists(filePath: string): Promise<string> {
 }
 
 async function combinedBookSource(bookDir: string): Promise<string> {
-  const files = await collectFiles(bookDir, (filePath) => filePath.endsWith(".adoc"));
+  const files = await collectFiles(bookDir, (filePath) => filePath.endsWith(".adoc") || filePath.endsWith(".mjs"));
   const sources = [];
-  for (const file of files) sources.push(await readFile(file, "utf8"));
+  for (const file of files) {
+    const relativePath = path.relative(path.dirname(bookDir), file).split(path.sep).join("/");
+    const source = await readFile(file, "utf8");
+    sources.push(`// file: ${relativePath}\n${source.endsWith("\n") ? source : `${source}\n`}`);
+  }
   return sources.join("\n");
 }
 
@@ -156,7 +232,6 @@ async function workspaceUsesDiagrams(rootDir: string, books: BookEntry[]): Promi
 
 function createAsciidoctor(loadKroki: boolean) {
   const asciidoctor = require("asciidoctor")();
-  require("@asciidoctor/reducer").register();
   if (loadKroki) {
     try {
       require("asciidoctor-kroki").register(asciidoctor.Extensions);
@@ -173,29 +248,6 @@ function createAsciidoctor(loadKroki: boolean) {
 function shouldFetchDiagrams(): boolean {
   const value = process.env[FETCH_DIAGRAMS_ENV];
   return value === "1" || value === "true";
-}
-
-function reduceAdocSource(asciidoctor: any, input: string): string {
-  const doc = asciidoctor.loadFile(input, { safe: "unsafe" });
-  const source = doc.getSource();
-  if (/^[ \t]*include::/m.test(source)) {
-    throw new Error(`reducer left unresolved include directives in ${input}`);
-  }
-  return source;
-}
-
-async function buildReducedAdoc(rootDir: string, books: BookEntry[], asciidoctor: any): Promise<void> {
-  const adocDir = path.join(rootDir, "build", "adoc");
-  await rm(adocDir, { force: true, recursive: true });
-  await mkdir(path.join(adocDir, "books"), { recursive: true });
-
-  const catalogSource = reduceAdocSource(asciidoctor, path.join(rootDir, "catalog.adoc"));
-  await writeFile(path.join(adocDir, "catalog.adoc"), catalogSource, "utf8");
-
-  for (const book of books) {
-    const source = reduceAdocSource(asciidoctor, book.input);
-    await writeFile(path.join(adocDir, "books", `${book.bookId}.adoc`), source, "utf8");
-  }
 }
 
 async function pruneStaleBookHtmlDirs(rootDir: string, books: BookEntry[]): Promise<void> {
@@ -270,11 +322,603 @@ function escapeJsonScript(value: string): string {
     .replaceAll("\u2029", "\\u2029");
 }
 
-function addBookControlsToBookHtml(html: string, href: string, homeLink: HomeLinkConfig, bookSource: string): string {
+function escapeJsonValueForScript(value: unknown): string {
+  return JSON.stringify(value)
+    .replaceAll("<", "\\u003c")
+    .replaceAll("\u2028", "\\u2028")
+    .replaceAll("\u2029", "\\u2029");
+}
+
+function sectionStyle(section: AbundantSection): string | undefined {
+  for (const metadata of section.metadata ?? []) {
+    const style = metadata.attributes?.style;
+    if (typeof style === "string") return style;
+  }
+  return undefined;
+}
+
+function firstSectionId(section: AbundantSection): string {
+  const id = section.ids?.[0];
+  if (!id) throw new Error(`section is missing an id: ${section.title ?? "(untitled)"}`);
+  return id;
+}
+
+function childSections(section: AbundantSection): AbundantSection[] {
+  return (section.children ?? []).filter((child) => child.kind === "section");
+}
+
+function sourceSpan(section: AbundantSection): ReaderSourceSpan | undefined {
+  const relativePath = section.source?.relativePath;
+  if (!relativePath) return undefined;
+  return {
+    relativePath,
+    ...(typeof section.source?.span?.startLine === "number" ? { startLine: section.source.span.startLine } : {}),
+    ...(typeof section.source?.span?.endLine === "number" ? { endLine: section.source.span.endLine } : {})
+  };
+}
+
+function sectionAnchorTree(section: AbundantSection): string[] {
+  const anchors = [firstSectionId(section)];
+  for (const child of childSections(section)) anchors.push(...sectionAnchorTree(child));
+  return anchors;
+}
+
+function sectionToc(section: AbundantSection, baseDepth = 0, topTitle?: string): ReaderTocItem[] {
+  const toc: ReaderTocItem[] = [{ title: topTitle ?? section.title ?? firstSectionId(section), anchor: firstSectionId(section), depth: baseDepth }];
+  for (const child of childSections(section)) {
+    toc.push(...sectionToc(child, baseDepth + 1));
+  }
+  return toc;
+}
+
+function chapterPage(section: AbundantSection, parentPageId?: string): ReaderPage {
+  return {
+    id: firstSectionId(section),
+    kind: "chapter",
+    title: section.title ?? firstSectionId(section),
+    anchors: sectionAnchorTree(section),
+    toc: sectionToc(section, 0, "概述"),
+    source: sourceSpan(section),
+    ...(parentPageId ? { parentPageId } : {})
+  };
+}
+
+function backmatterPage(section: AbundantSection, kind: ReaderPageKind): ReaderPage {
+  return {
+    id: firstSectionId(section),
+    kind,
+    title: section.title ?? firstSectionId(section),
+    anchors: sectionAnchorTree(section),
+    toc: sectionToc(section, 0, "概述"),
+    source: sourceSpan(section)
+  };
+}
+
+function assertNoToolErrors(bookId: string, diagnostics: unknown[]): void {
+  for (const diagnostic of diagnostics) {
+    const entry = objectValue(diagnostic);
+    if (entry.level === "error") {
+      throw new Error(`${bookId}: ${stringValue(entry.code, "error")}: ${stringValue(entry.message, "")}`);
+    }
+  }
+}
+
+function sourceBundleFromDocument(document: Record<string, unknown>, fallbackPath: string, fallbackSource: string): string {
+  const sourceFiles = Array.isArray(document.sourceFiles) ? document.sourceFiles as AbundantSourceFile[] : [];
+  const files = sourceFiles.filter((file) => typeof file.relativePath === "string" && typeof file.raw === "string");
+  if (files.length === 0) return fallbackSource;
+  return files.map((file) => {
+    const body = file.raw?.endsWith("\n") ? file.raw : `${file.raw ?? ""}\n`;
+    return `// file: ${file.relativePath ?? fallbackPath}\n${body}`;
+  }).join("\n");
+}
+
+function fallbackReaderBookData(rootDir: string, book: BookEntry, fallbackSource: string, reason: string): ReaderBookData {
+  console.warn(`${book.bookId}: reader page map fell back to cover-only mode: ${reason}`);
+  const entry = path.relative(rootDir, book.input).split(path.sep).join("/");
+  return {
+    pageMap: {
+      version: 1,
+      book: {
+        id: book.bookId,
+        title: book.bookId,
+        entry
+      },
+      pages: [{
+        id: "cover",
+        kind: "cover",
+        title: book.bookId,
+        anchors: [],
+        toc: []
+      }]
+    },
+    sourceBundle: fallbackSource
+  };
+}
+
+function buildReaderBookData(rootDir: string, book: BookEntry, fallbackSource: string): ReaderBookData {
+  let document: Record<string, unknown>;
+  try {
+    document = parseAbundantTree({
+      sourcePath: book.input,
+      mode: "book-entry",
+      documentRoot: rootDir
+    }) as Record<string, unknown>;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return fallbackReaderBookData(rootDir, book, fallbackSource, message);
+  }
+
+  const diagnostics = Array.isArray(document.toolDiagnostics) ? document.toolDiagnostics : [];
+  assertNoToolErrors(book.bookId, diagnostics);
+
+  const title = objectValue(document.title).text;
+  const pages: ReaderPage[] = [{
+    id: "cover",
+    kind: "cover",
+    title: typeof title === "string" ? title : book.bookId,
+    anchors: [],
+    toc: []
+  }];
+  const sections = (Array.isArray(document.children) ? document.children : []).filter((child): child is AbundantSection => {
+    return typeof child === "object" && child !== null && (child as AbundantSection).kind === "section";
+  });
+  const frontmatterStyles = new Set(["abstract", "colophon", "dedication", "preface", "acknowledgments"]);
+  const backmatterStyles = new Set<ReaderPageKind>(["appendix", "glossary", "bibliography", "index"]);
+  const frontmatter = sections.filter((section) => section.level === 1 && frontmatterStyles.has(sectionStyle(section) ?? ""));
+
+  if (frontmatter.length > 0) {
+    pages.push({
+      id: "frontmatter",
+      kind: "frontmatter",
+      title: "前置",
+      anchors: frontmatter.map(firstSectionId),
+      toc: frontmatter.map((section) => ({
+        title: section.title ?? firstSectionId(section),
+        anchor: firstSectionId(section),
+        depth: 0
+      }))
+    });
+  }
+
+  for (const section of sections) {
+    const style = sectionStyle(section);
+    if (frontmatterStyles.has(style ?? "")) continue;
+    if (backmatterStyles.has(style as ReaderPageKind)) {
+      pages.push(backmatterPage(section, style as ReaderPageKind));
+      continue;
+    }
+    if (section.level === 0) {
+      const partId = `part-${firstSectionId(section)}`;
+      const children = childSections(section);
+      const childPages = children.map((child) => chapterPage(child, partId));
+      pages.push({
+        id: partId,
+        kind: "part",
+        title: section.title ?? firstSectionId(section),
+        anchors: [firstSectionId(section)],
+        toc: [{ title: "概述", anchor: firstSectionId(section), depth: 0 }],
+        source: sourceSpan(section),
+        childPageIds: childPages.map((page) => page.id)
+      });
+      pages.push(...childPages);
+      continue;
+    }
+    pages.push(chapterPage(section));
+  }
+
+  const pageMap: ReaderPageMap = {
+    version: 1,
+    book: {
+      id: book.bookId,
+      title: pages[0].title,
+      entry: path.relative(rootDir, book.input).split(path.sep).join("/")
+    },
+    pages
+  };
+
+  return {
+    pageMap,
+    sourceBundle: sourceBundleFromDocument(document, pageMap.book.entry, fallbackSource)
+  };
+}
+
+function readerStyles(): string {
+  return `
+.multi-book-reader-toggle {
+  display: grid;
+  gap: .35rem;
+  grid-template-columns: 1fr 1fr;
+  margin-top: .75rem;
+}
+.multi-book-reader-toggle button {
+  appearance: none;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  color: #1f2937;
+  cursor: pointer;
+  font-size: .82rem;
+  font-weight: 600;
+  padding: .42rem .5rem;
+}
+.multi-book-reader-toggle button[aria-pressed="true"] {
+  border-color: #0f766e;
+  color: #0f766e;
+}
+[data-multi-book-page-nav] {
+  border-top: 1px solid #e5e7eb;
+  margin-top: .75rem;
+  padding-top: .75rem;
+}
+[data-multi-book-page-nav][hidden] {
+  display: none;
+}
+[data-multi-book-page-nav] a {
+  border-left: 3px solid transparent;
+  color: #334155;
+  display: block;
+  font-size: .85rem;
+  line-height: 1.35;
+  padding: .3rem .35rem .3rem .55rem;
+  text-decoration: none;
+}
+[data-multi-book-page-nav] a[data-reader-depth="1"] {
+  padding-left: 1.45rem;
+}
+[data-multi-book-page-nav] a[aria-current="page"] {
+  border-left-color: #0f766e;
+  color: #0f766e;
+  font-weight: 700;
+}
+.multi-book-reader-cover {
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+}
+.multi-book-reader-cover h2 {
+  margin-top: 0;
+}
+[data-multi-book-page-toc] {
+  border-left: 1px solid #e5e7eb;
+  color: #334155;
+  font-size: .85rem;
+  padding-left: 1rem;
+}
+[data-multi-book-page-toc][hidden] {
+  display: none;
+}
+[data-multi-book-page-toc] strong {
+  color: #1f2937;
+  display: block;
+  font-size: .78rem;
+  margin-bottom: .35rem;
+}
+[data-multi-book-page-toc] a {
+  color: #334155;
+  display: block;
+  margin: .35rem 0;
+  text-decoration: none;
+}
+[data-multi-book-pagination] {
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+}
+[data-multi-book-pagination][hidden] {
+  display: none;
+}
+[data-multi-book-pagination] a {
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  color: #1f2937;
+  flex: 1 1 0;
+  padding: .65rem;
+  text-decoration: none;
+}
+[data-multi-book-pagination] span {
+  color: #64748b;
+  display: block;
+  font-size: .78rem;
+}
+@media (min-width: 1024px) {
+  body.toc2.toc-left.multi-book-reader-paged #content {
+    --multi-book-reader-content-gutter: max(0px, calc((100vw - 20em - 1000px) / 2));
+    box-sizing: border-box;
+    margin-left: var(--multi-book-reader-content-gutter);
+    margin-right: 16rem;
+    max-width: min(800px, calc(100vw - 20em - 20rem - var(--multi-book-reader-content-gutter)));
+    padding-left: 15px;
+  }
+  body.toc2.toc-left.multi-book-reader-paged [data-multi-book-pagination] {
+    --multi-book-reader-content-gutter: max(0px, calc((100vw - 20em - 1000px) / 2));
+    margin-left: var(--multi-book-reader-content-gutter);
+    max-width: min(800px, calc(100vw - 20em - 20rem - var(--multi-book-reader-content-gutter)));
+    width: calc(100vw - 20em - 20rem - var(--multi-book-reader-content-gutter));
+  }
+  [data-multi-book-page-toc] {
+    position: fixed;
+    right: 2rem;
+    top: 7rem;
+    width: 12rem;
+  }
+}
+@media (min-width: 1024px) and (max-width: 1359px) {
+  [data-multi-book-page-toc] {
+    right: 1rem;
+    width: 8rem;
+  }
+}
+body.multi-book-reader-paged #footer {
+  display: none;
+}
+@media (max-width: 767px) {
+  #toc.toc2 {
+    position: static;
+    width: auto;
+  }
+  [data-multi-book-pagination] {
+    flex-direction: column;
+  }
+  pre, table {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
+`;
+}
+
+function readerScript(): string {
+  return `
+(function () {
+function initReader() {
+  var mapElement = document.getElementById("multi-book-page-map");
+  if (!mapElement) return;
+  var pageMap;
+  try {
+    pageMap = JSON.parse(mapElement.textContent || "{}");
+  } catch (error) {
+    return;
+  }
+  if (!pageMap || !Array.isArray(pageMap.pages)) return;
+
+  var content = document.getElementById("content");
+  var toc = document.getElementById("toc");
+  if (!content || !toc) return;
+
+  var pages = pageMap.pages;
+  var pagesById = new Map();
+  var anchorToPageId = new Map();
+  pages.forEach(function (page) {
+    pagesById.set(page.id, page);
+    (page.anchors || []).forEach(function (anchor) { anchorToPageId.set(anchor, page.id); });
+  });
+
+  var controls = document.querySelector("[data-multi-book-controls]");
+  var toggle = document.createElement("div");
+  toggle.className = "multi-book-reader-toggle";
+  toggle.setAttribute("data-multi-book-view-toggle", "");
+  toggle.innerHTML = '<button type="button" data-reader-view="continuous">连续</button><button type="button" data-reader-view="paged">页面</button>';
+  if (controls) controls.appendChild(toggle);
+
+  var nav = document.createElement("nav");
+  nav.setAttribute("data-multi-book-page-nav", "");
+  nav.setAttribute("aria-label", "页面");
+  if (controls && controls.nextSibling) toc.insertBefore(nav, controls.nextSibling);
+  else toc.appendChild(nav);
+
+  var pageToc = document.createElement("aside");
+  pageToc.setAttribute("data-multi-book-page-toc", "");
+  content.parentNode.insertBefore(pageToc, content.nextSibling);
+
+  var pagination = document.createElement("nav");
+  pagination.setAttribute("data-multi-book-pagination", "");
+  pagination.setAttribute("aria-label", "分页");
+  content.parentNode.insertBefore(pagination, pageToc.nextSibling);
+
+  var cover = document.createElement("section");
+  cover.id = "multi-book-reader-cover";
+  cover.className = "multi-book-reader-cover";
+  var sourceTitle = document.querySelector("#header > h1");
+  var details = document.querySelector("#header > .details");
+  cover.innerHTML = "<h2></h2>";
+  cover.querySelector("h2").textContent = sourceTitle ? sourceTitle.textContent : pageMap.book.title;
+  if (details) cover.appendChild(details.cloneNode(true));
+  content.insertBefore(cover, content.firstChild);
+
+  var originalTocNodes = Array.from(toc.children).filter(function (node) {
+    return node !== controls && node !== nav;
+  });
+  var originalNodes = Array.from(content.children).filter(function (node) { return node !== cover; });
+  var currentView = "continuous";
+  var currentPageId = "cover";
+
+  function query() {
+    return new URLSearchParams(window.location.search);
+  }
+
+  function writeQuery(values) {
+    var url = new URL(window.location.href);
+    Object.keys(values).forEach(function (key) {
+      if (values[key] == null) url.searchParams.delete(key);
+      else url.searchParams.set(key, values[key]);
+    });
+    history.pushState(null, "", url);
+  }
+
+  function pageNodes(page) {
+    if (page.kind === "cover") return [cover];
+    if (page.kind === "frontmatter") {
+      return (page.anchors || []).map(function (anchor) {
+        var heading = document.getElementById(anchor);
+        return heading ? heading.closest(".sect1") : null;
+      }).filter(Boolean);
+    }
+    if (page.kind === "part") {
+      var partHeading = document.getElementById(page.anchors[0]);
+      if (!partHeading) return [];
+      var nodes = [partHeading];
+      var next = partHeading.nextElementSibling;
+      while (next && !next.matches(".sect1") && !next.matches("h1.sect0")) {
+        nodes.push(next);
+        next = next.nextElementSibling;
+      }
+      return nodes;
+    }
+    var heading = document.getElementById(page.anchors[0]);
+    var section = heading ? heading.closest(".sect1") : null;
+    return section ? [section] : [];
+  }
+
+  function renderNav() {
+    nav.hidden = currentView !== "paged";
+    nav.textContent = "";
+    if (currentView !== "paged") return;
+    pages.forEach(function (page) {
+      var link = document.createElement("a");
+      link.href = "?view=paged&page=" + encodeURIComponent(page.id);
+      link.textContent = page.title;
+      link.dataset.pageId = page.id;
+      link.dataset.readerDepth = page.parentPageId ? "1" : "0";
+      if (page.id === currentPageId) link.setAttribute("aria-current", "page");
+      link.addEventListener("click", function (event) {
+        event.preventDefault();
+        setView("paged", page.id, true);
+      });
+      nav.appendChild(link);
+    });
+  }
+
+  function renderPageToc(page) {
+    pageToc.hidden = currentView !== "paged";
+    pageToc.textContent = "";
+    if (currentView !== "paged") return;
+    var title = document.createElement("strong");
+    title.textContent = "本页内容";
+    pageToc.appendChild(title);
+    (page.toc || []).forEach(function (item) {
+      var link = document.createElement("a");
+      link.href = "#" + item.anchor;
+      link.textContent = item.title;
+      link.style.paddingLeft = (item.depth * 0.8) + "rem";
+      link.addEventListener("click", function (event) {
+        event.preventDefault();
+        var target = document.getElementById(item.anchor);
+        if (target) target.scrollIntoView();
+      });
+      pageToc.appendChild(link);
+    });
+  }
+
+  function renderPagination(page) {
+    pagination.hidden = currentView !== "paged";
+    pagination.textContent = "";
+    if (currentView !== "paged") return;
+    var index = pages.findIndex(function (candidate) { return candidate.id === page.id; });
+    function addLink(label, target) {
+      if (!target) {
+        var spacer = document.createElement("span");
+        pagination.appendChild(spacer);
+        return;
+      }
+      var link = document.createElement("a");
+      link.href = "?view=paged&page=" + encodeURIComponent(target.id);
+      link.innerHTML = "<span>" + label + "</span>" + target.title;
+      link.addEventListener("click", function (event) {
+        event.preventDefault();
+        setView("paged", target.id, true);
+        window.scrollTo(0, 0);
+      });
+      pagination.appendChild(link);
+    }
+    addLink("上一页", pages[index - 1]);
+    addLink("下一页", pages[index + 1]);
+  }
+
+  function setView(view, pageId, persist) {
+    currentView = view;
+    currentPageId = pagesById.has(pageId) ? pageId : "cover";
+    var page = pagesById.get(currentPageId) || pages[0];
+    document.body.classList.toggle("multi-book-reader-paged", view === "paged");
+    document.body.classList.toggle("multi-book-reader-continuous", view === "continuous");
+    toggle.querySelectorAll("button").forEach(function (button) {
+      button.setAttribute("aria-pressed", button.dataset.readerView === view ? "true" : "false");
+    });
+    if (persist) {
+      localStorage.setItem("multi-book-reader-view", view);
+      writeQuery({ view: view, page: view === "paged" ? currentPageId : null });
+    }
+    if (view === "continuous") {
+      cover.hidden = true;
+      originalNodes.forEach(function (node) { node.hidden = false; });
+      originalTocNodes.forEach(function (node) { node.hidden = false; });
+      pageToc.hidden = true;
+      pagination.hidden = true;
+      renderNav();
+      return;
+    }
+    originalTocNodes.forEach(function (node) { node.hidden = true; });
+    var visible = new Set(pageNodes(page));
+    if (visible.size === 0 && page.kind !== "cover") {
+      cover.hidden = false;
+      cover.querySelector("h2").textContent = "当前页面无法在生成 HTML 中定位。";
+      visible.add(cover);
+    }
+    cover.hidden = !visible.has(cover);
+    originalNodes.forEach(function (node) { node.hidden = !visible.has(node); });
+    renderNav();
+    renderPageToc(page);
+    renderPagination(page);
+  }
+
+  toggle.addEventListener("click", function (event) {
+    var button = event.target.closest("button[data-reader-view]");
+    if (!button) return;
+    setView(button.dataset.readerView, currentPageId, true);
+  });
+
+  document.addEventListener("click", function (event) {
+    if (currentView !== "paged") return;
+    var link = event.target.closest('a[href^="#"]');
+    if (!link) return;
+    var anchor = decodeURIComponent(link.getAttribute("href").slice(1));
+    var targetPageId = anchorToPageId.get(anchor);
+    if (!targetPageId) return;
+    if (targetPageId !== currentPageId) {
+      event.preventDefault();
+      setView("paged", targetPageId, true);
+      var target = document.getElementById(anchor);
+      if (target) target.scrollIntoView();
+    }
+  });
+
+  window.addEventListener("popstate", function () {
+    var params = query();
+    setView(params.get("view") === "paged" ? "paged" : "continuous", params.get("page") || "cover", false);
+  });
+
+  var params = query();
+  var initialView = params.get("view") || localStorage.getItem("multi-book-reader-view") || "continuous";
+  setView(initialView === "paged" ? "paged" : "continuous", params.get("page") || "cover", false);
+}
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initReader);
+} else {
+  initReader();
+}
+}());
+`;
+}
+
+function addBookControlsToBookHtml(html: string, href: string, homeLink: HomeLinkConfig, bookSource: string, pageMap: ReaderPageMap, bookId: string): string {
   if (html.includes(CONTROLS_MARKER)) return html;
   const marker = '<div id="toc" class="toc2">';
   const index = html.indexOf(marker);
-  if (index === -1) throw new Error("book HTML is missing the left TOC container");
+  if (index === -1) throw new Error(`${bookId}: missing left TOC container`);
 
   const insertAt = index + marker.length;
   const controlsBlock = `
@@ -331,6 +975,7 @@ function addBookControlsToBookHtml(html: string, href: string, homeLink: HomeLin
   margin-top: .4rem;
   min-height: 1em;
 }
+${readerStyles()}
 </style>
 <div class="multi-book-controls" ${CONTROLS_MARKER}>
   <a class="multi-book-home" ${HOME_MARKER} href="${escapeHtmlAttribute(href)}">${escapeHtmlAttribute(homeLink.label)}<span>${escapeHtmlAttribute(homeLink.subtitle)}</span></a>
@@ -338,6 +983,7 @@ function addBookControlsToBookHtml(html: string, href: string, homeLink: HomeLin
   <span class="multi-book-copy-status" data-multi-book-source-status aria-live="polite"></span>
 </div>
 <script type="application/json" id="multi-book-source-data">${escapeJsonScript(bookSource)}</script>
+<script type="application/json" id="multi-book-page-map">${escapeJsonValueForScript(pageMap)}</script>
 <script>
 (function () {
   var sourceElement = document.getElementById("multi-book-source-data");
@@ -387,7 +1033,9 @@ function addBookControlsToBookHtml(html: string, href: string, homeLink: HomeLin
   });
 }());
 </script>`;
-  return `${html.slice(0, insertAt)}${controlsBlock}${html.slice(insertAt)}`;
+  const withReaderScript = `${controlsBlock}
+<script>${readerScript()}</script>`;
+  return `${html.slice(0, insertAt)}${withReaderScript}${html.slice(insertAt)}`;
 }
 
 async function addHomeLinks(rootDir: string, books: BookEntry[], homeLink: HomeLinkConfig): Promise<void> {
@@ -396,8 +1044,13 @@ async function addHomeLinks(rootDir: string, books: BookEntry[], homeLink: HomeL
     const htmlFile = path.join(book.htmlOutputDir, "book.html");
     const html = await readFile(htmlFile, "utf8");
     const href = path.relative(path.dirname(htmlFile), catalog);
-    const source = await readFile(path.join(rootDir, "build", "adoc", "books", `${book.bookId}.adoc`), "utf8");
-    await writeFile(htmlFile, addBookControlsToBookHtml(html, href, homeLink, source), "utf8");
+    const fallbackSource = await combinedBookSource(book.bookDir);
+    const readerData = buildReaderBookData(rootDir, book, fallbackSource);
+    await writeFile(
+      htmlFile,
+      addBookControlsToBookHtml(html, href, homeLink, readerData.sourceBundle, readerData.pageMap, book.bookId),
+      "utf8"
+    );
   }
 }
 
@@ -547,7 +1200,6 @@ export async function buildWorkspace(rootDir = process.cwd()): Promise<void> {
   const fetchDiagrams = shouldFetchDiagrams();
   const asciidoctor = createAsciidoctor(useKroki);
 
-  await buildReducedAdoc(rootDir, books, asciidoctor);
   await buildHtml(rootDir, books, asciidoctor, useKroki, fetchDiagrams);
   await copyAssets(rootDir, books);
   await addHomeLinks(rootDir, books, config.homeLink);

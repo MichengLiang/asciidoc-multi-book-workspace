@@ -142,8 +142,8 @@ The generated `package.json` directly lists the AsciiDoc toolchain:
     "clean": "node tools/adoc-books.mjs clean"
   },
   "devDependencies": {
-    "@asciidoctor/reducer": "1.1.2",
-    "asciidoctor": "2.2.9",
+    "asciidoc-abundant-tree": "0.1.14",
+    "asciidoctor": "3.0.4",
     "asciidoctor-kroki": "0.18.1"
   }
 }
@@ -277,8 +277,6 @@ pnpm run clean
 
 [source,text]
 ----
-build/adoc/catalog.adoc
-build/adoc/books/<book-id>.adoc
 build/html/index.html
 build/html/catalog.html
 build/html/books/<book-id>/book.html
@@ -286,7 +284,9 @@ build/html/shared/images/
 build/html/books/<book-id>/assets/
 ----
 
-The build expands includes to single-file ADOC outputs, renders catalog HTML, renders each book HTML, copies shared images, copies book-local assets, injects a catalog home link into book HTML, writes the root HTML index, checks local HTML resources, and checks the workspace contract.
+The build renders catalog HTML, renders each book HTML, copies shared images, copies book-local assets, injects a catalog home link and dual reader UI into book HTML, writes the root HTML index, checks local HTML resources, and checks the workspace contract.
+The copy-source control embeds an abundant-tree source bundle for the current book. The bundle preserves each participating source file with its workspace-relative path instead of pretending to be a single reduced AsciiDoc file.
+Default build and check commands do not write expanded ADOC outputs under `build/adoc/`.
 Diagram blocks render as Kroki image URLs by default, so ordinary builds do not depend on the Kroki service at build time.
 When `ADOC_BOOKS_FETCH_DIAGRAMS=1` is set, the runtime asks Kroki to fetch diagram images into the local HTML output.
 
@@ -317,7 +317,7 @@ The user runtime uses one Node process for the full build.
 It uses Asciidoctor.js in process through `require("asciidoctor")()`.
 It does not depend on a global `asciidoctor` executable.
 
-The runtime registers `@asciidoctor/reducer` in process.
+The runtime uses `asciidoc-abundant-tree` in process to derive reader page maps and source bundles.
 It loads `asciidoctor-kroki` only when current `.adoc` sources contain supported diagram blocks.
 If diagram blocks exist and `asciidoctor-kroki` cannot be loaded, the runtime reports that the workspace contains diagram blocks and needs the Kroki dependency or needs those blocks removed.
 
@@ -444,7 +444,7 @@ The design is satisfied when these statements are true:
 * `pnpm create asciidoc-multi-book-workspace my-books` creates a complete user workspace.
 * The generated workspace contains the official sample books by default.
 * The generated workspace does not contain maintainer assets.
-* The generated `package.json` directly lists `asciidoctor`, `@asciidoctor/reducer`, and `asciidoctor-kroki`.
+* The generated `package.json` directly lists `asciidoctor`, `asciidoc-abundant-tree`, and `asciidoctor-kroki`.
 * The generated workspace builds with `pnpm install` followed by `pnpm run build`.
 * The generated workspace checks with `pnpm run check`.
 * Deleting any one official sample book and removing its catalog entries leaves `pnpm run check` passing.

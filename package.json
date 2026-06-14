@@ -62,10 +62,11 @@
     "clean": "rm -rf dist build"
   },
   "devDependencies": {
-    "@asciidoctor/reducer": "1.1.2",
     "@types/node": "24.10.1",
-    "asciidoctor": "2.2.9",
+    "asciidoc-abundant-tree": "0.1.14",
+    "asciidoctor": "3.0.4",
     "asciidoctor-kroki": "0.18.1",
+    "playwright": "1.59.1",
     "typescript": "5.9.3"
   }
 }

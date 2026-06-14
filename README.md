@@ -63,7 +63,7 @@ It does not include this repository's `test/`, `.github/`, `src/`, `dist/`, `DES
 The generated `package.json` directly lists the AsciiDoc toolchain:
 
 - `asciidoctor`
-- `@asciidoctor/reducer`
+- `asciidoc-abundant-tree`
 - `asciidoctor-kroki`
 
 The generated scripts are:

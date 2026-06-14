@@ -4,12 +4,12 @@
 
 ### Added
 
-- Add a `复制本书为纯文本` control to each generated book page so readers can copy the expanded single-file book text for saving, note-taking, or model analysis.
-- Add a browser fallback that opens the expanded book text as a UTF-8 plain-text page when clipboard access is unavailable.
+- Add a `复制本书为纯文本` control to each generated book page so readers can copy the book source bundle for saving, note-taking, or model analysis.
+- Add a browser fallback that opens the book source bundle as a UTF-8 plain-text page when clipboard access is unavailable.
 
 ### Changed
 
-- Keep the generated book page controls self-contained by embedding the already-reduced book text in the HTML instead of adding another published source file.
+- Keep the generated book page controls self-contained by embedding the source bundle in the HTML instead of adding another published source file.
 
 ## 0.1.6 - 2026-06-09
 
@@ -91,5 +91,5 @@
 - Publish the project as `create-asciidoc-multi-book-workspace`, an npm initializer for complete AsciiDoc multi-book workspaces.
 - Generate user-owned workspaces with seven sample books, `catalog.adoc`, shared assets, explicit AsciiDoc dependencies, and an editable local `tools/adoc-books.mjs` runtime.
 - Keep maintainer-only files out of generated workspaces and the npm package, including tests, CI, TypeScript source, and `DESIGN.adoc`.
-- Build and check generated workspaces through a single Node runtime using Asciidoctor.js, reducer support, local resource checks, Kroki diagram URL rendering, and optional fetched diagram output.
+- Build and check generated workspaces through a single Node runtime using Asciidoctor.js, local resource checks, Kroki diagram URL rendering, and optional fetched diagram output.
 - Validate that each default sample book can be deleted after removing its catalog entries, while user-authored real broken xrefs still fail checks.

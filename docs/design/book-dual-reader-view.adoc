@@ -1,0 +1,238 @@
+= Book Dual Reader View Design
+:toc: left
+:toclevels: 3
+:sectnums:
+:sectnumlevels: 3
+:doctype: article
+:encoding: utf-8
+
+== Object
+
+The book dual reader view is an inline reader layer injected into each generated book HTML file.
+It keeps the Asciidoctor continuous document as the default reading surface and adds a semantic paged view backed by an `asciidoc-abundant-tree` page map.
+
+The generated workspace builds one HTML file per book at:
+
+[source,text]
+----
+build/html/books/<book-id>/book.html
+----
+
+The default build does not create expanded AsciiDoc outputs under `build/adoc/`.
+Users who need a separate merged source artifact must run or add that artifact generation explicitly outside the default build contract.
+
+== Dependencies
+
+The generated workspace lists the AsciiDoc toolchain directly:
+
+[source,json]
+----
+{
+  "devDependencies": {
+    "asciidoc-abundant-tree": "0.1.14",
+    "asciidoctor": "3.0.4",
+    "asciidoctor-kroki": "0.18.1"
+  }
+}
+----
+
+`asciidoc-abundant-tree` supplies source-aware document facts for page maps and source bundles.
+`asciidoctor` renders the book HTML.
+`asciidoctor-kroki` is loaded only when current sources contain supported diagram blocks.
+
+The default generated workspace does not depend on `@asciidoctor/reducer`.
+
+== Build Contract
+
+`pnpm run build` creates:
+
+[source,text]
+----
+build/html/index.html
+build/html/catalog.html
+build/html/books/<book-id>/book.html
+build/html/shared/images/
+build/html/books/<book-id>/assets/
+----
+
+For each book, the runtime:
+
+* renders the book with Asciidoctor,
+* derives reader data from `asciidoc-abundant-tree`,
+* injects the catalog home link,
+* injects the copy-source control,
+* injects the continuous/page view controls,
+* injects the page map and browser script into the same `book.html`.
+
+`pnpm run check` runs the same build and validation path.
+`pnpm run clean` deletes `build/` only.
+
+== Page Map
+
+The page map is a JSON object embedded in `book.html`:
+
+[source,json]
+----
+{
+  "version": 1,
+  "book": {
+    "id": "07-structured-writing-conventions",
+    "title": "结构化书写约定标本",
+    "entry": "books/07-structured-writing-conventions/book.adoc"
+  },
+  "pages": []
+}
+----
+
+Each page has:
+
+* `id`: stable page identity inside the generated reader.
+* `kind`: one of `cover`, `frontmatter`, `part`, `chapter`, `appendix`, `glossary`, `bibliography`, or `index`.
+* `title`: navigation label.
+* `anchors`: generated HTML anchors owned by the page.
+* `toc`: current-page table of contents.
+* `source`: optional source span from abundant-tree facts.
+* `parentPageId`: optional parent part page id for chapter pages.
+* `childPageIds`: optional child chapter page ids for part pages.
+
+The cover page is always first.
+Frontmatter sections with AsciiDoc styles `abstract`, `colophon`, `dedication`, `preface`, and `acknowledgments` are grouped into one `frontmatter` page.
+Level-0 book sections become `part` pages.
+Child level-1 sections under a part become `chapter` pages.
+Backmatter styles `appendix`, `glossary`, `bibliography`, and `index` become independent pages.
+
+The `07-structured-writing-conventions` sample is the strict page-map specimen.
+It must produce 16 pages in this order:
+
+[source,text]
+----
+cover
+frontmatter
+part: 从源文档看结构
+chapter: 源文本与投影
+chapter: 标题与引用
+chapter: 源文件编排号
+part: 给标题和引用加意图
+chapter: role 身份
+chapter: rel 关系谓词
+part: 字段、索引与术语
+chapter: 附加字段
+chapter: 索引词与术语表
+appendix: 附录 A：结构化写法速查
+glossary: 术语表
+bibliography: 参考坐标
+index: 索引
+----
+
+== Source Bundle
+
+The copy-source control copies the book's source bundle as plain text.
+
+When abundant-tree parses the book entry, the bundle is built from `document.sourceFiles`.
+Each source file is emitted with a workspace-relative marker:
+
+[source,text]
+----
+// file: books/01-starter-book/book.adoc
+...
+
+// file: shared/attributes.adoc
+...
+----
+
+When abundant-tree cannot parse the full book entry, the runtime falls back to collected `.adoc` and `.mjs` files under the book directory.
+The fallback keeps the same `// file: <relativePath>` marker format.
+
+The source bundle is embedded in:
+
+[source,html]
+----
+<script type="application/json" id="multi-book-source-data">...</script>
+----
+
+The browser control first writes that bundle to `navigator.clipboard`.
+If Clipboard API access is unavailable, it opens a generated `text/plain;charset=utf-8` Blob page.
+
+== Reader Behavior
+
+Continuous view is the default view.
+It shows the full Asciidoctor-rendered document and hides the synthetic cover section.
+
+Paged view shows one virtual page at a time.
+It uses the page map to build:
+
+* a left page tree in place of the existing Asciidoctor TOC,
+* a right-side current-page TOC,
+* previous and next page links.
+
+Paged view preserves the Asciidoctor left content origin.
+It does not recenter the body column after adding the right-side current-page TOC.
+The content column is capped only to keep source blocks out of the right-side TOC rail.
+
+The reader state can be addressed with:
+
+[source,text]
+----
+?view=paged&page=<page-id>
+----
+
+Cross-page anchor clicks in paged view switch to the page that owns the target anchor before scrolling to the anchor.
+Continuous view leaves ordinary anchor behavior intact.
+
+If a page exists in the page map but its anchor cannot be located in the generated HTML, paged view shows:
+
+[source,text]
+----
+当前页面无法在生成 HTML 中定位。
+----
+
+That message does not appear in continuous view.
+
+== Fallback Semantics
+
+If `book.html` does not contain `#toc.toc2`, the build fails with the book id and `missing left TOC container`.
+
+If abundant-tree throws while parsing a book entry, the runtime preserves the default build by emitting a cover-only page map and a fallback source bundle.
+This fallback covers parser-support gaps such as unsupported include attribute lists.
+
+If abundant-tree returns a document with an error-level diagnostic, the build fails with the book id, diagnostic code, and diagnostic message.
+
+If the browser script cannot read or parse `multi-book-page-map`, it stops without affecting the continuous document.
+
+== UI Contract
+
+The injected controls are inline in `book.html`; no separate reader asset file is required.
+
+The left TOC retains:
+
+* catalog home link,
+* copy-source button,
+* continuous/page toggle,
+* page tree.
+
+Continuous view shows the Asciidoctor-generated TOC.
+Paged view hides the Asciidoctor-generated TOC and shows only the page tree.
+
+Paged view hides the generated Asciidoctor footer.
+
+The reader does not create a real multi-page site.
+It does not paginate by viewport height.
+It does not replace Asciidoctor's generated continuous document.
+
+== Verification
+
+The maintainer verification surface is:
+
+[source,bash]
+----
+pnpm run check
+----
+
+The tests must prove:
+
+* generated workspaces depend on `asciidoc-abundant-tree` and do not depend on `@asciidoctor/reducer`,
+* default builds do not write `build/adoc/catalog.adoc`,
+* each sample book still emits `build/html/books/<book-id>/book.html`,
+* copy-source data includes `// file:` markers and source content,
+* `07-structured-writing-conventions` emits the 16-page map,
+* desktop and mobile Playwright checks cover view switching, page navigation, current-page TOC, cross-page anchor behavior, non-overlapping right TOC layout, hidden paged-view footer, and responsive layout.
