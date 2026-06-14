@@ -70,6 +70,14 @@ async function captureConsoleWarn(run) {
   return warnings;
 }
 
+async function launchBrowser() {
+  const { chromium } = await import("playwright");
+  const browserChannel = process.env.PLAYWRIGHT_BROWSER_CHANNEL;
+  // GitHub-hosted Ubuntu runners already ship Chrome; prefer it there so CI does not
+  // spend time downloading Playwright-managed browser archives.
+  return await chromium.launch(browserChannel ? { channel: browserChannel } : {});
+}
+
 function removeSampleFromCatalog(catalog, bookId) {
   const lines = catalog.split(/\r?\n/);
   const updated = [];
@@ -180,8 +188,7 @@ test("runtime reader UI supports desktop and mobile paged reading behavior", asy
   await buildWorkspace(target);
 
   const bookUrl = pathToFileURL(path.join(target, "build", "html", "books", "07-structured-writing-conventions", "book.html")).href;
-  const { chromium } = await import("playwright");
-  const browser = await chromium.launch();
+  const browser = await launchBrowser();
   try {
     const desktop = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     await desktop.goto(bookUrl);

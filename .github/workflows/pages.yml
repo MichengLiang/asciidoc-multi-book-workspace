@@ -17,6 +17,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_BROWSER_CHANNEL: chrome
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v6
@@ -31,7 +33,6 @@ jobs:
         with:
           enablement: true
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --only-shell chromium
       - run: pnpm run check
       - run: node dist/create.js tmp/pages-workspace
       - run: pnpm install
