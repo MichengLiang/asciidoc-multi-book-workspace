@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.8 - 2026-06-14
+
+### Fixed
+
+- Stop preview builds from emitting the Opal duplicate-load warning by loading Asciidoctor through the ESM `@asciidoctor/core` entry instead of mixing it with the CommonJS `asciidoctor` wrapper.
+
+### Changed
+
+- Depend on `@asciidoctor/core` directly in generated workspaces and align `asciidoctor-kroki` with core 3.0.4 in the lockfile.
+- Clarify the structured writing sample guidance for precisely referencing a source region with ordinary `xref` links.
+
 ## 0.1.7 - 2026-06-13
 
 ### Added
