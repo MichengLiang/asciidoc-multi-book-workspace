@@ -22,8 +22,8 @@
 |---|---|
 | 总文件数 | 20 |
 | 二进制文件 | 0 |
-| 总大小 | 13.4 KB |
-| 总行数 | 395 |
+| 总大小 | 13.9 KB |
+| 总行数 | 401 |
 
 </summary_stats>
 
@@ -33,7 +33,7 @@
 └── 07-structured-writing-conventions
     ├── book.adoc (1.4 KB)
     ├── backmatter
-    │   ├── appendix-a.adoc (1.6 KB)
+    │   ├── appendix-a.adoc (2.1 KB)
     │   ├── bibliography.adoc (0.5 KB)
     │   ├── glossary.adoc (0.7 KB)
     │   └── index.adoc (1.2 KB)
@@ -65,7 +65,7 @@
 
 --- NUL
 +++ b/backmatter/appendix-a.adoc
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,64 @@
 = 附录 A：结构化写法速查
 
 [cols="1,2", options="header"]
@@ -124,6 +124,12 @@
 role 描述标题身份。rel 描述 xref 边上的关系谓词。named attributes 是附加字段。
 
 `[appendix]`、`[glossary]`、`[bibliography]` 和 `[index]` 是 section style。它们改变紧随其后 section 的语义；标题层级仍由 `=` 数量决定。
+
+对于跨文件的交叉引用，为了避免重复编写相对路径，你可以在文档的头部（Header）定义一个文档属性（Document Attribute）来存储这个基础路径。
+
+你可以在主文档的开头定义一个变量（比如 `:book-b-dir:`），后续引用时通过 `{book-b-dir}` 来调用它。
+
+如果你的建模中存在需要对一段区域精准指向、提及的情况，优先考虑使用 **更小一级/更小一节** 的标题把这段区域划分出来，之后就可以继续使用 `xref` 进行交叉引用。
 
 --- NUL
 +++ b/backmatter/bibliography.adoc

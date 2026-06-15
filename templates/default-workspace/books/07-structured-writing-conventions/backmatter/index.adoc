@@ -34,4 +34,5 @@ Asciidoctor 的内置 HTML5 转换器不会自动生成索引目录。`[index]` 
 indexterm2:[role]
 indexterm:[relation predicate]
 indexterm:[源文件编排号]
+indexterm:[中间值插入]
 ----

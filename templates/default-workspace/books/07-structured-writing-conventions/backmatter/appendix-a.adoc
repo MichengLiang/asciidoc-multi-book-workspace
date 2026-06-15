@@ -25,11 +25,11 @@
 |`====== 最底层级`
 |Level 5 Section（五级章节）。AsciiDoc 支持的最深层级。
 
-|`parts/100-topic/`
-|part 目录的源文件编排号。
+|`parts/010-topic/`
+|Part 目录的源文件编排号。使用统一的三位数 `0X0` 格式。`X` 为顺序号，首个 `0` 为前导零，末尾 `0` 为插入预留。
 
 |`010-opening.adoc`
-|chapter 文件的源文件编排号。
+|Chapter 文件的源文件编排号。规则与 Part 目录编排号一致。
 
 |`[#stable-id]`
 |为重要标题声明稳定 ID。
