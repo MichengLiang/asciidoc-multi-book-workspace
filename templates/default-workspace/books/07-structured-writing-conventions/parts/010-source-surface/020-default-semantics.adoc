@@ -1,7 +1,7 @@
 [#heading-and-xref]
 == 标题与引用
 
-等号行是标题。标题前一行的 attrlist 承载地址和 role。
+等号行声明标题和层级。标题前的 attrlist 承载地址、role 和字段。
 
 [source,asciidoc]
 ----
@@ -9,18 +9,36 @@
 == 稳定标题
 ----
 
-`#stable-heading` 给标题一个稳定地址；`.concept` 标明标题身份；`稳定标题` 是读者看到的标题文本。
+`[#stable-heading]` 声明一个稳定地址。 `.concept` 标明标题身份。 `稳定标题` 是标题文本。
 
 [source,asciidoc]
 ----
 引用规则参见 xref:stable-heading[稳定标题]。
 ----
 
-这条 xref 表示参见目标标题。投影时，这条引用使用默认谓词 `aat:references`。
+该 xref 投影为 `aat:references`，即默认引用谓词。
 
 [source,asciidoc]
 ----
 引用规则依赖 xref:stable-heading[稳定标题, rel=depends-on]。
 ----
 
-写入 `rel=depends-on` 时，作者声明当前标题到目标标题的依赖关系。投影时，这条关系使用 `rel:depends-on`。
+`rel=depends-on` 声明从当前标题到目标标题的依赖关系，投影为 `rel:depends-on`。
+
+TIP: 需要保证全书里所有出现的稳定地址都最少有1个 `xref` 消费，也就是说可以在需要进行交叉引用时，再手动添加上稳定地址。
+
+标题声明角色后，其下级标题默认属于同一角色范围。下级标题可声明不同角色以切换语境。
+
+例如:
+
+[source,asciidoc]
+----
+[.rule]
+== 引用规则
+
+=== 基本语法
+
+[.example]
+=== 一个完整示例
+----
+

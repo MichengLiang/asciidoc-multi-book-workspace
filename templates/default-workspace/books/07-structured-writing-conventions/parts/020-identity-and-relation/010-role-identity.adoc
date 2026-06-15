@@ -1,8 +1,6 @@
 [#role-identity]
 == role 身份
 
-`[#xref-rule.rule]` 里的 `.rule` 是 indexterm2:[role]。它把这个标题标成规则说明。
-
 role 写在标题 attrlist 的点号 token 位置。
 
 [source,asciidoc]
@@ -14,7 +12,7 @@ role 写在标题 attrlist 的点号 token 位置。
 == 引用规则
 ----
 
-`#stable-heading` 和 `#xref-rule` 是稳定 ID。`.concept` 和 `.rule` 标明标题身份。
+`#stable-heading` 和 `#xref-rule` 是稳定 ID， `.concept` 和 `.rule` 是 indexterm2:[role]， 标明标题身份。
 
 [cols="1,2", options="header"]
 |===
@@ -32,6 +30,6 @@ role 写在标题 attrlist 的点号 token 位置。
 
 role 的职责，是在全书范围内保持身份含义的稳定。
 
-一旦一个 role 被定义——例如 `.rule` 代表规则说明——它在全书任何地方都只能代表这个身份，不能产生歧义。一本书需要多少种 role，取决于它所要描述的领域固有的本质复杂度。无论三种还是十种，每一种都必须是确定的。
+一本书使用的 role 种类和数量，取决于该领域的概念结构。每种 role 的语义在全书中保持唯一。
 
-读者和工具链依赖这种稳定理解来导航文本和提取结构。
+读者和工具链可以依据 role 进行导航文本和提取结构。

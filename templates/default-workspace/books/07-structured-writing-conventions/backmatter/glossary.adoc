@@ -2,6 +2,7 @@
 
 本术语表记录结构化书写约定中的核心术语。
 
+[glossary]
 heading:: 使用等号标题创建的书稿结构单位。
 stable ID:: 作者声明的稳定引用地址，例如 `#stable-heading`。
 source-order notation:: 写在源文件路径表面的排序符号。
