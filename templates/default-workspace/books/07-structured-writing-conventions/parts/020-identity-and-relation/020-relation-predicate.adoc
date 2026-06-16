@@ -5,8 +5,8 @@ indexterm:[relation predicate] `rel` 是 xref 边上的关系谓词。包含 xre
 
 [source,asciidoc]
 ----
-引用规则参见 xref:stable-heading[稳定标题]。
-引用规则依赖 xref:stable-heading[稳定标题, rel=depends-on]。
+引用规则参见 xref:regular-heading[常规标题]。
+引用规则依赖 xref:regular-heading[常规标题, rel=depends-on]。
 ----
 
 第一行投影为 `aat:references`，即默认引用谓词。第二行声明 `rel=depends-on`，投影为 `rel:depends-on`。

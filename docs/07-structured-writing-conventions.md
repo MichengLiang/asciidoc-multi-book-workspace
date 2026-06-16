@@ -22,8 +22,8 @@
 |---|---|
 | 总文件数 | 20 |
 | 二进制文件 | 0 |
-| 总大小 | 15.1 KB |
-| 总行数 | 437 |
+| 总大小 | 17.4 KB |
+| 总行数 | 483 |
 
 </summary_stats>
 
@@ -33,20 +33,20 @@
 └── 07-structured-writing-conventions
     ├── book.adoc (1.4 KB)
     ├── backmatter
-    │   ├── appendix-a.adoc (2.3 KB)
+    │   ├── appendix-a.adoc (3.1 KB)
     │   ├── bibliography.adoc (0.5 KB)
-    │   ├── glossary.adoc (0.7 KB)
+    │   ├── glossary.adoc (1.0 KB)
     │   └── index.adoc (1.2 KB)
     ├── frontmatter
     │   ├── abstract.adoc (0.2 KB)
     │   ├── acknowledgments.adoc (0.1 KB)
     │   ├── colophon.adoc (0.2 KB)
     │   ├── dedication.adoc (0.1 KB)
-    │   └── preface.adoc (1.0 KB)
+    │   └── preface.adoc (1.1 KB)
     └── parts
         ├── 010-source-surface
-        │   ├── 010-source-and-projection.adoc (1.5 KB)
-        │   ├── 020-default-semantics.adoc (1.1 KB)
+        │   ├── 010-source-and-projection.adoc (2.3 KB)
+        │   ├── 020-default-semantics.adoc (1.4 KB)
         │   ├── 030-source-order-notation.adoc (1.4 KB)
         │   └── _partintro.adoc (0.1 KB)
         ├── 020-identity-and-relation
@@ -65,7 +65,7 @@
 
 --- NUL
 +++ b/backmatter/appendix-a.adoc
-@@ -0,0 +1,64 @@
+@@ -0,0 +1,73 @@
 = 附录 A：结构化写法速查
 
 [cols="1,2", options="header"]
@@ -100,7 +100,10 @@
 |Chapter 文件的源文件编排号。规则与 Part 目录编排号一致。
 
 |`[#stable-id]`
-|为重要标题声明稳定 ID。
+|为标题声明一个稳定的引用地址。稳定 ID 仅当以下两个条件同时满足时才需显式声明：
+(1) 该标题被至少一个 `xref` 交叉引用；
+(2) 标题文本本身可能变更或在全书范围内可能重复。
+若标题本身已是领域内唯一且稳定的标识符（如专有名词、唯一实体名、标准化编号），即使被交叉引用，也无需额外声明稳定 ID——标题文本即地址。
 
 |`[#stable-id.concept]`
 |声明稳定 ID，并用 role 标明标题身份。
@@ -131,6 +134,12 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。named attribut
 
 如果你的建模中存在需要对一段区域精准指向、提及的情况，可以考虑使用 **更小一级/更小一节** 的标题把这段区域划分出来，之后就可以继续使用 `xref` 进行交叉引用。
 
+在 Asciidoc 中使用 pass:[] 宏可以表达透传，不会被解析，使用反引号包裹可以获得字体样式。
+
+如果遇到“代码/日志”与其“文字解释”需要分离的场景，可以考虑使用 Asciidoc 的 Callouts。
+
+TIP: 在你写作的过程中，你可以思考有哪些 Asciidoc 语法/表达 适合你当前的所撰写的对象，然后选择合适的并应用。
+
 --- NUL
 +++ b/backmatter/bibliography.adoc
 @@ -0,0 +1,7 @@
@@ -144,14 +153,17 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。named attribut
 
 --- NUL
 +++ b/backmatter/glossary.adoc
-@@ -0,0 +1,15 @@
+@@ -0,0 +1,18 @@
 = 术语表
 
 本术语表记录结构化书写约定中的核心术语。
 
 [glossary]
 heading:: 使用等号标题创建的书稿结构单位。
-stable ID:: 作者声明的稳定引用地址，例如 `#stable-heading`。
+stable ID:: 作者为标题显式声明的稳定引用地址，语法为 `[#id]`。
+仅当标题被交叉引用、且标题文本自身不能保证全局唯一和不变时才需使用。
+若标题文本已是领域内唯一的稳定标识符（如实体名称、标准化编号），
+标题文本本身即承担 stable ID 的寻址功能，无需额外声明。
 source-order notation:: 写在源文件路径表面的排序符号。
 role:: 标题身份标记，例如 `.concept` 或 `.rule`。
 ordinary reference:: 普通 xref。投影时使用默认谓词 `aat:references`。
@@ -235,21 +247,25 @@ indexterm:[中间值插入]
 
 --- NUL
 +++ b/frontmatter/preface.adoc
-@@ -0,0 +1,10 @@
+@@ -0,0 +1,14 @@
 == 前言
 
 这本书按源文档写法组织。阅读时先看源文档片段和投影片段，再对照后续章节理解每个标记承担的职责。
 
-实际书稿按写作目的选择这些写法。长期引用的标题使用稳定 ID；带有明确身份的标题使用 role；表达关系的引用使用 rel；随源稿保留的字段使用 named attributes。
+实际书稿按写作目的选择这些写法。
+长期引用且标题文本可能变更的标题使用稳定 ID；
+若标题本身已是唯一且稳定的实体名称，标题文本直接作为引用地址。
+带有明确身份的标题使用 role；表达关系的引用使用 rel；
+随源稿保留的字段使用 named attributes。
 
 业务含义由书稿自己的约定承载。本书展示同一份 AsciiDoc 源文本如何同时服务阅读、维护和工具链投影。
 
 通过展示标题、稳定 ID、role、xref、rel 和 named attributes 如何形成可读、可维护、可投影的源文档，让你能够理解，你可以拥有一种这样的表达方式，可以按照某种约定，就能够提升你书籍的质量，能够让下游的工具链继续消费你的书。 你可以参考本书里你所需要的结构。
-合适的结构能够提升书籍的可阅读，可维护性。你可以按写作目的选择其中写法。
+合适的结构能够提升书籍的可阅读、可维护性。你可以按写作目的选择其中写法。
 
 --- NUL
 +++ b/parts/010-source-surface/010-source-and-projection.adoc
-@@ -0,0 +1,44 @@
+@@ -0,0 +1,70 @@
 [#source-and-projection]
 == 源文本与投影
 
@@ -260,44 +276,70 @@ indexterm:[中间值插入]
 ----
 = 结构化写作样例
 
-[#stable-heading.concept]
-== 稳定标题
+[#regular-heading.concept]
+== 常规标题
 
-稳定标题提供可引用的阅读单位。
+常规标题提供可引用的阅读单位。
 
 [#xref-rule.rule]
 == 引用规则
 
-引用规则参见 xref:stable-heading[稳定标题]。
-引用规则依赖 xref:stable-heading[稳定标题, rel=depends-on, weight=strong]。
+引用规则参见 xref:regular-heading[常规标题]。
+引用规则依赖 xref:regular-heading[常规标题, rel=depends-on, weight=strong]。
 ----
 
-源文档把 `稳定标题` 写成可引用的阅读单位，把 `引用规则` 写成规则说明，并在正文里写出参见和依赖两种引用。
+源文档把 `常规标题` 写成可引用的阅读单位，把 `引用规则` 写成规则说明，并在正文里写出参见和依赖两种引用。
 
 [source,turtle]
 ----
-:stable-heading a aat:Heading ;
-  aat:headline "稳定标题" ;
-  aat:addressLabel "stable-heading" ;
+:regular-heading a aat:Heading ;
+  aat:headline "常规标题" ;
+  aat:addressLabel "regular-heading" ;
   aat:role "concept" .
 
 :xref-rule a aat:Heading ;
   aat:headline "引用规则" ;
   aat:addressLabel "xref-rule" ;
   aat:role "rule" ;
-  aat:references :stable-heading ;
-  rel:depends-on :stable-heading .
+  aat:references :regular-heading ;
+  rel:depends-on :regular-heading .
 
 :xref-edge-depends-on a aat:XrefEdge ;
   aat:rel "depends-on" ;
   aat:weight "strong" .
 ----
 
-读者看源文档，能直接看到 [.concept]#稳定标题# 是被引用的阅读单位， [.rule]#引用规则# 说明引用写法。下游投影工具链读取同一份源文档，得到 `aat:Heading`、`aat:addressLabel`、`aat:role`、`aat:references` 和 `rel:depends-on`。
+读者看源文档，能直接看到 [.concept]#常规标题# 是被引用的阅读单位， [.rule]#引用规则# 说明引用写法。下游投影工具链读取同一份源文档，得到 `aat:Heading`、`aat:addressLabel`、`aat:role`、`aat:references` 和 `rel:depends-on`。
+
+[source,asciidoc]
+----
+[.concept]
+== 林黛玉
+
+林黛玉是……她与 xref:贾宝玉[rel=love] 有木石前盟。
+----
+
+此处的 `pass:[xref:贾宝玉]` 直接使用标题文本作为寻址地址，
+因为“贾宝玉”在本书范围内唯一且不会变更为其他名称。
+交叉引用宏语法是 `pass:[xref:target-id[optional-display-text]]` ，所以这里省略了别名，渲染引擎默认会展示标题文字。
+
+'''
+
+再来看看这样的场景： 标题是编号型标识符，且被交叉引用
+
+例如： `REQ-2024-0088`、`TC-AUTH-032`、`ADR-2024-015`，他们的标题本身就是编号，是人为设计的全局唯一标识符， 需要尊重他的原来的结构与语义。
+
+[source,asciidoc]
+----
+[.requirement, category=性能]
+== REQ-2024-0088
+----
+
+引用时可以这样： `pass:[xref:REQ-2024-0088[REQ-2024-0088, rel=constrains]]`
 
 --- NUL
 +++ b/parts/010-source-surface/020-default-semantics.adoc
-@@ -0,0 +1,44 @@
+@@ -0,0 +1,48 @@
 [#heading-and-xref]
 == 标题与引用
 
@@ -305,27 +347,31 @@ indexterm:[中间值插入]
 
 [source,asciidoc]
 ----
-[#stable-heading.concept]
-== 稳定标题
+[#regular-heading.concept]
+== 常规标题
 ----
 
-`[#stable-heading]` 声明一个稳定地址。 `.concept` 标明标题身份。 `稳定标题` 是标题文本。
+`[#regular-heading]` 声明一个稳定地址。 `.concept` 标明标题身份。 `常规标题` 是标题文本。
 
 [source,asciidoc]
 ----
-引用规则参见 xref:stable-heading[稳定标题]。
+引用规则参见 xref:regular-heading[常规标题]。
 ----
 
 该 xref 投影为 `aat:references`，即默认引用谓词。
 
 [source,asciidoc]
 ----
-引用规则依赖 xref:stable-heading[稳定标题, rel=depends-on]。
+引用规则依赖 xref:regular-heading[常规标题, rel=depends-on]。
 ----
 
 `rel=depends-on` 声明从当前标题到目标标题的依赖关系，投影为 `rel:depends-on`。
 
-TIP: 需要保证全书里所有出现的稳定地址都最少有1个 `xref` 消费，也就是说可以在需要进行交叉引用时，再手动添加上稳定地址。
+[TIP]
+====
+1. 需要保证全书里所有出现的稳定地址都最少有1个 `xref` 消费，也就是说可以在需要进行交叉引用时，判断引用目标当前在全书中是否已经有稳定的标识，再确认是否需要手动添加上稳定地址。详细判断规则见 xref:附录 A：结构化写法速查[]。
+2. 按照书籍结构，跨越 `= 书名`、`= 卷/部`、`== 章` 这些大跨度的指代均需要使用 `xref` 手动标注，平衡隐式上下文的阅读压力。
+====
 
 标题声明角色后，其下级标题默认属于同一角色范围。下级标题可声明不同角色以切换语境。
 
@@ -398,14 +444,14 @@ role 写在标题 attrlist 的点号 token 位置。
 
 [source,asciidoc]
 ----
-[#stable-heading.concept]
-== 稳定标题
+[#regular-heading.concept]
+== 常规标题
 
 [#xref-rule.rule]
 == 引用规则
 ----
 
-`#stable-heading` 和 `#xref-rule` 是稳定 ID， `.concept` 和 `.rule` 是 indexterm2:[role]， 标明标题身份。
+`#regular-heading` 和 `#xref-rule` 是稳定 ID， `.concept` 和 `.rule` 是 indexterm2:[role]， 标明标题身份。
 
 [cols="1,2", options="header"]
 |===
@@ -437,8 +483,8 @@ indexterm:[relation predicate] `rel` 是 xref 边上的关系谓词。包含 xre
 
 [source,asciidoc]
 ----
-引用规则参见 xref:stable-heading[稳定标题]。
-引用规则依赖 xref:stable-heading[稳定标题, rel=depends-on]。
+引用规则参见 xref:regular-heading[常规标题]。
+引用规则依赖 xref:regular-heading[常规标题, rel=depends-on]。
 ----
 
 第一行投影为 `aat:references`，即默认引用谓词。第二行声明 `rel=depends-on`，投影为 `rel:depends-on`。
@@ -458,7 +504,7 @@ constrains:: 当前标题对目标标题的合法写法或范围施加约束。
 --- NUL
 +++ b/parts/020-identity-and-relation/_partintro.adoc
 @@ -0,0 +1,1 @@
-本部展示标题身份和引用关系。role 标明标题身份；rel 标明引用关系。 书籍中需要主动根据概念结构对各类词表进行建模与阅读，方便后续的使用。
+本部展示标题身份和引用关系。role 标明标题身份；rel 标明引用关系。 书籍中需要主动根据概念结构对各类词表进行建模与约定，方便后续的使用。
 
 --- NUL
 +++ b/parts/030-fields-and-lookup/010-surface-fields.adoc
@@ -473,7 +519,7 @@ named attributes 是写在源文档表面的字段。
 [#example.example, owner=writing-team]
 == 示例
 
-示例说明 xref:stable-heading[稳定标题, rel=illustrates, weight=strong]。
+示例说明 xref:regular-heading[常规标题, rel=illustrates, weight=strong]。
 ----
 
 `.example` 是 role。`owner=writing-team` 是标题附加字段。`weight=strong` 是 xref 边证据上的附加字段。
