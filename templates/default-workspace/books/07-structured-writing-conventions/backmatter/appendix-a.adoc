@@ -39,6 +39,7 @@
 
 |`[#stable-id.concept]`
 |声明稳定 ID，并用 role 标明标题身份。
+需要能够回答： “这个标题在整本书的知识体系中扮演什么认知功能”
 
 |`[#example.example, owner=writing-team]`
 |role 声明标题身份；named attributes 保留附加字段。
@@ -55,6 +56,8 @@
 |`indexterm:[relation predicate]`
 |正文隐藏索引词。
 |===
+
+全书标题需要保持 `标题层级连续`。
 
 role 描述标题身份。rel 描述 xref 边上的关系谓词。named attributes 是附加字段。
 

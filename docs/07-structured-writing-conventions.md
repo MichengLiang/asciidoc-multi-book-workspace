@@ -22,8 +22,8 @@
 |---|---|
 | 总文件数 | 20 |
 | 二进制文件 | 0 |
-| 总大小 | 17.4 KB |
-| 总行数 | 483 |
+| 总大小 | 18.3 KB |
+| 总行数 | 499 |
 
 </summary_stats>
 
@@ -33,7 +33,7 @@
 └── 07-structured-writing-conventions
     ├── book.adoc (1.4 KB)
     ├── backmatter
-    │   ├── appendix-a.adoc (3.1 KB)
+    │   ├── appendix-a.adoc (3.2 KB)
     │   ├── bibliography.adoc (0.5 KB)
     │   ├── glossary.adoc (1.0 KB)
     │   └── index.adoc (1.2 KB)
@@ -45,14 +45,14 @@
     │   └── preface.adoc (1.1 KB)
     └── parts
         ├── 010-source-surface
-        │   ├── 010-source-and-projection.adoc (2.3 KB)
+        │   ├── 010-source-and-projection.adoc (3.0 KB)
         │   ├── 020-default-semantics.adoc (1.4 KB)
         │   ├── 030-source-order-notation.adoc (1.4 KB)
         │   └── _partintro.adoc (0.1 KB)
         ├── 020-identity-and-relation
         │   ├── 010-role-identity.adoc (0.7 KB)
         │   ├── 020-relation-predicate.adoc (1.2 KB)
-        │   └── _partintro.adoc (0.2 KB)
+        │   └── _partintro.adoc (0.3 KB)
         └── 030-fields-and-lookup
             ├── 010-surface-fields.adoc (0.6 KB)
             ├── 020-index-and-glossary.adoc (0.5 KB)
@@ -65,7 +65,7 @@
 
 --- NUL
 +++ b/backmatter/appendix-a.adoc
-@@ -0,0 +1,73 @@
+@@ -0,0 +1,76 @@
 = 附录 A：结构化写法速查
 
 [cols="1,2", options="header"]
@@ -107,6 +107,7 @@
 
 |`[#stable-id.concept]`
 |声明稳定 ID，并用 role 标明标题身份。
+需要能够回答： “这个标题在整本书的知识体系中扮演什么认知功能”
 
 |`[#example.example, owner=writing-team]`
 |role 声明标题身份；named attributes 保留附加字段。
@@ -123,6 +124,8 @@
 |`indexterm:[relation predicate]`
 |正文隐藏索引词。
 |===
+
+全书标题需要保持 `标题层级连续`。
 
 role 描述标题身份。rel 描述 xref 边上的关系谓词。named attributes 是附加字段。
 
@@ -265,7 +268,7 @@ indexterm:[中间值插入]
 
 --- NUL
 +++ b/parts/010-source-surface/010-source-and-projection.adoc
-@@ -0,0 +1,70 @@
+@@ -0,0 +1,83 @@
 [#source-and-projection]
 == 源文本与投影
 
@@ -281,6 +284,11 @@ indexterm:[中间值插入]
 
 常规标题提供可引用的阅读单位。
 
+[#basic-syntax.example]
+=== 基本语法
+
+基本语法是常规标题下的直接子标题。
+
 [#xref-rule.rule]
 == 引用规则
 
@@ -288,28 +296,36 @@ indexterm:[中间值插入]
 引用规则依赖 xref:regular-heading[常规标题, rel=depends-on, weight=strong]。
 ----
 
-源文档把 `常规标题` 写成可引用的阅读单位，把 `引用规则` 写成规则说明，并在正文里写出参见和依赖两种引用。
+源文档把 `常规标题` 写成可引用的阅读单位，在其下写出 `基本语法` 子标题，把 `引用规则` 写成规则说明，并在正文里写出参见和依赖两种引用。
+
+Turtle 示例中的 `<urn:aat:doc:...#heading-*>` 和 `<urn:aat:doc:...#xref-edge-*>` 表示投影生成的 IRI；`aat:addressLabel` 保留源文档中的寻址 label。
 
 [source,turtle]
 ----
-:regular-heading a aat:Heading ;
+<urn:aat:doc:...#heading-l3-o0> a aat:Heading ;
   aat:headline "常规标题" ;
   aat:addressLabel "regular-heading" ;
-  aat:role "concept" .
+  aat:role "concept" ;
+  aat:containsDirectly <urn:aat:doc:...#heading-l8-o0> .
 
-:xref-rule a aat:Heading ;
+<urn:aat:doc:...#heading-l8-o0> a aat:Heading ;
+  aat:headline "基本语法" ;
+  aat:addressLabel "basic-syntax" ;
+  aat:role "example" .
+
+<urn:aat:doc:...#heading-l13-o0> a aat:Heading ;
   aat:headline "引用规则" ;
   aat:addressLabel "xref-rule" ;
   aat:role "rule" ;
-  aat:references :regular-heading ;
-  rel:depends-on :regular-heading .
+  aat:references <urn:aat:doc:...#heading-l3-o0> ;
+  rel:depends-on <urn:aat:doc:...#heading-l3-o0> .
 
-:xref-edge-depends-on a aat:XrefEdge ;
+<urn:aat:doc:...#xref-edge-l17-c8-o0> a aat:XrefEdge ;
   aat:rel "depends-on" ;
   aat:weight "strong" .
 ----
 
-读者看源文档，能直接看到 [.concept]#常规标题# 是被引用的阅读单位， [.rule]#引用规则# 说明引用写法。下游投影工具链读取同一份源文档，得到 `aat:Heading`、`aat:addressLabel`、`aat:role`、`aat:references` 和 `rel:depends-on`。
+读者看源文档，能直接看到 [.concept]#常规标题# 是被引用的阅读单位，`基本语法` 是它的下级标题， [.rule]#引用规则# 说明引用写法。投影读取同一份源文档，为标题生成 IRI，并在标题节点上保留 `aat:headline`、`aat:addressLabel` 和 `aat:role`；标题层级投影为 `aat:containsDirectly`，xref 投影为 `aat:references` 和 `rel:depends-on`。
 
 [source,asciidoc]
 ----
@@ -504,7 +520,7 @@ constrains:: 当前标题对目标标题的合法写法或范围施加约束。
 --- NUL
 +++ b/parts/020-identity-and-relation/_partintro.adoc
 @@ -0,0 +1,1 @@
-本部展示标题身份和引用关系。role 标明标题身份；rel 标明引用关系。 书籍中需要主动根据概念结构对各类词表进行建模与约定，方便后续的使用。
+本部展示标题身份和引用关系。role 标明标题身份；rel 标明引用关系。 在书籍中，你需要主动根据你当前所建模的概念结构对各类词表进行建模与约定，需要专门的词表约定章节清晰的写出你需要使用的受控词表，方便后续的使用。
 
 --- NUL
 +++ b/parts/030-fields-and-lookup/010-surface-fields.adoc
