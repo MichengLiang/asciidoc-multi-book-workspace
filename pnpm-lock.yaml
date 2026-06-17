@@ -9,22 +9,22 @@ importers:
   .:
     devDependencies:
       '@asciidoctor/core':
-        specifier: 3.0.4
+        specifier: ^3.0.4
         version: 3.0.4
       '@types/node':
-        specifier: 24.10.1
+        specifier: ^24.10.1
         version: 24.10.1
       asciidoc-abundant-tree:
-        specifier: 0.1.14
-        version: 0.1.14
+        specifier: ^0.1.16
+        version: 0.1.16
       asciidoctor-kroki:
-        specifier: 0.18.1
+        specifier: ^0.18.1
         version: 0.18.1(@asciidoctor/core@3.0.4)
       playwright:
-        specifier: 1.59.1
+        specifier: ^1.59.1
         version: 1.59.1
       typescript:
-        specifier: 5.9.3
+        specifier: ^5.9.3
         version: 5.9.3
 
 packages:
@@ -44,8 +44,8 @@ packages:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
     engines: {node: '>=6.5'}
 
-  asciidoc-abundant-tree@0.1.14:
-    resolution: {integrity: sha512-lbMZcvvO5oboY3LV1SPYdhi0GG+0l6ofzCrBWsKVk4I8PS0cD+aDMXlKqKhxGE4h1ixCIo5sZGe+NiNgg5U2Gw==}
+  asciidoc-abundant-tree@0.1.16:
+    resolution: {integrity: sha512-r1pTL+b8pVgPmILiSrno3VreQ+zJmaFxzpgewhzej89nbMRjH7ETyPAWqeO3WQz7h6uZayaid3QemrT3O36J/A==}
     engines: {node: '>=20.19.0'}
     hasBin: true
 
@@ -196,7 +196,7 @@ snapshots:
     dependencies:
       event-target-shim: 5.0.1
 
-  asciidoc-abundant-tree@0.1.14:
+  asciidoc-abundant-tree@0.1.16:
     dependencies:
       '@asciidoctor/core': 3.0.4
       n3: 2.0.3

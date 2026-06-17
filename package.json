@@ -1,6 +1,6 @@
 {
   "name": "create-asciidoc-multi-book-workspace",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Create a complete AsciiDoc multi-book workspace.",
   "license": "Apache-2.0",
   "author": {
@@ -62,11 +62,11 @@
     "clean": "rm -rf dist build"
   },
   "devDependencies": {
-    "@asciidoctor/core": "3.0.4",
-    "@types/node": "24.10.1",
-    "asciidoc-abundant-tree": "0.1.14",
-    "asciidoctor-kroki": "0.18.1",
-    "playwright": "1.59.1",
-    "typescript": "5.9.3"
+    "@asciidoctor/core": "^3.0.4",
+    "@types/node": "^24.10.1",
+    "asciidoc-abundant-tree": "^0.1.16",
+    "asciidoctor-kroki": "^0.18.1",
+    "playwright": "^1.59.1",
+    "typescript": "^5.9.3"
   }
 }

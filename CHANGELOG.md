@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.10 - 2026-06-17
+
+### Changed
+
+- Update the maintainer dependency range for `asciidoc-abundant-tree` to `^0.1.16` and refresh the lockfile.
+- Allow compatible maintainer dependency revisions through caret ranges while preserving the current resolved toolchain versions.
+
 ## 0.1.9 - 2026-06-17
 
 ### Added
