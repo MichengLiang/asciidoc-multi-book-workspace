@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.11 - 2026-06-17
+
+### Fixed
+
+- Synchronize the generated workspace dependency template with the `asciidoc-abundant-tree` `^0.1.16` toolchain update.
+- Correct the README usage example and generated workspace dependency list.
+
 ## 0.1.10 - 2026-06-17
 
 ### Changed

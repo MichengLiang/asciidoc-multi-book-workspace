@@ -7,8 +7,8 @@ It creates a user-owned workspace with sample books, a catalog, shared assets, e
 ## Usage
 
 ```bash
-pnpm create asciidoc-multi-book-workspace my-books
-cd my-books
+pnpm create asciidoc-multi-book-workspace bookshelf
+cd bookshelf
 pnpm install
 pnpm run build
 ```
@@ -62,7 +62,7 @@ It does not include this repository's `test/`, `.github/`, `src/`, `dist/`, `DES
 
 The generated `package.json` directly lists the AsciiDoc toolchain:
 
-- `asciidoctor`
+- `@asciidoctor/core`
 - `asciidoc-abundant-tree`
 - `asciidoctor-kroki`
 
