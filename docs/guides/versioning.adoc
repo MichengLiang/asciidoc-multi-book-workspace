@@ -1,0 +1,100 @@
+= Versioning Policy
+:toc: left
+:toclevels: 3
+:sectnums:
+:doctype: article
+:encoding: utf-8
+
+== Version Surface
+
+发布版本由多个版本表面共同承载。`package.json` 中的 `version` 是 npm 包内容的版本表面。`.release-please-manifest.json` 中的版本是 Release Please 的状态表面。GitHub Release tag 使用 `create-asciidoc-multi-book-workspace-vX.Y.Z`。npm registry 中的 published version 是外部安装者看到的版本表面。
+
+一次发布只对应一个版本号。版本号进入发布状态后，包元数据、release manifest、GitHub Release tag 和 npm registry 版本应指向同一个 `X.Y.Z`。这些表面不承担相同职责，但它们共同定义同一次发布的坐标。
+
+`CHANGELOG.md` 记录已经发布的版本。它说明版本坐标下包含的可见变化。它不决定版本号；版本号由待发布对象的外部表面决定。
+
+== Version Coordinates
+
+版本号使用 `MAJOR.MINOR.PATCH`。三个位置按数值递增。
+
+`PATCH` 表示兼容修订。修订可以改变文档、样例文本、测试、内部构建、发布元数据和不改变外部使用方式的运行时行为。修订发布不要求使用者修改安装命令、调用方式、生成工作区的基本维护方式或已经公开的配置形状。
+
+`MINOR` 表示新增外部能力。新增能力进入 npm 包、CLI、公开 API、生成工作区结构、默认样例契约或用户可依赖的运行时行为时，版本号进入下一个 minor。新增能力可以保持兼容，但它扩大了外部使用者可依赖的表面。
+
+`MAJOR` 表示不兼容变更。包名、命令入口、公开 API、生成工作区契约、运行命令、配置形状、输出路径、Node 支持范围或已公开运行时行为发生不兼容变化时，版本号进入下一个 major。
+
+`0.x` 阶段仍使用这三个坐标。`0.x` 不提供 `1.x` 阶段的稳定性承诺，但 npm 包已经向外部发布；安装者仍然依赖版本坐标判断升级风险。`0.x` 的 minor 可以承载较大的产品形状变化，patch 仍应保留兼容修订的含义。
+
+== Public Surface
+
+版本判定从 public surface 开始。public surface 是外部使用者可以依赖的对象集合。
+
+本包的 public surface 包括：
+
+* npm package name：`create-asciidoc-multi-book-workspace`
+* initializer 命令和安装入口
+* package root export
+* `initWorkspace` 的可见输入与返回结果
+* 生成工作区的文件结构
+* 生成工作区的 package scripts
+* 生成工作区的 AsciiDoc toolchain 声明
+* 默认模板中的样例书集合
+* 默认模板中可被用户引用、复制或改造的样例契约
+* `tools/adoc-books.mjs` 在生成工作区中的可见构建、检查和清理行为
+* README 中承诺的使用方式
+
+内部维护文件不单独构成 public surface。`src/`、`test/`、`DESIGN.adoc`、CI workflow 和 maintainer preview output 影响维护质量，但不会因为自身变化直接要求 minor 或 major。它们影响版本号的条件，是它们改变了外部使用者可依赖的对象。
+
+默认样例内容更新通常进入 patch。样例内容可以澄清概念、补充说明、修正文案、更新示例数据或扩展示范文本，只要生成工作区的基本使用方式不变。
+
+默认样例契约新增可依赖能力时进入 minor。新增样例书、增加用户可直接复用的模板结构、公开新的配置表面、增加新的生成输出行为，属于外部表面扩展。
+
+默认模板中的既有路径、命令、入口或可见行为被移除、重命名或改形状时，需要不兼容评估。若既有使用者需要迁移，版本进入 major。
+
+== Commit-Derived Version Candidates
+
+Conventional Commits 提交类型生成版本候选。版本候选用于自动化工具整理待发布变更；发布版本由待发布对象的外部表面决定。
+
+`fix:` 通常生成 patch 候选。`feat:` 通常生成 minor 候选。提交头中的 breaking marker 或正文中的 `BREAKING CHANGE` 通常生成 major 候选。
+
+提交类型不是发布对象本身。同一个提交类型在不同 public surface 下可能对应不同发布坐标。文档修订可以使用 `docs:` 而不进入发布版本。测试契约更新可以使用 `test:` 而不改变外部行为。维护者发布提交可以使用 `chore: release X.Y.Z` 记录版本表面的同步。
+
+自动化工具读取提交历史。维护者读取发布对象。两者不在同一层级。工具输出的候选版本需要被 public surface 规则解释后才能进入发布状态。
+
+== Release Please State
+
+Release Please 读取 release config、release manifest、GitHub releases、Git tags 和 Conventional Commits 历史，生成 release pull request 或 GitHub Release。
+
+`.release-please-manifest.json` 记录 Release Please 认为的当前版本。该文件是工具状态，不是唯一版本来源。它必须与 `package.json`、GitHub Release tag 和 npm published version 保持一致。
+
+Release Please 在 `main` push 后自动运行时，会立即读取当时的 release state。若版本提交先进入 `main`，而对应 GitHub Release tag 尚未创建，工具可能无法把该版本识别为已经发布的边界。若历史中存在早期 `feat:` 或 `fix:` 提交没有被工具识别为已发布，工具可能生成高于维护者意图的候选版本。
+
+本仓库采用维护者判定版本的制度。Release Please 不在 `main` push 后自动创建 release PR。需要使用 Release Please 时，应由维护者手动触发 workflow，并以 public surface 规则审查候选版本。
+
+== Version Decision Rules
+
+发布前先确定待发布对象的 public surface。
+
+public surface 未扩展且未破坏既有使用方式时，版本进入 patch。
+
+public surface 增加新的兼容能力时，版本进入 minor。
+
+public surface 改变既有使用者的成功条件时，版本进入 major。
+
+只改变内部维护方式时，不单独提高版本坐标。内部变化如果改变了外部使用方式，按外部变化判定。
+
+只改变发布元数据时，版本通常进入 patch。发布元数据包括 changelog、manifest、package version、release note 和 tag 对齐。
+
+工具生成的版本候选不得覆盖 public surface 判定。候选版本与维护者判定不一致时，先校准工具状态或关闭候选 PR，再发布维护者确认的版本。
+
+== Examples
+
+文档修订、测试契约同步、样例说明扩写和 changelog 修订属于 patch，只要生成工作区的安装方式、命令入口和已公开行为不变。
+
+新增 `initWorkspace` option 属于 minor，只要既有调用方式继续工作。该变化扩大 package root export 的使用表面。
+
+新增默认样例书通常属于 minor。它改变生成工作区中的样例集合，并扩大用户可以直接阅读、复制或改造的模板表面。
+
+重命名生成工作区中的既有 script 属于 major。既有用户的 `pnpm run build`、`pnpm run check` 或 `pnpm run clean` 依赖这些命令。
+
+Release Please 从历史 `feat:` 提交生成 `0.2.0` 候选，而维护者已经发布 `0.1.9` patch 时，不合并候选 PR。处理对象是工具状态，不是版本号本身。维护者应关闭候选 PR，校准 release state，并保持 manifest、tag、GitHub Release 和 npm registry 的版本一致。

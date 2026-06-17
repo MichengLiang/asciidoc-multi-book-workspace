@@ -112,9 +112,11 @@ or the initializer contract. Use `pnpm run preview:build` for normal template ed
 
 ## Releases
 
-Release Please manages release pull requests and `CHANGELOG.md`.
+Release Please can be run manually to generate candidate release pull requests and `CHANGELOG.md` updates.
 
 Publishing to npm happens from published GitHub releases. The publish workflow runs `pnpm run check` before `pnpm publish` and uses the repository `NPM_TOKEN` secret.
+
+Version coordinates and release automation state are defined in [Versioning Policy](docs/guides/versioning.adoc).
 
 ## License
 
