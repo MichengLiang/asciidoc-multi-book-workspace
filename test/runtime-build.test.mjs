@@ -168,7 +168,7 @@ test("runtime build creates HTML, assets, home links, source bundles, and root i
   );
   assert.equal(
     pageMap.pages.find((page) => page.title === "源文本与投影")?.source?.relativePath,
-    "books/07-structured-writing-conventions/parts/100-source-surface/010-source-and-projection.adoc"
+    "books/07-structured-writing-conventions/parts/010-source-surface/010-source-and-projection.adoc"
   );
   assert.deepEqual(
     pageMap.pages.slice(-4).map((page) => page.kind),
