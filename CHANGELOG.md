@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.9 - 2026-06-17
+
+### Added
+
+- Add design notes for the `0X0` source-order numbering scheme used by structured writing sample books.
+- Add a reference note on book structure, front matter, body matter, and back matter for authors modeling AsciiDoc books.
+- Expand the structured writing conventions sample with heading containment, generated projection IRI, stable address label, and xref edge examples.
+
+### Changed
+
+- Use the same three-digit `0X0` numbering format for structured writing sample Part directories and Chapter files.
+- Clarify when authors should declare stable IDs versus relying on globally unique, stable title text as the xref target.
+- Tighten the sample guidance for role vocabularies, rel predicates, heading level continuity, pass macros, callouts, and large-scope xrefs.
+
 ## 0.1.8 - 2026-06-14
 
 ### Fixed
