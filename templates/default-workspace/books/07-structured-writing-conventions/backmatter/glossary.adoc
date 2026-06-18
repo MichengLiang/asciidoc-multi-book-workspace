@@ -14,5 +14,5 @@ ordinary reference:: 普通 xref。投影时使用默认谓词 `aat:references`�
 relation predicate:: xref `rel` 字段选择的边谓词。
 source heading:: xref 所在的标题。
 target heading:: xref selector 指向的标题。
-surface field:: named attributes 携带的源文档表面字段。
+surface field:: 源文档表面的附加字段。标题字段可来自标题 attrlist 或标题下描述列表；xref 边字段来自 xref named attributes。
 index term:: 服务书后索引和读者检索的索引入口。

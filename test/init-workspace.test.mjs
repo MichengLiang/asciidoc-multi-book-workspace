@@ -79,7 +79,7 @@ test("initWorkspace renders user package.json with visible AsciiDoc dependencies
   assert.equal(packageJson.packageManager, "pnpm@10.33.0");
   assert.equal("@asciidoctor/reducer" in packageJson.devDependencies, false);
   assert.equal(packageJson.devDependencies["@asciidoctor/core"], "^3.0.4");
-  assert.equal(packageJson.devDependencies["asciidoc-abundant-tree"], "^0.1.16");
+  assert.equal(packageJson.devDependencies["asciidoc-abundant-tree"], "^0.1.18");
   assert.equal("asciidoctor" in packageJson.devDependencies, false);
   assert.equal(packageJson.devDependencies["asciidoctor-kroki"], "^0.18.1");
 });

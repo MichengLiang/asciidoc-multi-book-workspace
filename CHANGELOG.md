@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.12 - 2026-06-19
+
+### Changed
+
+- Expand the structured writing conventions sample to document title fields written as description lists, including multi-line field values.
+- Update the maintainer and generated workspace `asciidoc-abundant-tree` dependency range to `^0.1.18` so new workspaces use the matching projection toolchain.
+
 ## 0.1.11 - 2026-06-17
 
 ### Fixed

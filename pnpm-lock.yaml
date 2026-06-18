@@ -15,8 +15,8 @@ importers:
         specifier: ^24.10.1
         version: 24.10.1
       asciidoc-abundant-tree:
-        specifier: ^0.1.16
-        version: 0.1.16
+        specifier: ^0.1.18
+        version: 0.1.18
       asciidoctor-kroki:
         specifier: ^0.18.1
         version: 0.18.1(@asciidoctor/core@3.0.4)
@@ -44,8 +44,8 @@ packages:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
     engines: {node: '>=6.5'}
 
-  asciidoc-abundant-tree@0.1.16:
-    resolution: {integrity: sha512-r1pTL+b8pVgPmILiSrno3VreQ+zJmaFxzpgewhzej89nbMRjH7ETyPAWqeO3WQz7h6uZayaid3QemrT3O36J/A==}
+  asciidoc-abundant-tree@0.1.18:
+    resolution: {integrity: sha512-6oM7w23rrIPFruvRmLPek2LHXl7N6bhEV/PqsSo0pynFDepqwuErXEAQIMjRpRgE5K2780TvcStJICI75Y3VCA==}
     engines: {node: '>=20.19.0'}
     hasBin: true
 
@@ -196,7 +196,7 @@ snapshots:
     dependencies:
       event-target-shim: 5.0.1
 
-  asciidoc-abundant-tree@0.1.16:
+  asciidoc-abundant-tree@0.1.18:
     dependencies:
       '@asciidoctor/core': 3.0.4
       n3: 2.0.3

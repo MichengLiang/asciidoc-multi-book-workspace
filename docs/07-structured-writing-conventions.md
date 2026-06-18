@@ -22,8 +22,8 @@
 |---|---|
 | 总文件数 | 20 |
 | 二进制文件 | 0 |
-| 总大小 | 18.3 KB |
-| 总行数 | 499 |
+| 总大小 | 19.5 KB |
+| 总行数 | 521 |
 
 </summary_stats>
 
@@ -33,9 +33,9 @@
 └── 07-structured-writing-conventions
     ├── book.adoc (1.4 KB)
     ├── backmatter
-    │   ├── appendix-a.adoc (3.2 KB)
-    │   ├── bibliography.adoc (0.5 KB)
-    │   ├── glossary.adoc (1.0 KB)
+    │   ├── appendix-a.adoc (3.5 KB)
+    │   ├── bibliography.adoc (0.6 KB)
+    │   ├── glossary.adoc (1.1 KB)
     │   └── index.adoc (1.2 KB)
     ├── frontmatter
     │   ├── abstract.adoc (0.2 KB)
@@ -54,7 +54,7 @@
         │   ├── 020-relation-predicate.adoc (1.2 KB)
         │   └── _partintro.adoc (0.3 KB)
         └── 030-fields-and-lookup
-            ├── 010-surface-fields.adoc (0.6 KB)
+            ├── 010-surface-fields.adoc (1.3 KB)
             ├── 020-index-and-glossary.adoc (0.5 KB)
             └── _partintro.adoc (0.1 KB)
 ```
@@ -65,7 +65,7 @@
 
 --- NUL
 +++ b/backmatter/appendix-a.adoc
-@@ -0,0 +1,76 @@
+@@ -0,0 +1,79 @@
 = 附录 A：结构化写法速查
 
 [cols="1,2", options="header"]
@@ -112,6 +112,9 @@
 |`[#example.example, owner=writing-team]`
 |role 声明标题身份；named attributes 保留附加字段。
 
+|`summary::` + 下一行说明文本
+|标题下描述列表字段。用于较多字段或多行字段值。
+
 |`xref:stable-id[显示文本]`
 |显示为链接，投影为 references。
 
@@ -127,7 +130,7 @@
 
 全书标题需要保持 `标题层级连续`。
 
-role 描述标题身份。rel 描述 xref 边上的关系谓词。named attributes 是附加字段。
+role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段可以写在标题 attrlist、标题下描述列表或 xref named attributes 中。
 
 `[appendix]`、`[glossary]`、`[bibliography]` 和 `[index]` 是 section style。它们改变紧随其后 section 的语义；标题层级仍由 `=` 数量决定。
 
@@ -137,7 +140,7 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。named attribut
 
 如果你的建模中存在需要对一段区域精准指向、提及的情况，可以考虑使用 **更小一级/更小一节** 的标题把这段区域划分出来，之后就可以继续使用 `xref` 进行交叉引用。
 
-在 Asciidoc 中使用 pass:[] 宏可以表达透传，不会被解析，使用反引号包裹可以获得字体样式。
+如果文章中出现 Asciidoc 自己的语法，通过反引号包裹依然会被解析，必须使用 pass:[] 宏才可以表达透传，不会被解析，使用反引号包裹可以获得字体样式。
 
 如果遇到“代码/日志”与其“文字解释”需要分离的场景，可以考虑使用 Asciidoc 的 Callouts。
 
@@ -145,13 +148,14 @@ TIP: 在你写作的过程中，你可以思考有哪些 Asciidoc 语法/表达 
 
 --- NUL
 +++ b/backmatter/bibliography.adoc
-@@ -0,0 +1,7 @@
+@@ -0,0 +1,8 @@
 = 参考坐标
 
-以下资料提供 AsciiDoc 标题、交叉引用和元素属性的参考坐标。
+以下资料提供 AsciiDoc 标题、交叉引用、元素属性和描述列表的参考坐标。
 
 * [[[asciidoctor-xref]]] Asciidoctor Docs, Cross References, https://docs.asciidoctor.org/asciidoc/latest/macros/xref/
 * [[[asciidoctor-attributes]]] Asciidoctor Docs, Element Attributes, https://docs.asciidoctor.org/asciidoc/latest/attributes/element-attributes/
+* [[[asciidoctor-description-lists]]] Asciidoctor Docs, Description Lists, https://docs.asciidoctor.org/asciidoc/latest/lists/description/
 * [[[asciidoctor-sections]]] Asciidoctor Docs, Sections, https://docs.asciidoctor.org/asciidoc/latest/sections/
 
 --- NUL
@@ -173,12 +177,12 @@ ordinary reference:: 普通 xref。投影时使用默认谓词 `aat:references`�
 relation predicate:: xref `rel` 字段选择的边谓词。
 source heading:: xref 所在的标题。
 target heading:: xref selector 指向的标题。
-surface field:: named attributes 携带的源文档表面字段。
+surface field:: 源文档表面的附加字段。标题字段可来自标题 attrlist 或标题下描述列表；xref 边字段来自 xref named attributes。
 index term:: 服务书后索引和读者检索的索引入口。
 
 --- NUL
 +++ b/backmatter/index.adoc
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,39 @@
 = 索引
 
 索引 section 位于书籍后置区域。正文中的索引词宏是索引词来源。
@@ -216,6 +220,7 @@ indexterm2:[role]
 indexterm:[relation predicate]
 indexterm:[源文件编排号]
 indexterm:[中间值插入]
+indexterm:[描述列表]
 ----
 
 --- NUL
@@ -223,7 +228,7 @@ indexterm:[中间值插入]
 @@ -0,0 +1,3 @@
 == 摘要
 
-本书展示标题、稳定 ID、role、xref、rel 和 named attributes 形成可读、可维护、可投影的源文档的方式。作者可按写作目的选择其中写法。
+本书展示标题、稳定 ID、role、xref、rel 和附加字段形成可读、可维护、可投影的源文档的方式。作者可按写作目的选择其中写法。
 
 --- NUL
 +++ b/frontmatter/acknowledgments.adoc
@@ -259,11 +264,11 @@ indexterm:[中间值插入]
 长期引用且标题文本可能变更的标题使用稳定 ID；
 若标题本身已是唯一且稳定的实体名称，标题文本直接作为引用地址。
 带有明确身份的标题使用 role；表达关系的引用使用 rel；
-随源稿保留的字段使用 named attributes。
+随源稿保留的短字段使用 named attributes；字段较多或需要多行值的标题字段使用标题下描述列表。
 
 业务含义由书稿自己的约定承载。本书展示同一份 AsciiDoc 源文本如何同时服务阅读、维护和工具链投影。
 
-通过展示标题、稳定 ID、role、xref、rel 和 named attributes 如何形成可读、可维护、可投影的源文档，让你能够理解，你可以拥有一种这样的表达方式，可以按照某种约定，就能够提升你书籍的质量，能够让下游的工具链继续消费你的书。 你可以参考本书里你所需要的结构。
+通过展示标题、稳定 ID、role、xref、rel 和附加字段如何形成可读、可维护、可投影的源文档，让你能够理解，你可以拥有一种这样的表达方式，可以按照某种约定，就能够提升你书籍的质量，能够让下游的工具链继续消费你的书。 你可以参考本书里你所需要的结构。
 合适的结构能够提升书籍的可阅读、可维护性。你可以按写作目的选择其中写法。
 
 --- NUL
@@ -520,15 +525,15 @@ constrains:: 当前标题对目标标题的合法写法或范围施加约束。
 --- NUL
 +++ b/parts/020-identity-and-relation/_partintro.adoc
 @@ -0,0 +1,1 @@
-本部展示标题身份和引用关系。role 标明标题身份；rel 标明引用关系。 在书籍中，你需要主动根据你当前所建模的概念结构对各类词表进行建模与约定，需要专门的词表约定章节清晰的写出你需要使用的受控词表，方便后续的使用。
+本部展示标题身份和引用关系。role 标明标题身份；rel 标明引用关系。 在书籍中，你需要主动根据你当前所建模的概念结构对各类词表（`role`、`rel` 或者其他更多）进行建模与约定，需要专门的词表约定章节清晰的写出你需要使用的受控词表，方便后续的使用。
 
 --- NUL
 +++ b/parts/030-fields-and-lookup/010-surface-fields.adoc
-@@ -0,0 +1,18 @@
+@@ -0,0 +1,35 @@
 [#surface-fields]
 == 附加字段
 
-named attributes 是写在源文档表面的字段。
+附加字段是写在源文档表面的键值信息。标题字段可以写在标题 attrlist 或标题下描述列表中；xref 边证据字段写在 xref named attributes 中。
 
 [source,asciidoc]
 ----
@@ -541,6 +546,23 @@ named attributes 是写在源文档表面的字段。
 `.example` 是 role。`owner=writing-team` 是标题附加字段。`weight=strong` 是 xref 边证据上的附加字段。
 
 `owner=writing-team` 写在标题 attrlist 中，投影时成为标题字段。`weight=strong` 写在 xref 中，投影时成为边证据字段。
+
+标题字段较少且值较短时，写在标题 attrlist 中。标题字段较多，或字段值需要换行时，写在标题下的第一个连续描述列表中。indexterm:[描述列表]
+
+[source,asciidoc]
+----
+[#rule.example, status=active]
+== 示例规则
+
+priority:: normal
+summary::
+示例规则说明标题字段的描述列表写法。
+多行说明保留为同一个标题字段。
+
+示例规则正文从这里开始。
+----
+
+`priority:: normal` 和 `summary::` 属于 `示例规则` 标题的附加字段。投影时它们成为标题字段，例如 `aat:priority` 和 `aat:summary`。
 
 字段名和字段值来自本书自己的约定。同一本书使用附加字段时，应保持字段写法和字段含义稳定。
 
