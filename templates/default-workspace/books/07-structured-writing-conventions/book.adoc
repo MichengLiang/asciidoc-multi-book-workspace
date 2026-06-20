@@ -61,6 +61,9 @@ include::parts/030-fields-and-lookup/020-index-and-glossary.adoc[]
 [appendix]
 include::backmatter/appendix-a.adoc[]
 
+[appendix]
+include::backmatter/appendix-b-decision-trees.adoc[]
+
 [glossary]
 include::backmatter/glossary.adoc[]
 

@@ -1,3 +1,4 @@
+[#structured-writing-quick-reference]
 = 附录 A：结构化写法速查
 
 [cols="1,2", options="header"]
@@ -76,4 +77,4 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段�
 
 如果遇到“代码/日志”与其“文字解释”需要分离的场景，可以考虑使用 Asciidoc 的 Callouts。
 
-TIP: 在你写作的过程中，你可以思考有哪些 Asciidoc 语法/表达 适合你当前的所撰写的对象，然后选择合适的并应用。
+结构化写法的选择由当前对象、引用需求、投影需求和维护成本共同决定。具体判定流程见 xref:structured-writing-decision-trees[附录 B：结构化写法决策树]。
