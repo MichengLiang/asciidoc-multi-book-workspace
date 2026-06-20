@@ -111,7 +111,16 @@ const requiredPatterns = new Map([
       "rel:depends-on",
       "aat:containsDirectly",
       "[.concept]",
-      "[.rule]"
+      "[.rule]",
+      "附录 B：结构化写法决策树",
+      "标题生成与层级拓扑控制",
+      "stable ID 的生命周期与寻址机制",
+      "role 的作用域与语境管理",
+      "xref 与 rel 关系谓词建立",
+      "surface field 落位策略",
+      "源文件物理编排与编号运算",
+      "index term 落位",
+      "语法透传与 callouts"
     ]
   ]
 ]);

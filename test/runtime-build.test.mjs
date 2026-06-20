@@ -22,7 +22,16 @@ const structuredWritingPageSequence = [
   ["part", "part-字段索引与术语", "字段、索引与术语"],
   ["chapter", "surface-fields", "附加字段"],
   ["chapter", "index-and-glossary", "索引词与术语表"],
-  ["appendix", "附录-a结构化写法速查", "附录 A：结构化写法速查"],
+  ["appendix", "structured-writing-quick-reference", "附录 A：结构化写法速查"],
+  ["appendix", "structured-writing-decision-trees", "附录 B：结构化写法决策树"],
+  ["chapter", "标题生成与层级拓扑控制", "标题生成与层级拓扑控制"],
+  ["chapter", "stable-id-的生命周期与寻址机制", "stable ID 的生命周期与寻址机制"],
+  ["chapter", "role-的作用域与语境管理", "role 的作用域与语境管理"],
+  ["chapter", "xref-与-rel-关系谓词建立", "xref 与 rel 关系谓词建立"],
+  ["chapter", "surface-field-落位策略", "surface field 落位策略"],
+  ["chapter", "源文件物理编排与编号运算", "源文件物理编排与编号运算"],
+  ["chapter", "index-term-落位", "index term 落位"],
+  ["chapter", "语法透传与-callouts", "语法透传与 callouts"],
   ["glossary", "术语表", "术语表"],
   ["bibliography", "参考坐标", "参考坐标"],
   ["index", "索引", "索引"]
@@ -171,8 +180,12 @@ test("runtime build creates HTML, assets, home links, source bundles, and root i
     "books/07-structured-writing-conventions/parts/010-source-surface/010-source-and-projection.adoc"
   );
   assert.deepEqual(
-    pageMap.pages.slice(-4).map((page) => page.kind),
-    ["appendix", "glossary", "bibliography", "index"]
+    pageMap.pages.filter((page) => page.kind === "appendix").map((page) => page.title),
+    ["附录 A：结构化写法速查", "附录 B：结构化写法决策树"]
+  );
+  assert.deepEqual(
+    pageMap.pages.slice(-3).map((page) => page.kind),
+    ["glossary", "bibliography", "index"]
   );
   assert.match(structuredWriting, /data-multi-book-view-toggle/);
   assert.match(structuredWriting, />连续<\/button>/);

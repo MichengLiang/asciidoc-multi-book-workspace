@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.13 - 2026-06-21
+
+### Changed
+
+- Expand the structured writing conventions sample with a decision-tree appendix for heading topology, stable IDs, roles, xrefs, surface fields, source numbering, index terms, and syntax pass-through choices.
+- Update the structured writing quick reference and default semantics guidance to point authors toward the new decision-tree workflow.
+
 ## 0.1.12 - 2026-06-19
 
 ### Changed
