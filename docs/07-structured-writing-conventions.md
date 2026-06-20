@@ -20,10 +20,10 @@
 
 | 项目 | 数量 |
 |---|---|
-| 总文件数 | 20 |
+| 总文件数 | 21 |
 | 二进制文件 | 0 |
-| 总大小 | 19.5 KB |
-| 总行数 | 521 |
+| 总大小 | 26.5 KB |
+| 总行数 | 690 |
 
 </summary_stats>
 
@@ -31,9 +31,10 @@
 
 ```
 └── 07-structured-writing-conventions
-    ├── book.adoc (1.4 KB)
+    ├── book.adoc (1.5 KB)
     ├── backmatter
-    │   ├── appendix-a.adoc (3.5 KB)
+    │   ├── appendix-a.adoc (3.6 KB)
+    │   ├── appendix-b-decision-trees.adoc (6.9 KB)
     │   ├── bibliography.adoc (0.6 KB)
     │   ├── glossary.adoc (1.1 KB)
     │   └── index.adoc (1.2 KB)
@@ -46,7 +47,7 @@
     └── parts
         ├── 010-source-surface
         │   ├── 010-source-and-projection.adoc (3.0 KB)
-        │   ├── 020-default-semantics.adoc (1.4 KB)
+        │   ├── 020-default-semantics.adoc (1.3 KB)
         │   ├── 030-source-order-notation.adoc (1.4 KB)
         │   └── _partintro.adoc (0.1 KB)
         ├── 020-identity-and-relation
@@ -65,7 +66,8 @@
 
 --- NUL
 +++ b/backmatter/appendix-a.adoc
-@@ -0,0 +1,79 @@
+@@ -0,0 +1,80 @@
+[#structured-writing-quick-reference]
 = 附录 A：结构化写法速查
 
 [cols="1,2", options="header"]
@@ -144,7 +146,177 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段�
 
 如果遇到“代码/日志”与其“文字解释”需要分离的场景，可以考虑使用 Asciidoc 的 Callouts。
 
-TIP: 在你写作的过程中，你可以思考有哪些 Asciidoc 语法/表达 适合你当前的所撰写的对象，然后选择合适的并应用。
+结构化写法的选择由当前对象、引用需求、投影需求和维护成本共同决定。具体判定流程见 xref:structured-writing-decision-trees[附录 B：结构化写法决策树]。
+
+--- NUL
++++ b/backmatter/appendix-b-decision-trees.adoc
+@@ -0,0 +1,166 @@
+[#structured-writing-decision-trees]
+= 附录 B：结构化写法决策树
+
+== 标题生成与层级拓扑控制
+
+触发场景:: 作者准备在源文档中创建新的标题节点。
+
+[source,text]
+----
+1. 当前标题是否为文档大标题？
+   ├─ 是：使用 `= 书名`，并放置于文档首行。流程结束。
+   └─ 否：评估逻辑层级。
+
+2. 当前标题与紧邻上级标题的层级关系是否连续？
+   ├─ 否：补充中间层级标题，保持标题层级连续；回到节点 2 重新评估。
+   └─ 是：评估区域划分。
+
+3. 当前标题下的文本区域后续是否需要被精准指向或提及？
+   ├─ 是：使用更小一级标题将该区域独立划分，后续用 xref 指向该标题。流程结束。
+   └─ 否：评估 section style。
+
+4. 当前标题是否承载附录、术语表、参考文献或索引等后置结构？
+   ├─ 是：在等号标题上方声明对应 section style：
+   │      `[appendix]`、`[glossary]`、`[bibliography]` 或 `[index]`。
+   │      section style 改变紧随其后 section 的语义；标题层级仍由 `=` 数量决定。
+   │      流程结束。
+   └─ 否：写入标准等号标题。流程结束。
+----
+
+== stable ID 的生命周期与寻址机制
+
+触发场景:: 作者评估是否需要为当前标题显式声明寻址 ID。
+
+[source,text]
+----
+1. 当前标题文本是否已是领域内唯一且稳定的标识符？
+   ├─ 是：不声明 `[#stable-id]`；直接使用标题文本作为引用地址。流程结束。
+   └─ 否：评估交叉引用状态。
+
+2. 该标题在全书范围内是否被至少一个 `xref` 交叉引用？
+   ├─ 否：不声明 `[#stable-id]`。流程结束。
+   └─ 是：在等号标题上方的 attrlist 中显式声明 `[#stable-id]`。流程结束。
+----
+
+触发场景:: 项目全局构建或审查阶段检查 stable ID 消费状态。
+
+[source,text]
+----
+1. 扫描源文件中所有手工显式声明的 `[#stable-id]`。
+   ├─ 每个 ID 对应的 xref 引用次数 >= 1：保留声明，审查通过。
+   └─ 某个 ID 对应的 xref 引用次数 == 0：移除该 `[#stable-id]` 声明。
+----
+
+== role 的作用域与语境管理
+
+触发场景:: 作者为标题标记认知功能与身份语义。
+前提:: 当前书稿已经约定 role 受控词表，例如 `.concept`、`.rule`、`.example`。
+
+[source,text]
+----
+1. 当前标题是否为其父标题的下级标题？
+   ├─ 否：从受控词表中选取匹配当前语境的 role，写入标题 attrlist。流程结束。
+   └─ 是：评估语境连续性。
+
+2. 当前子标题承载的认知角色是否与父标题声明的 role 相同？
+   ├─ 是：不重复声明 role；下级标题默认属于同一角色范围。流程结束。
+   └─ 否：从受控词表中选取匹配新语境的 role，显式写入当前标题 attrlist。
+          该声明完成语境切换。流程结束。
+----
+
+== xref 与 rel 关系谓词建立
+
+触发场景:: 作者在正文中写入指向其他标题节点的交叉引用。
+
+[source,text]
+----
+1. 当前引用是否跨越 `= 书名`、`= 卷/部`、`== 章` 等大跨度指代？
+   ├─ 是：手动写入 `xref`，平衡隐式上下文的阅读压力；进入关系评估。
+   └─ 否：评估文件位置。
+
+2. 目标标题是否位于不同的物理源文件中？
+   ├─ 是：在文档头部定义文档属性存储基础路径；
+   │      后续通过该属性调用基础路径进行跨文件引用；进入关系评估。
+   └─ 否：进入关系评估。
+
+3. 引用目的是什么？
+   ├─ 表达阅读顺序、先读建议或普通参见：
+   │      写入普通 xref，例如 `xref:target-id[显示文本]`。
+   │      投影为默认谓词 `aat:references`。流程结束。
+   └─ 声明明确的逻辑关系边：选取 `rel` 谓词。
+
+4. 根据全书约定的关系谓词选择 `rel`。
+   ├─ 当前标题的判断、规则或操作以目标标题为依据：使用 `rel=depends-on`。
+   ├─ 当前标题提供目标标题的示例：使用 `rel=illustrates`。
+   ├─ 当前标题给出目标标题所代表对象的定义：使用 `rel=defines`。
+   └─ 当前标题对目标标题的合法写法或范围施加约束：使用 `rel=constrains`。
+----
+
+== surface field 落位策略
+
+触发场景:: 作者为 heading 节点或 xref 边挂载键值信息。
+
+[source,text]
+----
+1. 字段描述的主体是什么？
+   ├─ xref 引用边：将字段写入 xref 的 named attributes 中。流程结束。
+   └─ heading 标题节点：评估字段体积。
+
+2. heading 字段数量和长度是否适合写入标题 attrlist？
+   ├─ 字段较少，且字段值较短：写入标题前方 attrlist。
+   │      例如 `[owner=writing-team, status=active]`。流程结束。
+   └─ 字段较多，或包含多行字段值：
+          写入紧随标题下方的第一个连续描述列表。
+          例如 `key:: value`。流程结束。
+----
+
+== 源文件物理编排与编号运算
+
+触发场景:: 作者为 Part 目录或 Chapter 源文件生成文件编排号。
+前提:: Part 目录和 Chapter 文件统一使用三位数 `0X0` 格式；初始序列步长为 10，例如 `010`、`020`、`030`。
+
+[source,text]
+----
+1. 新文件在逻辑序列中的位置是什么？
+   ├─ 位于当前既有序列的最后方：执行末尾追加。
+   └─ 位于当前既有文件 A 与文件 B 之间：执行中间插入。
+
+2. 末尾追加：
+   提取当前同级列表中的最大编号，将其十位数字加 1，个位保持 0。
+   流程结束。
+
+3. 中间插入：
+   提取上文文件 A 和下文文件 B 的编号，计算两者的算术中间值。
+   例如在 `010` 与 `020` 之间插入，使用 `015`。
+   流程结束。
+----
+
+== index term 落位
+
+触发场景:: 作者为读者检索和书后索引添加索引入口。
+
+[source,text]
+----
+1. 索引目标词是否已经自然出现在当前正文句子中？
+   ├─ 是：使用正文可见索引词宏 `indexterm2:[<primary>]` 包裹该词。
+   │      正文保持可见，同时提取为一级索引项。流程结束。
+   └─ 否：使用正文隐藏索引词宏 `indexterm:[<primary>]`。
+          按需使用多级形式，例如 `indexterm:[<primary>, <secondary>]`。
+          隐藏索引词贴近相关段落内容，放在相关句子末尾。流程结束。
+----
+
+== 语法透传与 callouts
+
+触发场景:: 作者书写代码、日志或工具语法文本。
+
+[source,text]
+----
+1. 正文中是否出现 AsciiDoc 原生语法字符，且需要阻止其被解析引擎渲染？
+   ├─ 是：使用 `pass:[]` 宏包裹该内容。
+   │      若需要代码字体样式，在外层叠加反引号包裹。流程结束。
+   └─ 否：评估解释关联。
+
+2. 当前是否为代码或日志结构，且配有单独的文字解释？
+   ├─ 是：使用 AsciiDoc callouts 标注代码或日志与解释之间的关联。流程结束。
+   └─ 否：正常书写。流程结束。
+----
 
 --- NUL
 +++ b/backmatter/bibliography.adoc
@@ -360,7 +532,7 @@ Turtle 示例中的 `<urn:aat:doc:...#heading-*>` 和 `<urn:aat:doc:...#xref-edg
 
 --- NUL
 +++ b/parts/010-source-surface/020-default-semantics.adoc
-@@ -0,0 +1,48 @@
+@@ -0,0 +1,47 @@
 [#heading-and-xref]
 == 标题与引用
 
@@ -390,7 +562,7 @@ Turtle 示例中的 `<urn:aat:doc:...#heading-*>` 和 `<urn:aat:doc:...#xref-edg
 
 [TIP]
 ====
-1. 需要保证全书里所有出现的稳定地址都最少有1个 `xref` 消费，也就是说可以在需要进行交叉引用时，判断引用目标当前在全书中是否已经有稳定的标识，再确认是否需要手动添加上稳定地址。详细判断规则见 xref:附录 A：结构化写法速查[]。
+1. 全书中手工声明的稳定地址至少需要一个 `xref` 消费。写法速查见 xref:structured-writing-quick-reference[附录 A：结构化写法速查]；完整判断流程见 xref:structured-writing-decision-trees[附录 B：结构化写法决策树]。
 2. 按照书籍结构，跨越 `= 书名`、`= 卷/部`、`== 章` 这些大跨度的指代均需要使用 `xref` 手动标注，平衡隐式上下文的阅读压力。
 ====
 
@@ -408,7 +580,6 @@ Turtle 示例中的 `<urn:aat:doc:...#heading-*>` 和 `<urn:aat:doc:...#xref-edg
 [.example]
 === 一个完整示例
 ----
-
 
 --- NUL
 +++ b/parts/010-source-surface/030-source-order-notation.adoc
@@ -591,7 +762,7 @@ indexterm:[relation predicate]
 
 --- NUL
 +++ b/book.adoc
-@@ -0,0 +1,71 @@
+@@ -0,0 +1,74 @@
 = 结构化书写约定标本
 作者 <author@example.com>
 v0.1, 2026-05
@@ -654,6 +825,9 @@ include::parts/030-fields-and-lookup/020-index-and-glossary.adoc[]
 
 [appendix]
 include::backmatter/appendix-a.adoc[]
+
+[appendix]
+include::backmatter/appendix-b-decision-trees.adoc[]
 
 [glossary]
 include::backmatter/glossary.adoc[]
