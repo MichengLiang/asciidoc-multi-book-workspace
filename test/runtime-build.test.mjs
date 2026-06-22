@@ -345,28 +345,48 @@ test("runtime check still fails for a user-authored real cross-book xref to a mi
   );
 });
 
+test("runtime check fails for missing include targets reported by Asciidoctor", async () => {
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-missing-include-${randomUUID()}`);
+  await initWorkspace({ targetDir: target });
+  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  const chapter = await readFile(chapterPath, "utf8");
+  await writeFile(
+    chapterPath,
+    `${chapter}\n\ninclude::missing-include.adoc[]\n`,
+    "utf8"
+  );
+
+  await assert.rejects(
+    () => checkWorkspace(target),
+    /AsciiDoc strict check failed[\s\S]*include file not found/
+  );
+});
+
+test("runtime check fails for same-page missing anchors in generated HTML", async () => {
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-missing-same-page-anchor-${randomUUID()}`);
+  await initWorkspace({ targetDir: target });
+  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  const chapter = await readFile(chapterPath, "utf8");
+  await writeFile(
+    chapterPath,
+    `${chapter}\n\nSee xref:missing-anchor[missing anchor].\n`,
+    "utf8"
+  );
+
+  await assert.rejects(
+    () => checkWorkspace(target),
+    /HTML local resource check failed/
+  );
+});
+
 test("runtime check accepts typed explicit anchors in user-authored xrefs", async () => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-typed-anchor-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
-  const targetChapterPath = path.join(
-    target,
-    "books",
-    "02-multipart-monograph",
-    "parts",
-    "01-domain",
-    "01-problem-world.adoc"
-  );
-  const targetChapter = await readFile(targetChapterPath, "utf8");
-  await writeFile(
-    targetChapterPath,
-    `[#typed-anchor.contract-object, owner=sample]\n${targetChapter}`,
-    "utf8"
-  );
   const sourceChapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
   const sourceChapter = await readFile(sourceChapterPath, "utf8");
   await writeFile(
     sourceChapterPath,
-    `${sourceChapter}\n\nSee xref:../02-multipart-monograph/book.adoc#typed-anchor[typed anchor].\n`,
+    `${sourceChapter}\n\nSee xref:../02-multipart-monograph/book.adoc#multipart-book-boundary[typed anchor].\n`,
     "utf8"
   );
 

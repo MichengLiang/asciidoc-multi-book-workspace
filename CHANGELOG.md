@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 - 2026-06-23
+
+### Added
+
+- Make generated workspace builds fail when Asciidoctor reports parser diagnostics, including missing `include::` targets that previously only appeared on stderr.
+- Extend generated HTML validation to fail on missing same-page and cross-page fragment anchors, not just missing local files.
+
+### Fixed
+
+- Escape quick-reference `xref` syntax examples in the structured writing sample so example text does not render as broken links.
+
 ## 0.1.13 - 2026-06-21
 
 ### Changed
