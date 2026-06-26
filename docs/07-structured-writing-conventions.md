@@ -325,6 +325,7 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段�
 
 以下资料提供 AsciiDoc 标题、交叉引用、元素属性和描述列表的参考坐标。
 
+[bibliography]
 * [[[asciidoctor-xref]]] Asciidoctor Docs, Cross References, https://docs.asciidoctor.org/asciidoc/latest/macros/xref/
 * [[[asciidoctor-attributes]]] Asciidoctor Docs, Element Attributes, https://docs.asciidoctor.org/asciidoc/latest/attributes/element-attributes/
 * [[[asciidoctor-description-lists]]] Asciidoctor Docs, Description Lists, https://docs.asciidoctor.org/asciidoc/latest/lists/description/

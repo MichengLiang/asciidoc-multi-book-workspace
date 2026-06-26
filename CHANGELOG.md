@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 - 2026-06-27
+
+### Fixed
+
+- Mark the structured writing conventions bibliography as an AsciiDoc bibliography list in both maintainer docs and generated workspaces.
+
 ## 0.2.0 - 2026-06-23
 
 ### Added
