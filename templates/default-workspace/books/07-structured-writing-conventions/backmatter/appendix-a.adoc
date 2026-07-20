@@ -54,18 +54,13 @@
 |`pass:[xref:stable-id[显示文本, rel=depends-on]]`
 |显示为链接，同时声明 depends-on 关系。
 
-|`indexterm2:[role]`
-|正文可见索引词。
-
-|`indexterm:[relation predicate]`
-|正文隐藏索引词。
 |===
 
 全书标题需要保持 `标题层级连续`。
 
 role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段可以写在标题 attrlist、标题下描述列表或 xref named attributes 中。
 
-`[appendix]`、`[glossary]`、`[bibliography]` 和 `[index]` 是 section style。它们改变紧随其后 section 的语义；标题层级仍由 `=` 数量决定。
+`[appendix]`、`[glossary]` 和 `[bibliography]` 是 section style。它们改变紧随其后 section 的语义；标题层级仍由 `=` 数量决定。
 
 对于跨文件的交叉引用，为了避免重复编写相对路径，你可以在文档的头部（Header）定义一个文档属性（Document Attribute）来存储这个基础路径。
 

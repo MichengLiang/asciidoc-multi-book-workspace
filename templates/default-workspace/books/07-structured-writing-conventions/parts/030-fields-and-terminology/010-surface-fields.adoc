@@ -15,7 +15,7 @@
 
 `owner=writing-team` 写在标题 attrlist 中，投影时成为标题字段。`weight=strong` 写在 xref 中，投影时成为边证据字段。
 
-标题字段较少且值较短时，写在标题 attrlist 中。标题字段较多，或字段值需要换行时，写在标题下的第一个连续描述列表中。indexterm:[描述列表]
+标题字段较少且值较短时，写在标题 attrlist 中。标题字段较多，或字段值需要换行时，写在标题下的第一个连续描述列表中。
 
 [source,asciidoc]
 ----

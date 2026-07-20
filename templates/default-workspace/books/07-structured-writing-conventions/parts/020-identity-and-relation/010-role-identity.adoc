@@ -12,7 +12,7 @@ role 写在标题 attrlist 的点号 token 位置。
 == 引用规则
 ----
 
-`#regular-heading` 和 `#xref-rule` 是稳定 ID， `.concept` 和 `.rule` 是 indexterm2:[role]， 标明标题身份。
+`#regular-heading` 和 `#xref-rule` 是稳定 ID，`.concept` 和 `.rule` 是 role，标明标题身份。
 
 [cols="1,2", options="header"]
 |===

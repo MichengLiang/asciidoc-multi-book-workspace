@@ -49,14 +49,14 @@ include::parts/020-identity-and-relation/010-role-identity.adoc[]
 
 include::parts/020-identity-and-relation/020-relation-predicate.adoc[]
 
-= 字段、索引与术语
+= 字段与术语
 
 [partintro]
-include::parts/030-fields-and-lookup/_partintro.adoc[]
+include::parts/030-fields-and-terminology/_partintro.adoc[]
 
-include::parts/030-fields-and-lookup/010-surface-fields.adoc[]
+include::parts/030-fields-and-terminology/010-surface-fields.adoc[]
 
-include::parts/030-fields-and-lookup/020-index-and-glossary.adoc[]
+include::parts/030-fields-and-terminology/020-glossary.adoc[]
 
 [appendix]
 include::backmatter/appendix-a.adoc[]
@@ -69,6 +69,3 @@ include::backmatter/glossary.adoc[]
 
 [bibliography]
 include::backmatter/bibliography.adoc[]
-
-[index]
-include::backmatter/index.adoc[]

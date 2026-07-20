@@ -1,7 +1,7 @@
 [#source-order-notation]
 == 源文件编排号
 
-源文件编排号写在 part 目录名和 chapter 文件名前部。indexterm:[源文件编排号]
+源文件编排号写在 part 目录名和 chapter 文件名前部。
 
 Part 目录和 Chapter 文件统一使用三位数 `0X0` 格式进行编排。
 
