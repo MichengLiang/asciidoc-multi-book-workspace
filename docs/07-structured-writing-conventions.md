@@ -20,10 +20,10 @@
 
 | 项目 | 数量 |
 |---|---|
-| 总文件数 | 21 |
+| 总文件数 | 20 |
 | 二进制文件 | 0 |
-| 总大小 | 26.5 KB |
-| 总行数 | 690 |
+| 总大小 | 24.2 KB |
+| 总行数 | 621 |
 
 </summary_stats>
 
@@ -33,11 +33,10 @@
 └── 07-structured-writing-conventions
     ├── book.adoc (1.5 KB)
     ├── backmatter
-    │   ├── appendix-a.adoc (3.6 KB)
-    │   ├── appendix-b-decision-trees.adoc (6.9 KB)
+    │   ├── appendix-a.adoc (3.5 KB)
+    │   ├── appendix-b-decision-trees.adoc (6.3 KB)
     │   ├── bibliography.adoc (0.6 KB)
-    │   ├── glossary.adoc (1.1 KB)
-    │   └── index.adoc (1.2 KB)
+    │   └── glossary.adoc (1.0 KB)
     ├── frontmatter
     │   ├── abstract.adoc (0.2 KB)
     │   ├── acknowledgments.adoc (0.1 KB)
@@ -48,15 +47,15 @@
         ├── 010-source-surface
         │   ├── 010-source-and-projection.adoc (3.0 KB)
         │   ├── 020-default-semantics.adoc (1.3 KB)
-        │   ├── 030-source-order-notation.adoc (1.4 KB)
+        │   ├── 030-source-order-notation.adoc (1.3 KB)
         │   └── _partintro.adoc (0.1 KB)
         ├── 020-identity-and-relation
         │   ├── 010-role-identity.adoc (0.7 KB)
         │   ├── 020-relation-predicate.adoc (1.2 KB)
         │   └── _partintro.adoc (0.3 KB)
-        └── 030-fields-and-lookup
+        └── 030-fields-and-terminology
             ├── 010-surface-fields.adoc (1.3 KB)
-            ├── 020-index-and-glossary.adoc (0.5 KB)
+            ├── 020-glossary.adoc (0.3 KB)
             └── _partintro.adoc (0.1 KB)
 ```
 
@@ -66,7 +65,7 @@
 
 --- NUL
 +++ b/backmatter/appendix-a.adoc
-@@ -0,0 +1,80 @@
+@@ -0,0 +1,75 @@
 [#structured-writing-quick-reference]
 = 附录 A：结构化写法速查
 
@@ -117,24 +116,19 @@
 |`summary::` + 下一行说明文本
 |标题下描述列表字段。用于较多字段或多行字段值。
 
-|`xref:stable-id[显示文本]`
+|`pass:[xref:stable-id[显示文本]]`
 |显示为链接，投影为 references。
 
-|`xref:stable-id[显示文本, rel=depends-on]`
+|`pass:[xref:stable-id[显示文本, rel=depends-on]]`
 |显示为链接，同时声明 depends-on 关系。
 
-|`indexterm2:[role]`
-|正文可见索引词。
-
-|`indexterm:[relation predicate]`
-|正文隐藏索引词。
 |===
 
 全书标题需要保持 `标题层级连续`。
 
 role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段可以写在标题 attrlist、标题下描述列表或 xref named attributes 中。
 
-`[appendix]`、`[glossary]`、`[bibliography]` 和 `[index]` 是 section style。它们改变紧随其后 section 的语义；标题层级仍由 `=` 数量决定。
+`[appendix]`、`[glossary]` 和 `[bibliography]` 是 section style。它们改变紧随其后 section 的语义；标题层级仍由 `=` 数量决定。
 
 对于跨文件的交叉引用，为了避免重复编写相对路径，你可以在文档的头部（Header）定义一个文档属性（Document Attribute）来存储这个基础路径。
 
@@ -150,7 +144,7 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段�
 
 --- NUL
 +++ b/backmatter/appendix-b-decision-trees.adoc
-@@ -0,0 +1,166 @@
+@@ -0,0 +1,152 @@
 [#structured-writing-decision-trees]
 = 附录 B：结构化写法决策树
 
@@ -172,9 +166,9 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段�
    ├─ 是：使用更小一级标题将该区域独立划分，后续用 xref 指向该标题。流程结束。
    └─ 否：评估 section style。
 
-4. 当前标题是否承载附录、术语表、参考文献或索引等后置结构？
+4. 当前标题是否承载附录、术语表或参考文献等后置结构？
    ├─ 是：在等号标题上方声明对应 section style：
-   │      `[appendix]`、`[glossary]`、`[bibliography]` 或 `[index]`。
+   │      `[appendix]`、`[glossary]` 或 `[bibliography]`。
    │      section style 改变紧随其后 section 的语义；标题层级仍由 `=` 数量决定。
    │      流程结束。
    └─ 否：写入标准等号标题。流程结束。
@@ -288,20 +282,6 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段�
    流程结束。
 ----
 
-== index term 落位
-
-触发场景:: 作者为读者检索和书后索引添加索引入口。
-
-[source,text]
-----
-1. 索引目标词是否已经自然出现在当前正文句子中？
-   ├─ 是：使用正文可见索引词宏 `indexterm2:[<primary>]` 包裹该词。
-   │      正文保持可见，同时提取为一级索引项。流程结束。
-   └─ 否：使用正文隐藏索引词宏 `indexterm:[<primary>]`。
-          按需使用多级形式，例如 `indexterm:[<primary>, <secondary>]`。
-          隐藏索引词贴近相关段落内容，放在相关句子末尾。流程结束。
-----
-
 == 语法透传与 callouts
 
 触发场景:: 作者书写代码、日志或工具语法文本。
@@ -320,7 +300,7 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段�
 
 --- NUL
 +++ b/backmatter/bibliography.adoc
-@@ -0,0 +1,8 @@
+@@ -0,0 +1,9 @@
 = 参考坐标
 
 以下资料提供 AsciiDoc 标题、交叉引用、元素属性和描述列表的参考坐标。
@@ -333,7 +313,7 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段�
 
 --- NUL
 +++ b/backmatter/glossary.adoc
-@@ -0,0 +1,18 @@
+@@ -0,0 +1,17 @@
 = 术语表
 
 本术语表记录结构化书写约定中的核心术语。
@@ -351,50 +331,6 @@ relation predicate:: xref `rel` 字段选择的边谓词。
 source heading:: xref 所在的标题。
 target heading:: xref selector 指向的标题。
 surface field:: 源文档表面的附加字段。标题字段可来自标题 attrlist 或标题下描述列表；xref 边字段来自 xref named attributes。
-index term:: 服务书后索引和读者检索的索引入口。
-
---- NUL
-+++ b/backmatter/index.adoc
-@@ -0,0 +1,39 @@
-= 索引
-
-索引 section 位于书籍后置区域。正文中的索引词宏是索引词来源。
-
-AsciiDoc 区分正文可见索引词和正文隐藏索引词：
-
-[cols="1,2", options="header"]
-|===
-|写法 |含义
-
-|`indexterm2:[<primary>]`
-|正文可见，同时作为一级索引项。
-
-|`indexterm:[<primary>]`
-|正文不可见，作为一级索引项。
-
-|`indexterm:[<primary>, <secondary>]`
-|正文不可见，作为二级索引项。
-
-|`indexterm:[<primary>, <secondary>, <tertiary>]`
-|正文不可见，作为三级索引项。
-|===
-
-正文中已经出现该词时，优先使用正文可见索引词。需要补充未出现在正文里的索引入口时，使用正文隐藏索引词。
-
-隐藏索引词应贴近它标记的段落内容。本书把隐藏索引词放在相关句子末尾。
-
-Asciidoctor 的内置 HTML5 转换器不会自动生成索引目录。`[index]` section 是 PDF 和 DocBook 工具链自动填充索引目录的种子位置；在本 HTML 样本中，它展示后置索引章节的位置和索引词写法。
-
-本书正文中的索引词示例：
-
-[source,asciidoc]
-----
-indexterm2:[role]
-indexterm:[relation predicate]
-indexterm:[源文件编排号]
-indexterm:[中间值插入]
-indexterm:[描述列表]
-----
 
 --- NUL
 +++ b/frontmatter/abstract.adoc
@@ -588,7 +524,7 @@ Turtle 示例中的 `<urn:aat:doc:...#heading-*>` 和 `<urn:aat:doc:...#xref-edg
 [#source-order-notation]
 == 源文件编排号
 
-源文件编排号写在 part 目录名和 chapter 文件名前部。indexterm:[源文件编排号]
+源文件编排号写在 part 目录名和 chapter 文件名前部。
 
 Part 目录和 Chapter 文件统一使用三位数 `0X0` 格式进行编排。
 
@@ -644,7 +580,7 @@ role 写在标题 attrlist 的点号 token 位置。
 == 引用规则
 ----
 
-`#regular-heading` 和 `#xref-rule` 是稳定 ID， `.concept` 和 `.rule` 是 indexterm2:[role]， 标明标题身份。
+`#regular-heading` 和 `#xref-rule` 是稳定 ID，`.concept` 和 `.rule` 是 role，标明标题身份。
 
 [cols="1,2", options="header"]
 |===
@@ -672,7 +608,7 @@ role 的职责，是在全书范围内保持身份含义的稳定。
 [#relation-predicate]
 == rel 关系谓词
 
-indexterm:[relation predicate] `rel` 是 xref 边上的关系谓词。包含 xref 的标题是关系起点，xref 指向的标题是关系终点。本书把这两个位置称为 source heading 和 target heading。
+`rel` 是 xref 边上的关系谓词。包含 xref 的标题是关系起点，xref 指向的标题是关系终点。本书把这两个位置称为 source heading 和 target heading。
 
 [source,asciidoc]
 ----
@@ -700,7 +636,7 @@ constrains:: 当前标题对目标标题的合法写法或范围施加约束。
 本部展示标题身份和引用关系。role 标明标题身份；rel 标明引用关系。 在书籍中，你需要主动根据你当前所建模的概念结构对各类词表（`role`、`rel` 或者其他更多）进行建模与约定，需要专门的词表约定章节清晰的写出你需要使用的受控词表，方便后续的使用。
 
 --- NUL
-+++ b/parts/030-fields-and-lookup/010-surface-fields.adoc
++++ b/parts/030-fields-and-terminology/010-surface-fields.adoc
 @@ -0,0 +1,35 @@
 [#surface-fields]
 == 附加字段
@@ -719,7 +655,7 @@ constrains:: 当前标题对目标标题的合法写法或范围施加约束。
 
 `owner=writing-team` 写在标题 attrlist 中，投影时成为标题字段。`weight=strong` 写在 xref 中，投影时成为边证据字段。
 
-标题字段较少且值较短时，写在标题 attrlist 中。标题字段较多，或字段值需要换行时，写在标题下的第一个连续描述列表中。indexterm:[描述列表]
+标题字段较少且值较短时，写在标题 attrlist 中。标题字段较多，或字段值需要换行时，写在标题下的第一个连续描述列表中。
 
 [source,asciidoc]
 ----
@@ -739,31 +675,23 @@ summary::
 字段名和字段值来自本书自己的约定。同一本书使用附加字段时，应保持字段写法和字段含义稳定。
 
 --- NUL
-+++ b/parts/030-fields-and-lookup/020-index-and-glossary.adoc
-@@ -0,0 +1,14 @@
-[#index-and-glossary]
-== 索引词与术语表
++++ b/parts/030-fields-and-terminology/020-glossary.adoc
+@@ -0,0 +1,6 @@
+[#glossary-conventions]
+== 术语表
 
-索引词帮助读者在书后找到词。术语表解释本书采用的词。role 标明标题身份，rel 标明引用关系。
+术语表记录本书采用的关键用词，并为它们给出稳定定义。role 标明标题身份，rel 标明引用关系。
 
-正文里已经自然出现该词时，使用可见索引词标记。需要补充未出现在正文里的索引入口时，使用隐藏索引词。
-
-[source,asciidoc]
-----
-indexterm2:[role]
-indexterm:[relation predicate]
-----
-
-稳定术语帮助作者、读者和维护者使用同一组词理解源文档。
+稳定术语帮助作者、读者和维护者使用同一组词理解源文档。术语的定义集中维护在书后的术语表中。
 
 --- NUL
-+++ b/parts/030-fields-and-lookup/_partintro.adoc
++++ b/parts/030-fields-and-terminology/_partintro.adoc
 @@ -0,0 +1,1 @@
-本部展示字段、索引词和术语表。字段随源文档保留；索引词和术语表帮助读者找词、解词。
+本部展示字段和术语表。字段随源文档保留；术语表帮助读者统一理解本书采用的用词。
 
 --- NUL
 +++ b/book.adoc
-@@ -0,0 +1,74 @@
+@@ -0,0 +1,71 @@
 = 结构化书写约定标本
 作者 <author@example.com>
 v0.1, 2026-05
@@ -815,14 +743,14 @@ include::parts/020-identity-and-relation/010-role-identity.adoc[]
 
 include::parts/020-identity-and-relation/020-relation-predicate.adoc[]
 
-= 字段、索引与术语
+= 字段与术语
 
 [partintro]
-include::parts/030-fields-and-lookup/_partintro.adoc[]
+include::parts/030-fields-and-terminology/_partintro.adoc[]
 
-include::parts/030-fields-and-lookup/010-surface-fields.adoc[]
+include::parts/030-fields-and-terminology/010-surface-fields.adoc[]
 
-include::parts/030-fields-and-lookup/020-index-and-glossary.adoc[]
+include::parts/030-fields-and-terminology/020-glossary.adoc[]
 
 [appendix]
 include::backmatter/appendix-a.adoc[]
@@ -835,9 +763,6 @@ include::backmatter/glossary.adoc[]
 
 [bibliography]
 include::backmatter/bibliography.adoc[]
-
-[index]
-include::backmatter/index.adoc[]
 
 </file_contents>
 

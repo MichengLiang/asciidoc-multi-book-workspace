@@ -127,16 +127,16 @@
 [abstract]
 本文档是一份 AsciiDoc 语法与结构化表达示例集，涵盖基础排版到复杂容器嵌套的高频使用场景，所有语法均基于 Asciidoctor 当前推荐的标准宏 (Macro) 规范构建。
 
-== 1. 文本语义与内联修饰
+== 文本语义与内联修饰
 
 *基础强调*：这是 *粗体*，这是 _斜体_，这是 *_粗斜体_*。
 *代码与高亮*：请使用等宽字体表示行内代码，例如 `const a = 1;`。或者对重点内容进行 #高亮突出#。
 *科学排版*：化学分子式 H~2~O，物理公式 E=mc^2^。
 *状态变更*：如果某项规则已废弃，可以使用 [.line-through]#删除线标记#。
 
-== 2. 区块级容器与警告说明
+== 区块级容器与警告说明
 
-=== 2.1 警告说明 (Admonitions)
+=== 警告说明 (Admonitions)
 
 NOTE: 这是一个普通的提示信息。通常用于附加的参考说明。
 
@@ -148,7 +148,7 @@ CAUTION: 潜在风险提示，操作时需谨慎。
 
 WARNING: 严重警告，例如可能导致数据丢失的操作。
 
-=== 2.2 引用与诗歌 (Quotes & Verse)
+=== 引用与诗歌 (Quotes & Verse)
 
 [quote, 艾伦·图灵, 计算机机械与智力 (1950)]
 ____
@@ -162,7 +162,7 @@ ____
 一花一天堂。
 ____
 
-=== 2.3 侧边栏与示例块 (Sidebars & Examples)
+=== 侧边栏与示例块 (Sidebars & Examples)
 
 .扩展阅读：侧边栏标题
 ****
@@ -174,9 +174,9 @@ ____
 示例块使用四个等号，通常用来包裹一段完整的操作演示或代码输出。
 ====
 
-== 3. 列表体系与层级挂载
+== 列表体系与层级挂载
 
-=== 3.1 基础与嵌套列表
+=== 基础与嵌套列表
 
 * 无序列表第一级
 ** 无序列表第二级
@@ -186,13 +186,13 @@ ____
 . 有序列表第一级
 .. 有序列表第二级
 
-=== 3.2 任务清单 (Checklists)
+=== 任务清单 (Checklists)
 
 * [*] 核心框架搭建
 * [x] 样式兼容性测试
 * [ ] 打印模式适配
 
-=== 3.3 术语字典与 Q&A (Description & Q&A)
+=== 术语字典与 Q&A (Description & Q&A)
 
 API 接口::
   应用程序编程接口。
@@ -201,7 +201,7 @@ API 接口::
 AsciiDoc 相比 Markdown 的优势是什么？::
 原生支持复杂的文档结构如脚注、交叉引用和包含指令。
 
-=== 3.4 列表的复杂挂载 (List Continuation)
+=== 列表的复杂挂载 (List Continuation)
 
 * 列表项 1：如何在其下方挂载一段代码，而不断开列表？
 +
@@ -217,7 +217,7 @@ WARNING: 不要忘记加号前后的换行！
 * 列表项 2：继续列表。
 
 [#code-and-callouts]
-== 4. 源代码与标注 (Code & Callouts)
+== 源代码与标注 (Code & Callouts)
 
 .服务端入口代码
 [source, javascript]
@@ -235,23 +235,23 @@ app.listen(3000); <3>
 <2> 定义根路由的响应内容。
 <3> 启动服务并监听 3000 端口。
 
-== 5. 多媒体与 UI 宏表达
+== 多媒体与 UI 宏表达
 
-=== 5.1 图像 (Images)
+=== 图像 (Images)
 
 .架构流程图 (带属性控制)
 image::https://asciidoctor.org/images/asciidoctor-logo.svg[Asciidoctor Logo, 150, 150, float="right", align="center"]
 当图片设置为右浮动时，这段说明文字将会环绕在图片的左侧。这段文字需要足够长才能清楚地看到环绕排版的最终视觉效果。
 
-=== 5.2 UI 交互元素 (UI Macros)
+=== UI 交互元素 (UI Macros)
 
 * 快捷键组合：请按下 kbd:[Ctrl+Shift+P] 唤出控制台。
 * 菜单导航路径：前往 menu:File[Preferences > Settings] 修改配置。
 * 界面按钮点击：点击 btn:[Save & Apply] 保存修改。
 
-== 6. 表格与网格数据
+== 表格与网格数据
 
-=== 6.1 基础数据表格
+=== 基础数据表格
 
 .用户权限对照表
 [cols="1,2,1", options="header"]
@@ -267,7 +267,7 @@ image::https://asciidoctor.org/images/asciidoctor-logo.svg[Asciidoctor Logo, 150
 | 限制
 |===
 
-=== 6.2 深度嵌套表格 (带有 `a` 列)
+=== 深度嵌套表格 (带有 `a` 列)
 
 .带有区块嵌套和合并的高级表格
 [cols="1,2a,1", options="header"]
@@ -291,15 +291,15 @@ image::https://asciidoctor.org/images/asciidoctor-logo.svg[Asciidoctor Logo, 150
 | 底部声明 2+| 此模块需要在下个迭代优先完成。
 |===
 
-== 7. 导航、引用与超链接
+== 导航、引用与超链接
 
-=== 7.1 锚点与交叉引用
+=== 锚点与交叉引用
 
 [#core-concept]
 这是一个名为“核心概念”的自定义锚点声明。
 当你需要引用它时：请参考 xref:core-concept[这里的详细阐述]，或者直接跳转到 xref:code-and-callouts[源代码与标注章节]。
 
-=== 7.2 超链接与脚注
+=== 超链接与脚注
 
 这是外部链接： https://asciidoctor.org[Asciidoctor 官方网站, window="_blank"]。
 
@@ -307,9 +307,9 @@ image::https://asciidoctor.org/images/asciidoctor-logo.svg[Asciidoctor Logo, 150
 如果你需要多次引用同一个参考，可以使用带目标 ID 的脚注宏。footnote:rfc793[RFC 793 - 传输控制协议规范。]
 在下文中再次引用它。footnote:rfc793[]
 
-== 8. 动态控制与折叠视图
+== 动态控制与折叠视图
 
-=== 8.1 交互式折叠块 (Collapsible)
+=== 交互式折叠块 (Collapsible)
 
 .长篇日志输出 (点击展开)
 [%collapsible]
@@ -323,7 +323,7 @@ image::https://asciidoctor.org/images/asciidoctor-logo.svg[Asciidoctor Logo, 150
 ----
 ====
 
-=== 8.2 开放块与分割线 (Open Blocks & Rules)
+=== 开放块与分割线 (Open Blocks & Rules)
 
 --
 这是一个开放块 (Open Block)。它是一个通用的容器，通常配合自定义的 Role (CSS class) 使用，在不破坏语义的前提下改变局部排版。

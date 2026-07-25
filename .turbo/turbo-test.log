@@ -1,0 +1,5 @@
+
+> create-asciidoc-multi-book-workspace@0.2.1 test /home/t103o/workbench/micheng-ts/projects/asciidoc-multi-book-workspace
+> pnpm run build && node --test test/*.test.mjs
+
+ ELIFECYCLE  Test failed. See above for more details.
