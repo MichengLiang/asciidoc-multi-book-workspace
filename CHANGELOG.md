@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 - 2026-07-26
+
+### Changed
+
+- Restructure the structured writing conventions sample around fields and terminology, including a dedicated glossary chapter and escaped xref syntax examples.
+
+### Removed
+
+- Retire the index-term tutorial, index section, and the associated generated sample paths from the structured writing conventions workspace.
+
 ## 0.2.1 - 2026-06-27
 
 ### Fixed

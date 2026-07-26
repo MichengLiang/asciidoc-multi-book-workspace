@@ -19,9 +19,9 @@ const structuredWritingPageSequence = [
   ["part", "part-给标题和引用加意图", "给标题和引用加意图"],
   ["chapter", "role-identity", "role 身份"],
   ["chapter", "relation-predicate", "rel 关系谓词"],
-  ["part", "part-字段索引与术语", "字段、索引与术语"],
+  ["part", "part-字段与术语", "字段与术语"],
   ["chapter", "surface-fields", "附加字段"],
-  ["chapter", "index-and-glossary", "索引词与术语表"],
+  ["chapter", "glossary-conventions", "术语表"],
   ["appendix", "structured-writing-quick-reference", "附录 A：结构化写法速查"],
   ["appendix", "structured-writing-decision-trees", "附录 B：结构化写法决策树"],
   ["chapter", "标题生成与层级拓扑控制", "标题生成与层级拓扑控制"],
@@ -30,11 +30,9 @@ const structuredWritingPageSequence = [
   ["chapter", "xref-与-rel-关系谓词建立", "xref 与 rel 关系谓词建立"],
   ["chapter", "surface-field-落位策略", "surface field 落位策略"],
   ["chapter", "源文件物理编排与编号运算", "源文件物理编排与编号运算"],
-  ["chapter", "index-term-落位", "index term 落位"],
   ["chapter", "语法透传与-callouts", "语法透传与 callouts"],
   ["glossary", "术语表", "术语表"],
-  ["bibliography", "参考坐标", "参考坐标"],
-  ["index", "索引", "索引"]
+  ["bibliography", "参考坐标", "参考坐标"]
 ];
 const expectedBooks = [
   "00-book-anatomy",
@@ -155,7 +153,7 @@ test("runtime build creates HTML, assets, home links, source bundles, and root i
   );
   assert.match(structuredWriting, /<h1 id="从源文档看结构" class="sect0">Part I: 从源文档看结构<\/h1>/);
   assert.match(structuredWriting, /<h1 id="给标题和引用加意图" class="sect0">Part II: 给标题和引用加意图<\/h1>/);
-  assert.match(structuredWriting, /<h1 id="字段索引与术语" class="sect0">Part III: 字段、索引与术语<\/h1>/);
+  assert.match(structuredWriting, /<h1 id="字段与术语" class="sect0">Part III: 字段与术语<\/h1>/);
   assert.match(structuredWriting, /<a href="#从源文档看结构">Part I: 从源文档看结构<\/a>/);
 
   const pageMapMatch = structuredWriting.match(/<script type="application\/json" id="multi-book-page-map">([\s\S]*?)<\/script>/);
@@ -184,8 +182,8 @@ test("runtime build creates HTML, assets, home links, source bundles, and root i
     ["附录 A：结构化写法速查", "附录 B：结构化写法决策树"]
   );
   assert.deepEqual(
-    pageMap.pages.slice(-3).map((page) => page.kind),
-    ["glossary", "bibliography", "index"]
+    pageMap.pages.slice(-2).map((page) => page.kind),
+    ["glossary", "bibliography"]
   );
   assert.match(structuredWriting, /data-multi-book-view-toggle/);
   assert.match(structuredWriting, />连续<\/button>/);
@@ -206,7 +204,7 @@ test("runtime reader UI supports desktop and mobile paged reading behavior", asy
     const desktop = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     await desktop.goto(bookUrl);
     await assertVisibleText(desktop, "#content", "源文本与投影");
-    await assertVisibleText(desktop, "#content", "索引词与术语表");
+    await assertVisibleText(desktop, "#content", "术语的定义集中维护在书后的术语表中");
     const continuousContentBox = await desktop.locator("#content").boundingBox();
     const continuousFirstBlockBox = await desktop.locator("#content > :visible").first().boundingBox();
     assert.notEqual(continuousContentBox, null);
@@ -251,7 +249,7 @@ test("runtime reader UI supports desktop and mobile paged reading behavior", asy
 
     await desktop.getByRole("button", { name: "连续" }).click();
     await assertVisibleText(desktop, "#content", "源文本与投影");
-    await assertVisibleText(desktop, "#content", "索引词与术语表");
+    await assertVisibleText(desktop, "#content", "术语的定义集中维护在书后的术语表中");
     assert.equal(await desktop.locator("[data-multi-book-page-nav]").evaluate((node) => node.hidden), true);
     assert.equal(
       await desktop.locator("#toc > :not([data-multi-book-controls]):not([data-multi-book-page-nav])").evaluateAll((nodes) => {

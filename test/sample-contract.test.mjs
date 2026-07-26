@@ -103,8 +103,8 @@ const requiredPatterns = new Map([
       "附加字段",
       "`owner=writing-team` 写在标题 attrlist 中，投影时成为标题字段",
       "字段名和字段值来自本书自己的约定",
-      "indexterm2:[role]",
-      "indexterm:[relation predicate]",
+      "术语表记录本书采用的关键用词",
+      "术语的定义集中维护在书后的术语表中",
       "xref:regular-heading[常规标题]",
       "xref:regular-heading[常规标题, rel=depends-on, weight=strong]",
       "aat:references",
@@ -119,7 +119,6 @@ const requiredPatterns = new Map([
       "xref 与 rel 关系谓词建立",
       "surface field 落位策略",
       "源文件物理编排与编号运算",
-      "index term 落位",
       "语法透传与 callouts"
     ]
   ]
