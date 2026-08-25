@@ -81,20 +81,19 @@ const requiredPatterns = new Map([
       "结构化书写约定标本",
       ":partnums:",
       ":part-signifier: Part",
-      "按写作目的选择这些写法",
+      "同一份 AsciiDoc 源文档",
       "从源文档看结构",
-      "长期引用且标题文本可能变更的标题使用稳定 ID",
+      "标题保存当前规范名称",
       "源文档把 `常规标题` 写成可引用的阅读单位",
-      "`[#regular-heading]` 声明一个稳定地址",
+      "显式寻址标签",
       "源文件编排号",
       "source-order notation",
       "Part 目录和 Chapter 文件统一使用三位数 `0X0` 格式进行编排",
       "末尾追加",
       "中间插入",
-      "标题文本保留语义名称",
-      "长期引用的标题使用显式 ID",
+      "标题保存当前规范名称；引用用标题或已有的显式寻址标签找到标题",
       "include::parts/010-source-surface/030-source-order-notation.adoc[]",
-      "role 标明标题身份",
+      "标题的 role",
       "该 xref 投影为 `aat:references`",
       "references",
       "`rel=depends-on` 声明从当前标题到目标标题的依赖关系",
@@ -105,8 +104,8 @@ const requiredPatterns = new Map([
       "字段名和字段值来自本书自己的约定",
       "术语表记录本书采用的关键用词",
       "术语的定义集中维护在书后的术语表中",
-      "xref:regular-heading[常规标题]",
-      "xref:regular-heading[常规标题, rel=depends-on, weight=strong]",
+      "xref:常规标题[]",
+      "xref:常规标题[常规标题, rel=depends-on, weight=strong]",
       "aat:references",
       "rel:depends-on",
       "aat:containsDirectly",
@@ -114,7 +113,7 @@ const requiredPatterns = new Map([
       "[.rule]",
       "附录 B：结构化写法决策树",
       "标题生成与层级拓扑控制",
-      "stable ID 的生命周期与寻址机制",
+      "名称变化与寻址标签",
       "role 的作用域与语境管理",
       "xref 与 rel 关系谓词建立",
       "surface field 落位策略",
@@ -208,6 +207,12 @@ test("default workspace template satisfies the official sample contract", async 
       assert.match(bookSource, /^:upper-book:\s+\.\.\/05-upper-volume\/book\.adoc$/m);
       assert.match(allSource, /xref \+ : \+ \{upper-book\}#upper-core-model\[上册核心模型\]/);
       assert.doesNotMatch(allSource, /xref:\{upper-book\}#upper-core-model\[/);
+    }
+    if (bookId === "07-structured-writing-conventions") {
+      assert.doesNotMatch(
+        allSource,
+        /\bstable ID\b|stable-id|稳定 ID|稳定地址|regular-heading|basic-syntax|xref-rule/
+      );
     }
   }
 });

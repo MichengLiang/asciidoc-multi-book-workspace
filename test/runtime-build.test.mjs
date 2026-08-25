@@ -14,10 +14,11 @@ const structuredWritingPageSequence = [
   ["frontmatter", "frontmatter", "前置"],
   ["part", "part-从源文档看结构", "从源文档看结构"],
   ["chapter", "source-and-projection", "源文本与投影"],
-  ["chapter", "heading-and-xref", "标题与引用"],
+  ["chapter", "heading-address-and-xref", "标题、寻址与引用"],
   ["chapter", "source-order-notation", "源文件编排号"],
-  ["part", "part-给标题和引用加意图", "给标题和引用加意图"],
-  ["chapter", "role-identity", "role 身份"],
+  ["part", "part-名称角色与关系", "名称、角色与关系"],
+  ["chapter", "names-and-address-labels", "名称变化与寻址标签"],
+  ["chapter", "heading-roles", "标题的 role"],
   ["chapter", "relation-predicate", "rel 关系谓词"],
   ["part", "part-字段与术语", "字段与术语"],
   ["chapter", "surface-fields", "附加字段"],
@@ -25,7 +26,7 @@ const structuredWritingPageSequence = [
   ["appendix", "structured-writing-quick-reference", "附录 A：结构化写法速查"],
   ["appendix", "structured-writing-decision-trees", "附录 B：结构化写法决策树"],
   ["chapter", "标题生成与层级拓扑控制", "标题生成与层级拓扑控制"],
-  ["chapter", "stable-id-的生命周期与寻址机制", "stable ID 的生命周期与寻址机制"],
+  ["chapter", "名称变化与寻址标签", "名称变化与寻址标签"],
   ["chapter", "role-的作用域与语境管理", "role 的作用域与语境管理"],
   ["chapter", "xref-与-rel-关系谓词建立", "xref 与 rel 关系谓词建立"],
   ["chapter", "surface-field-落位策略", "surface field 落位策略"],
@@ -152,7 +153,7 @@ test("runtime build creates HTML, assets, home links, source bundles, and root i
     "utf8"
   );
   assert.match(structuredWriting, /<h1 id="从源文档看结构" class="sect0">Part I: 从源文档看结构<\/h1>/);
-  assert.match(structuredWriting, /<h1 id="给标题和引用加意图" class="sect0">Part II: 给标题和引用加意图<\/h1>/);
+  assert.match(structuredWriting, /<h1 id="名称角色与关系" class="sect0">Part II: 名称、角色与关系<\/h1>/);
   assert.match(structuredWriting, /<h1 id="字段与术语" class="sect0">Part III: 字段与术语<\/h1>/);
   assert.match(structuredWriting, /<a href="#从源文档看结构">Part I: 从源文档看结构<\/a>/);
 
@@ -229,7 +230,7 @@ test("runtime reader UI supports desktop and mobile paged reading behavior", asy
 
     await desktop.locator("[data-multi-book-page-nav]").getByRole("link", { name: "源文本与投影", exact: true }).click();
     await assertVisibleText(desktop, "#content", "源文本与投影");
-    await assertHiddenText(desktop, "#content", "标题与引用");
+    await assertHiddenText(desktop, "#content", "标题、寻址与引用");
     await assertVisibleText(desktop, "[data-multi-book-page-toc]", "概述");
     const desktopContentBox = await desktop.locator("#content").boundingBox();
     const codeBox = await desktop.locator("#content .listingblock").first().boundingBox();
@@ -243,9 +244,9 @@ test("runtime reader UI supports desktop and mobile paged reading behavior", asy
     assert.equal(codeBox.x + codeBox.width <= pageTocBox.x, true);
     assert.equal(await desktop.locator("#footer").isVisible(), false);
 
-    await desktop.locator("[data-multi-book-page-nav]").getByRole("link", { name: "标题与引用", exact: true }).click();
-    await assertVisibleText(desktop, "#content", "标题与引用");
-    assert.match(desktop.url(), /[?&]page=heading-and-xref/);
+    await desktop.locator("[data-multi-book-page-nav]").getByRole("link", { name: "标题、寻址与引用", exact: true }).click();
+    await assertVisibleText(desktop, "#content", "标题、寻址与引用");
+    assert.match(desktop.url(), /[?&]page=heading-address-and-xref/);
 
     await desktop.getByRole("button", { name: "连续" }).click();
     await assertVisibleText(desktop, "#content", "源文本与投影");

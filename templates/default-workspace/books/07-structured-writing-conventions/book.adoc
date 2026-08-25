@@ -36,18 +36,20 @@ include::parts/010-source-surface/_partintro.adoc[]
 
 include::parts/010-source-surface/010-source-and-projection.adoc[]
 
-include::parts/010-source-surface/020-default-semantics.adoc[]
+include::parts/010-source-surface/020-heading-address-and-xref.adoc[]
 
 include::parts/010-source-surface/030-source-order-notation.adoc[]
 
-= 给标题和引用加意图
+= 名称、角色与关系
 
 [partintro]
-include::parts/020-identity-and-relation/_partintro.adoc[]
+include::parts/020-names-roles-and-relations/_partintro.adoc[]
 
-include::parts/020-identity-and-relation/010-role-identity.adoc[]
+include::parts/020-names-roles-and-relations/010-names-and-address-labels.adoc[]
 
-include::parts/020-identity-and-relation/020-relation-predicate.adoc[]
+include::parts/020-names-roles-and-relations/020-heading-roles.adoc[]
+
+include::parts/020-names-roles-and-relations/030-relation-predicate.adoc[]
 
 = 字段与术语
 

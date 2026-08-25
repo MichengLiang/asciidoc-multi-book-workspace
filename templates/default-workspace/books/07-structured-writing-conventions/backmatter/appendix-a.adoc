@@ -32,33 +32,34 @@
 |`010-opening.adoc`
 |Chapter 文件的源文件编排号。规则与 Part 目录编排号一致。
 
-|`[#stable-id]`
-|为标题声明一个稳定的引用地址。稳定 ID 仅当以下两个条件同时满足时才需显式声明：
-(1) 该标题被至少一个 `xref` 交叉引用；
-(2) 标题文本本身可能变更或在全书范围内可能重复。
-若标题本身已是领域内唯一且稳定的标识符（如专有名词、唯一实体名、标准化编号），即使被交叉引用，也无需额外声明稳定 ID——标题文本即地址。
+|`== 标题`
+|创建标题节点；标题给出当前规范名称。
 
-|`[#stable-id.concept]`
-|声明稳定 ID，并用 role 标明标题身份。
-需要能够回答： “这个标题在整本书的知识体系中扮演什么认知功能”
+|`[.concept]`
+|用 role 标记标题在书中的作用。
 
-|`[#example.example, owner=writing-team]`
-|role 声明标题身份；named attributes 保留附加字段。
+|`[#address-label]`
+|为标题附加显式寻址标签。它用于找到标题。
+
+|`[.example, owner=writing-team]`
+|role 和 named attributes 保留标题的作用与附加字段。
 
 |`summary::` + 下一行说明文本
 |标题下描述列表字段。用于较多字段或多行字段值。
 
-|`pass:[xref:stable-id[显示文本]]`
+|`pass:[xref:标题[显示文本]]`
 |显示为链接，投影为 references。
 
-|`pass:[xref:stable-id[显示文本, rel=depends-on]]`
+|`pass:[xref:标题[显示文本, rel=depends-on]]`
 |显示为链接，同时声明 depends-on 关系。
 
 |===
 
 全书标题需要保持 `标题层级连续`。
 
-role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段可以写在标题 attrlist、标题下描述列表或 xref named attributes 中。
+role 描述标题在书中的作用。rel 描述 xref 边上的关系谓词。附加字段可以写在标题 attrlist、标题下描述列表或 xref named attributes 中。
+
+标题改名时，更新引用；旧称有保留价值时写入别名。概念被拆分或废止时，保留历史标题并写明后续使用的标题。
 
 `[appendix]`、`[glossary]` 和 `[bibliography]` 是 section style。它们改变紧随其后 section 的语义；标题层级仍由 `=` 数量决定。
 

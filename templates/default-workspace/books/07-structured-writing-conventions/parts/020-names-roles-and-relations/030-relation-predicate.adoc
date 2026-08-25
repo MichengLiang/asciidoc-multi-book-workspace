@@ -5,8 +5,8 @@
 
 [source,asciidoc]
 ----
-引用规则参见 xref:regular-heading[常规标题]。
-引用规则依赖 xref:regular-heading[常规标题, rel=depends-on]。
+引用规则参见 xref:常规标题[]。
+引用规则依赖 xref:常规标题[常规标题, rel=depends-on]。
 ----
 
 第一行投影为 `aat:references`，即默认引用谓词。第二行声明 `rel=depends-on`，投影为 `rel:depends-on`。
@@ -19,6 +19,6 @@ illustrates:: 当前标题提供目标标题的示例。
 defines:: 当前标题给出目标标题所代表对象的定义。
 constrains:: 当前标题对目标标题的合法写法或范围施加约束。
 
-关系谓词描述标题之间的边。标题自身的身份使用 role 表达。
+关系谓词描述标题之间的边。标题在书中的作用由 role 表达。
 
 标题之间的阅读顺序和先读建议，使用普通 xref（默认 `aat:references`）表达。

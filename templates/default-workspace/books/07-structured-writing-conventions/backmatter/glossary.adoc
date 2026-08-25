@@ -4,12 +4,13 @@
 
 [glossary]
 heading:: 使用等号标题创建的书稿结构单位。
-stable ID:: 作者为标题显式声明的稳定引用地址，语法为 `[#id]`。
-仅当标题被交叉引用、且标题文本自身不能保证全局唯一和不变时才需使用。
-若标题文本已是领域内唯一的稳定标识符（如实体名称、标准化编号），
-标题文本本身即承担 stable ID 的寻址功能，无需额外声明。
+规范名称:: 当前书稿采用的标题名称。
+显式寻址标签:: 作者用 `[#label]` 附加给标题的地址标签。它用于找到标题。
+别名:: 标题以外仍有检索、历史或语境价值的名称。
+不透明记录键:: 工具层用于跨改名追踪同一条记录的机器键。
+内容哈希:: 标识某次冻结内容的校验值。
 source-order notation:: 写在源文件路径表面的排序符号。
-role:: 标题身份标记，例如 `.concept` 或 `.rule`。
+role:: 标题节点在书中承担的叙述作用，例如 `.concept`、`.rule` 或 `.example`。
 ordinary reference:: 普通 xref。投影时使用默认谓词 `aat:references`。
 relation predicate:: xref `rel` 字段选择的边谓词。
 source heading:: xref 所在的标题。

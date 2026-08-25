@@ -5,10 +5,10 @@
 
 [source,asciidoc]
 ----
-[#example.example, owner=writing-team]
+[.example, owner=writing-team]
 == 示例
 
-示例说明 xref:regular-heading[常规标题, rel=illustrates, weight=strong]。
+示例说明 xref:常规标题[rel=illustrates, weight=strong]。
 ----
 
 `.example` 是 role。`owner=writing-team` 是标题附加字段。`weight=strong` 是 xref 边证据上的附加字段。
@@ -19,7 +19,7 @@
 
 [source,asciidoc]
 ----
-[#rule.example, status=active]
+[.example, status=active]
 == 示例规则
 
 priority:: normal
@@ -33,3 +33,16 @@ summary::
 `priority:: normal` 和 `summary::` 属于 `示例规则` 标题的附加字段。投影时它们成为标题字段，例如 `aat:priority` 和 `aat:summary`。
 
 字段名和字段值来自本书自己的约定。同一本书使用附加字段时，应保持字段写法和字段含义稳定。
+
+[source,asciidoc]
+----
+[.concept]
+== 宿舍集中备考者
+
+aliases::
+
+* 宿舍高强度备考者（旧称）
+* 宿舍备考学生（常用称呼）
+----
+
+`aliases` 记录其他名称；它不取代标题，也不作为隐藏的第二个规范名称。
