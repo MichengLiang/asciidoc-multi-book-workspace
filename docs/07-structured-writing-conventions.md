@@ -1,71 +1,446 @@
-<document>
-<format_guide>
-本次文件扫描结果使用XML标签标识各个结构化区域。
+// file: books/07-structured-writing-conventions/book.adoc
+= 结构化书写约定标本
+作者 <author@example.com>
+v0.1, 2026-05
+:doctype: book
+:toc: left
+:toclevels: 3
+:sectnums:
+:partnums:
+:part-signifier: Part
+:icons: font
+:experimental:
+:idprefix:
+:idseparator: -
 
-标签说明：
-- <summary_stats> : 项目统计信息，以Markdown表格呈现
-- <directory_tree> : ASCII目录树结构，包裹在代码块中
-- <file_contents> : 所有源文件的完整内容
+include::../../shared/attributes.adoc[]
 
-文件内容格式说明：
-每个文件使用 unified diff 格式头部作为边界和元信息标记：
---- NUL                   (表示新文件)
-+++ b/<相对路径>           (文件路径)
-@@ -0,0 +1,<行数> @@       (文件行数)
-<实际内容>                 (文件内容，无+前缀)
-文件之间通过新的 '--- NUL' 行分隔。
-</format_guide>
+[abstract]
+include::frontmatter/abstract.adoc[]
 
-<summary_stats>
+[colophon]
+include::frontmatter/colophon.adoc[]
 
-| 项目 | 数量 |
-|---|---|
-| 总文件数 | 20 |
-| 二进制文件 | 0 |
-| 总大小 | 24.2 KB |
-| 总行数 | 621 |
+[dedication]
+include::frontmatter/dedication.adoc[]
 
-</summary_stats>
+[preface]
+include::frontmatter/preface.adoc[]
 
-<directory_tree>
+[acknowledgments]
+include::frontmatter/acknowledgments.adoc[]
 
-```
-└── 07-structured-writing-conventions
-    ├── book.adoc (1.5 KB)
-    ├── backmatter
-    │   ├── appendix-a.adoc (3.5 KB)
-    │   ├── appendix-b-decision-trees.adoc (6.3 KB)
-    │   ├── bibliography.adoc (0.6 KB)
-    │   └── glossary.adoc (1.0 KB)
-    ├── frontmatter
-    │   ├── abstract.adoc (0.2 KB)
-    │   ├── acknowledgments.adoc (0.1 KB)
-    │   ├── colophon.adoc (0.2 KB)
-    │   ├── dedication.adoc (0.1 KB)
-    │   └── preface.adoc (1.1 KB)
-    └── parts
-        ├── 010-source-surface
-        │   ├── 010-source-and-projection.adoc (3.0 KB)
-        │   ├── 020-default-semantics.adoc (1.3 KB)
-        │   ├── 030-source-order-notation.adoc (1.3 KB)
-        │   └── _partintro.adoc (0.1 KB)
-        ├── 020-identity-and-relation
-        │   ├── 010-role-identity.adoc (0.7 KB)
-        │   ├── 020-relation-predicate.adoc (1.2 KB)
-        │   └── _partintro.adoc (0.3 KB)
-        └── 030-fields-and-terminology
-            ├── 010-surface-fields.adoc (1.3 KB)
-            ├── 020-glossary.adoc (0.3 KB)
-            └── _partintro.adoc (0.1 KB)
-```
+= 从源文档看结构
 
-</directory_tree>
+[partintro]
+include::parts/010-source-surface/_partintro.adoc[]
 
-<file_contents>
+include::parts/010-source-surface/010-source-and-projection.adoc[]
 
---- NUL
-+++ b/backmatter/appendix-a.adoc
-@@ -0,0 +1,75 @@
+include::parts/010-source-surface/020-heading-address-and-xref.adoc[]
+
+include::parts/010-source-surface/030-source-order-notation.adoc[]
+
+= 名称、角色与关系
+
+[partintro]
+include::parts/020-names-roles-and-relations/_partintro.adoc[]
+
+include::parts/020-names-roles-and-relations/010-names-and-address-labels.adoc[]
+
+include::parts/020-names-roles-and-relations/020-heading-roles.adoc[]
+
+include::parts/020-names-roles-and-relations/030-relation-predicate.adoc[]
+
+= 字段与术语
+
+[partintro]
+include::parts/030-fields-and-terminology/_partintro.adoc[]
+
+include::parts/030-fields-and-terminology/010-surface-fields.adoc[]
+
+include::parts/030-fields-and-terminology/020-glossary.adoc[]
+
+[appendix]
+include::backmatter/appendix-a.adoc[]
+
+[appendix]
+include::backmatter/appendix-b-decision-trees.adoc[]
+
+[glossary]
+include::backmatter/glossary.adoc[]
+
+[bibliography]
+include::backmatter/bibliography.adoc[]
+
+// file: shared/attributes.adoc
+:series-name: AsciiDoc 多本书工作区示例
+:source-format: AsciiDoc
+
+// file: books/07-structured-writing-conventions/frontmatter/abstract.adoc
+== 摘要
+
+本书说明标题、引用、role、rel 和附加字段怎样共同构成可读、可维护、可投影的源文档。标题保存当前规范名称；引用用地址找到标题；显式寻址标签只在已有技术地址需要保留时使用。
+
+// file: books/07-structured-writing-conventions/frontmatter/colophon.adoc
+== 版本说明
+
+本文档属于 `{series-name}`。colophon 位于书籍前置区域，记录本样本书的版本、来源或出版信息。
+
+示例版本：v0.1。
+
+// file: books/07-structured-writing-conventions/frontmatter/dedication.adoc
+== 献辞
+
+献给每一位愿意为自己写下的标题、引用和标记负责的作者。
+
+// file: books/07-structured-writing-conventions/frontmatter/preface.adoc
+== 前言
+
+这本书把标题、引用、role、rel 和附加字段放在同一份 AsciiDoc 源文档中。标题给出当前规范名称；xref 找到标题；role 说明标题在书中的作用；rel 说明引用表达的关系。
+
+显式寻址标签只保留已经存在的技术地址。旧称、俗称和历史名称写入别名，不隐藏在地址字符串中。字段较少且值较短时写在标题 attrlist；字段较多或需要多行值时写在标题下的连续描述列表。
+
+同一份源文档因此同时保留阅读结构、维护所需的名称和关系，以及工具可以继续投影的字段。
+
+// file: books/07-structured-writing-conventions/frontmatter/acknowledgments.adoc
+== 致谢
+
+感谢 Asciidoctor 和 RDF 投影相关文档提供术语与结构坐标。
+
+// file: books/07-structured-writing-conventions/parts/010-source-surface/_partintro.adoc
+标题、引用和文件路径同时构成书稿的阅读结构与可投影的源文档表面。
+
+// file: books/07-structured-writing-conventions/parts/010-source-surface/010-source-and-projection.adoc
+[#source-and-projection]
+== 源文本与投影
+
+本章用一段示例展示结构化书写约定。Turtle 片段列出关键投影事实；完整投影还会保留 raw、路径、行号和边证据。
+本章节的演示展示文字如何形成清晰的查询与导航结构。
+
+[source,asciidoc]
+----
+= 结构化写作样例
+
+[.concept]
+== 常规标题
+
+常规标题提供可引用的阅读单位。
+
+[.example]
+=== 基本语法
+
+基本语法是常规标题下的直接子标题。
+
+[.rule]
+== 引用规则
+
+引用规则参见 xref:常规标题[]。
+引用规则依赖 xref:常规标题[常规标题, rel=depends-on, weight=strong]。
+----
+
+源文档把 `常规标题` 写成可引用的阅读单位，在其下写出 `基本语法` 子标题，把 `引用规则` 写成规则说明，并在正文里写出参见和依赖两种引用。
+
+Turtle 示例中的 `<urn:aat:doc:...#heading-*>` 和 `<urn:aat:doc:...#xref-edge-*>` 表示投影生成的文档节点 IRI。本例没有为标题附加显式寻址标签，因此 `aat:addressLabel` 与标题文字一致。
+
+[source,turtle]
+----
+<urn:aat:doc:...#heading-l3-o0> a aat:Heading ;
+  aat:headline "常规标题" ;
+  aat:addressLabel "常规标题" ;
+  aat:role "concept" ;
+  aat:containsDirectly <urn:aat:doc:...#heading-l8-o0> .
+
+<urn:aat:doc:...#heading-l8-o0> a aat:Heading ;
+  aat:headline "基本语法" ;
+  aat:addressLabel "基本语法" ;
+  aat:role "example" .
+
+<urn:aat:doc:...#heading-l13-o0> a aat:Heading ;
+  aat:headline "引用规则" ;
+  aat:addressLabel "引用规则" ;
+  aat:role "rule" ;
+  aat:references <urn:aat:doc:...#heading-l3-o0> ;
+  rel:depends-on <urn:aat:doc:...#heading-l3-o0> .
+
+<urn:aat:doc:...#xref-edge-l17-c8-o0> a aat:XrefEdge ;
+  aat:rel "depends-on" ;
+  aat:weight "strong" .
+----
+
+源文档中的 [.concept]#常规标题# 是被引用的阅读单位，`基本语法` 是它的下级标题， [.rule]#引用规则# 说明引用写法。投影读取同一份源文档，为标题生成 IRI，并在标题节点上保留 `aat:headline`、`aat:addressLabel` 和 `aat:role`；标题层级投影为 `aat:containsDirectly`，xref 投影为 `aat:references` 和 `rel:depends-on`。
+
+[source,asciidoc]
+----
+[.concept]
+== 林黛玉
+
+林黛玉是……她与 xref:贾宝玉[rel=love] 有木石前盟。
+----
+
+此处的 `pass:[xref:贾宝玉]` 直接使用标题文本作为寻址地址，
+因为“贾宝玉”在当前书稿中作为唯一标题名称使用。
+交叉引用宏语法是 `pass:[xref:目标标题[可选显示文本]]`，所以这里省略了显示文本，渲染引擎默认会展示标题文字。
+
+'''
+
+再来看看这样的场景： 标题是编号型标识符，且被交叉引用
+
+例如： `REQ-2024-0088`、`TC-AUTH-032`、`ADR-2024-015`，他们的标题本身就是编号，是人为设计的全局唯一标识符， 需要尊重他的原来的结构与语义。
+
+[source,asciidoc]
+----
+[.requirement, category=性能]
+== REQ-2024-0088
+----
+
+`REQ-2024-0088` 是本书采用的编号名称。编号制度负责分配和唯一性，引用直接使用该编号：`pass:[xref:REQ-2024-0088[REQ-2024-0088, rel=constrains]]`
+
+// file: books/07-structured-writing-conventions/parts/010-source-surface/020-heading-address-and-xref.adoc
+[#heading-address-and-xref]
+== 标题、寻址与引用
+
+等号行创建标题和层级。标题给出当前规范名称；标题前的 attrlist 可以承载 role 和字段。
+
+[source,asciidoc]
+----
+[.concept]
+== 常规标题
+----
+
+`.concept` 标明标题在书中的作用。`常规标题` 是当前规范名称。
+
+[source,asciidoc]
+----
+引用规则参见 xref:常规标题[]。
+----
+
+该 xref 投影为 `aat:references`，即默认引用谓词。
+
+[source,asciidoc]
+----
+引用规则依赖 xref:常规标题[常规标题, rel=depends-on]。
+----
+
+`rel=depends-on` 声明从当前标题到目标标题的依赖关系，投影为 `rel:depends-on`。
+
+[source,asciidoc]
+----
+[#catalog-entry-482]
+== 宿舍集中备考者
+----
+
+`catalog-entry-482` 是附加给标题的显式寻址标签。外部目录已经使用这个地址时，引用可以继续使用它；标题“宿舍集中备考者”仍是当前规范名称。本书各章开头的英文标签用于阅读器页面地址；它们负责找到章节。
+
+[TIP]
+====
+1. 显式寻址标签只在已有技术地址、外部链接或阅读器页面需要保留时出现。没有这种需要时，标题直接承担引用地址。写法速查见 xref:structured-writing-quick-reference[附录 A：结构化写法速查]；完整判断流程见 xref:structured-writing-decision-trees[附录 B：结构化写法决策树]。
+2. 按照书籍结构，跨越 `= 书名`、`= 卷/部`、`== 章` 这些大跨度的指代均需要使用 `xref` 手动标注，平衡隐式上下文的阅读压力。
+====
+
+标题声明角色后，其下级标题默认属于同一角色范围。下级标题可声明不同角色以切换语境。
+
+例如:
+
+[source,asciidoc]
+----
+[.rule]
+== 引用规则
+
+=== 基本语法
+
+[.example]
+=== 一个完整示例
+----
+
+// file: books/07-structured-writing-conventions/parts/010-source-surface/030-source-order-notation.adoc
+[#source-order-notation]
+== 源文件编排号
+
+源文件编排号写在 part 目录名和 chapter 文件名前部。
+
+Part 目录和 Chapter 文件统一使用三位数 `0X0` 格式进行编排。
+
+* 初始序列以 `10` 为步长：`010`、`020`、`030`……
+* 十位数字（`X`）用于线性递增，以追加新内容。
+* 个位数字（`0`）预留空间用于中间插入。
+
+[source,text]
+----
+parts/010-source-surface/
+parts/015-new-topic/       <1>
+parts/020-names-roles-and-relations/
+
+010-opening.adoc
+015-new-context.adoc       <2>
+020-main-flow.adoc
+----
+<1> 使用 `015` 在 `010` 和 `020` 两个 Part 之间插入。
+<2> 使用 `015` 在 `010` 和 `020` 两个 Chapter 之间插入。
+
+**操作规则：**
+
+作者需要两个原子操作：
+
+. **末尾追加**：取当前最大编号，将其十位数字加 `1`，个位保持 `0`。例如，`090` 之后是 `100`。
+. **中间插入**：在 A 与 B 之间插入时，新编号取 A 和 B 的**算术中间值**。例如，在 `010` 与 `020` 之间插入，使用 `015`。此策略可确保插入后仍为后续插入保留最大空间。
+
+使用三位数 `0X0` 格式，能够解决书籍动态维护过程中编号格式的稳定。
+
+编排号只安排源文件顺序。标题保存当前规范名称；引用用标题或已有的显式寻址标签找到标题。
+
+编排号、标题和寻址标签承担不同职责，不互相替代。
+
+// file: books/07-structured-writing-conventions/parts/020-names-roles-and-relations/_partintro.adoc
+标题给出当前名称；寻址标签提供已有的技术地址；role 说明标题节点在书中的作用；rel 说明标题之间的关系。
+
+// file: books/07-structured-writing-conventions/parts/020-names-roles-and-relations/010-names-and-address-labels.adoc
+[#names-and-address-labels]
+== 名称变化与寻址标签
+
+标题不只是排版上的显示文字。它是当前书稿采用的名称，也是读者、项目和引用者正在使用的名称。
+
+[.population]
+=== 宿舍集中备考者
+
+别名::
+
+* 宿舍高强度备考者（旧称）
+* 宿舍备考学生（常用称呼）
+
+标题改成“宿舍集中备考者”后，书中的 xref 与装配引用随标题更新。“宿舍高强度备考者”仍有历史检索价值时，作为旧称保留在别名中。
+
+名称变得更准确时，改标题并更新引用。概念边界改变时，同时检查描述、纳入条件、排除条件、相关标题和既有结论。旧概念被拆分或废止时，保留历史标题，写明后续应使用的标题。
+
+显式寻址标签只保留已有的技术地址。带有语义的标签是地址别名，不替代标题，也不代替概念变化的审查。
+
+工具若要跨改名追踪同一条记录，由工具层保存不透明记录键。某次冻结内容的校验，由内容哈希或快照承担。标题继续保存当前规范名称。
+
+// file: books/07-structured-writing-conventions/parts/020-names-roles-and-relations/020-heading-roles.adoc
+[#heading-roles]
+== 标题的 role
+
+role 写在标题 attrlist 的点号 token 位置。
+
+[source,asciidoc]
+----
+[.concept]
+== 常规标题
+
+[.rule]
+== 引用规则
+----
+
+`.concept` 和 `.rule` 是 role。它们说明标题在当前书中承担概念说明或规则说明的作用。
+
+[cols="1,2", options="header"]
+|===
+|写法 |读者看到的作用
+
+|`[.concept]`
+|标记概念说明。
+
+|`[.rule]`
+|标记规则说明。
+
+|`[.example]`
+|标记示例。
+|===
+
+同一个 role 在全书中保持同一种叙述作用。
+
+一本书使用的 role 种类和数量，取决于该领域的概念结构。每种 role 的语义在全书中保持唯一。
+
+读者和工具链可以依据 role 进行导航文本和提取结构。
+
+// file: books/07-structured-writing-conventions/parts/020-names-roles-and-relations/030-relation-predicate.adoc
+[#relation-predicate]
+== rel 关系谓词
+
+`rel` 是 xref 边上的关系谓词。包含 xref 的标题是关系起点，xref 指向的标题是关系终点。本书把这两个位置称为 source heading 和 target heading。
+
+[source,asciidoc]
+----
+引用规则参见 xref:常规标题[]。
+引用规则依赖 xref:常规标题[常规标题, rel=depends-on]。
+----
+
+第一行投影为 `aat:references`，即默认引用谓词。第二行声明 `rel=depends-on`，投影为 `rel:depends-on`。
+
+`rel` 可以被读者和工具当作关系谓词，所以在全书范围内，每种 `rel` 谓词的语义需要保持唯一且不变。
+
+[horizontal]
+depends-on:: 当前标题的判断、规则或操作以目标标题为依据。阅读顺序和先读建议使用普通 xref 表达。
+illustrates:: 当前标题提供目标标题的示例。
+defines:: 当前标题给出目标标题所代表对象的定义。
+constrains:: 当前标题对目标标题的合法写法或范围施加约束。
+
+关系谓词描述标题之间的边。标题在书中的作用由 role 表达。
+
+标题之间的阅读顺序和先读建议，使用普通 xref（默认 `aat:references`）表达。
+
+// file: books/07-structured-writing-conventions/parts/030-fields-and-terminology/_partintro.adoc
+字段补充标题与引用已经表达的内容；术语表统一全书采用的名称。
+
+// file: books/07-structured-writing-conventions/parts/030-fields-and-terminology/010-surface-fields.adoc
+[#surface-fields]
+== 附加字段
+
+附加字段是写在源文档表面的键值信息。标题字段可以写在标题 attrlist 或标题下描述列表中；xref 边证据字段写在 xref named attributes 中。
+
+[source,asciidoc]
+----
+[.example, owner=writing-team]
+== 示例
+
+示例说明 xref:常规标题[rel=illustrates, weight=strong]。
+----
+
+`.example` 是 role。`owner=writing-team` 是标题附加字段。`weight=strong` 是 xref 边证据上的附加字段。
+
+`owner=writing-team` 写在标题 attrlist 中，投影时成为标题字段。`weight=strong` 写在 xref 中，投影时成为边证据字段。
+
+标题字段较少且值较短时，写在标题 attrlist 中。标题字段较多，或字段值需要换行时，写在标题下的第一个连续描述列表中。
+
+[source,asciidoc]
+----
+[.example, status=active]
+== 示例规则
+
+priority:: normal
+summary::
+示例规则说明标题字段的描述列表写法。
+多行说明保留为同一个标题字段。
+
+示例规则正文从这里开始。
+----
+
+`priority:: normal` 和 `summary::` 属于 `示例规则` 标题的附加字段。投影时它们成为标题字段，例如 `aat:priority` 和 `aat:summary`。
+
+字段名和字段值来自本书自己的约定。同一本书使用附加字段时，应保持字段写法和字段含义稳定。
+
+[source,asciidoc]
+----
+[.concept]
+== 宿舍集中备考者
+
+aliases::
+
+* 宿舍高强度备考者（旧称）
+* 宿舍备考学生（常用称呼）
+----
+
+`aliases` 记录其他名称；它不取代标题，也不作为隐藏的第二个规范名称。
+
+// file: books/07-structured-writing-conventions/parts/030-fields-and-terminology/020-glossary.adoc
+[#glossary-conventions]
+== 术语表
+
+术语表记录本书采用的关键用词。规范名称、显式寻址标签、别名、role、rel 和附加字段分别指向不同对象。
+
+role 说明标题节点在书中的作用；rel 说明引用边表达的关系。术语的定义集中维护在书后的术语表中。
+
+// file: books/07-structured-writing-conventions/backmatter/appendix-a.adoc
 [#structured-writing-quick-reference]
 = 附录 A：结构化写法速查
 
@@ -100,33 +475,34 @@
 |`010-opening.adoc`
 |Chapter 文件的源文件编排号。规则与 Part 目录编排号一致。
 
-|`[#stable-id]`
-|为标题声明一个稳定的引用地址。稳定 ID 仅当以下两个条件同时满足时才需显式声明：
-(1) 该标题被至少一个 `xref` 交叉引用；
-(2) 标题文本本身可能变更或在全书范围内可能重复。
-若标题本身已是领域内唯一且稳定的标识符（如专有名词、唯一实体名、标准化编号），即使被交叉引用，也无需额外声明稳定 ID——标题文本即地址。
+|`== 标题`
+|创建标题节点；标题给出当前规范名称。
 
-|`[#stable-id.concept]`
-|声明稳定 ID，并用 role 标明标题身份。
-需要能够回答： “这个标题在整本书的知识体系中扮演什么认知功能”
+|`[.concept]`
+|用 role 标记标题在书中的作用。
 
-|`[#example.example, owner=writing-team]`
-|role 声明标题身份；named attributes 保留附加字段。
+|`[#address-label]`
+|为标题附加显式寻址标签。它用于找到标题。
+
+|`[.example, owner=writing-team]`
+|role 和 named attributes 保留标题的作用与附加字段。
 
 |`summary::` + 下一行说明文本
 |标题下描述列表字段。用于较多字段或多行字段值。
 
-|`pass:[xref:stable-id[显示文本]]`
+|`pass:[xref:标题[显示文本]]`
 |显示为链接，投影为 references。
 
-|`pass:[xref:stable-id[显示文本, rel=depends-on]]`
+|`pass:[xref:标题[显示文本, rel=depends-on]]`
 |显示为链接，同时声明 depends-on 关系。
 
 |===
 
 全书标题需要保持 `标题层级连续`。
 
-role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段可以写在标题 attrlist、标题下描述列表或 xref named attributes 中。
+role 描述标题在书中的作用。rel 描述 xref 边上的关系谓词。附加字段可以写在标题 attrlist、标题下描述列表或 xref named attributes 中。
+
+标题改名时，更新引用；旧称有保留价值时写入别名。概念被拆分或废止时，保留历史标题并写明后续使用的标题。
 
 `[appendix]`、`[glossary]` 和 `[bibliography]` 是 section style。它们改变紧随其后 section 的语义；标题层级仍由 `=` 数量决定。
 
@@ -142,9 +518,7 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段�
 
 结构化写法的选择由当前对象、引用需求、投影需求和维护成本共同决定。具体判定流程见 xref:structured-writing-decision-trees[附录 B：结构化写法决策树]。
 
---- NUL
-+++ b/backmatter/appendix-b-decision-trees.adoc
-@@ -0,0 +1,152 @@
+// file: books/07-structured-writing-conventions/backmatter/appendix-b-decision-trees.adoc
 [#structured-writing-decision-trees]
 = 附录 B：结构化写法决策树
 
@@ -174,33 +548,38 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段�
    └─ 否：写入标准等号标题。流程结束。
 ----
 
-== stable ID 的生命周期与寻址机制
+== 名称变化与寻址标签
 
-触发场景:: 作者评估是否需要为当前标题显式声明寻址 ID。
-
-[source,text]
-----
-1. 当前标题文本是否已是领域内唯一且稳定的标识符？
-   ├─ 是：不声明 `[#stable-id]`；直接使用标题文本作为引用地址。流程结束。
-   └─ 否：评估交叉引用状态。
-
-2. 该标题在全书范围内是否被至少一个 `xref` 交叉引用？
-   ├─ 否：不声明 `[#stable-id]`。流程结束。
-   └─ 是：在等号标题上方的 attrlist 中显式声明 `[#stable-id]`。流程结束。
-----
-
-触发场景:: 项目全局构建或审查阶段检查 stable ID 消费状态。
+触发场景:: 作者发现当前标题、旧称或引用地址发生变化。
 
 [source,text]
 ----
-1. 扫描源文件中所有手工显式声明的 `[#stable-id]`。
-   ├─ 每个 ID 对应的 xref 引用次数 >= 1：保留声明，审查通过。
-   └─ 某个 ID 对应的 xref 引用次数 == 0：移除该 `[#stable-id]` 声明。
+1. 当前标题还是该对象的规范名称吗？
+   ├─ 是：继续使用标题。
+   └─ 否：判断变化类型。
+
+2. 只是换成更准确的名称吗？
+   ├─ 是：改标题，更新引用；旧称有价值时写入别名。
+   └─ 否：检查概念边界。
+
+3. 概念边界改变了吗？
+   ├─ 是：检查描述、纳入条件、排除条件、相关标题和既有结论。
+   └─ 否：完成名称更新。
+
+4. 旧概念被拆分或废止了吗？
+   ├─ 是：保留历史标题，写明后续标题。
+   └─ 否：继续维护当前标题。
+
+5. 是否已有外部技术地址必须保留？
+   ├─ 是：为标题保留显式寻址标签。
+   └─ 否：不增加标签。
 ----
+
+跨改名追踪记录和冻结内容版本，由工具层分别处理，不由标题的显式寻址标签承担。
 
 == role 的作用域与语境管理
 
-触发场景:: 作者为标题标记认知功能与身份语义。
+触发场景:: 作者为标题标记认知作用。
 前提:: 当前书稿已经约定 role 受控词表，例如 `.concept`、`.rule`、`.example`。
 
 [source,text]
@@ -232,7 +611,7 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段�
 
 3. 引用目的是什么？
    ├─ 表达阅读顺序、先读建议或普通参见：
-   │      写入普通 xref，例如 `xref:target-id[显示文本]`。
+   │      写入普通 xref，例如 `xref:目标标题[显示文本]`。
    │      投影为默认谓词 `aat:references`。流程结束。
    └─ 声明明确的逻辑关系边：选取 `rel` 谓词。
 
@@ -298,9 +677,27 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段�
    └─ 否：正常书写。流程结束。
 ----
 
---- NUL
-+++ b/backmatter/bibliography.adoc
-@@ -0,0 +1,9 @@
+// file: books/07-structured-writing-conventions/backmatter/glossary.adoc
+= 术语表
+
+本术语表记录结构化书写约定中的核心术语。
+
+[glossary]
+heading:: 使用等号标题创建的书稿结构单位。
+规范名称:: 当前书稿采用的标题名称。
+显式寻址标签:: 作者用 `[#label]` 附加给标题的地址标签。它用于找到标题。
+别名:: 标题以外仍有检索、历史或语境价值的名称。
+不透明记录键:: 工具层用于跨改名追踪同一条记录的机器键。
+内容哈希:: 标识某次冻结内容的校验值。
+source-order notation:: 写在源文件路径表面的排序符号。
+role:: 标题节点在书中承担的叙述作用，例如 `.concept`、`.rule` 或 `.example`。
+ordinary reference:: 普通 xref。投影时使用默认谓词 `aat:references`。
+relation predicate:: xref `rel` 字段选择的边谓词。
+source heading:: xref 所在的标题。
+target heading:: xref selector 指向的标题。
+surface field:: 源文档表面的附加字段。标题字段可来自标题 attrlist 或标题下描述列表；xref 边字段来自 xref named attributes。
+
+// file: books/07-structured-writing-conventions/backmatter/bibliography.adoc
 = 参考坐标
 
 以下资料提供 AsciiDoc 标题、交叉引用、元素属性和描述列表的参考坐标。
@@ -310,460 +707,3 @@ role 描述标题身份。rel 描述 xref 边上的关系谓词。附加字段�
 * [[[asciidoctor-attributes]]] Asciidoctor Docs, Element Attributes, https://docs.asciidoctor.org/asciidoc/latest/attributes/element-attributes/
 * [[[asciidoctor-description-lists]]] Asciidoctor Docs, Description Lists, https://docs.asciidoctor.org/asciidoc/latest/lists/description/
 * [[[asciidoctor-sections]]] Asciidoctor Docs, Sections, https://docs.asciidoctor.org/asciidoc/latest/sections/
-
---- NUL
-+++ b/backmatter/glossary.adoc
-@@ -0,0 +1,17 @@
-= 术语表
-
-本术语表记录结构化书写约定中的核心术语。
-
-[glossary]
-heading:: 使用等号标题创建的书稿结构单位。
-stable ID:: 作者为标题显式声明的稳定引用地址，语法为 `[#id]`。
-仅当标题被交叉引用、且标题文本自身不能保证全局唯一和不变时才需使用。
-若标题文本已是领域内唯一的稳定标识符（如实体名称、标准化编号），
-标题文本本身即承担 stable ID 的寻址功能，无需额外声明。
-source-order notation:: 写在源文件路径表面的排序符号。
-role:: 标题身份标记，例如 `.concept` 或 `.rule`。
-ordinary reference:: 普通 xref。投影时使用默认谓词 `aat:references`。
-relation predicate:: xref `rel` 字段选择的边谓词。
-source heading:: xref 所在的标题。
-target heading:: xref selector 指向的标题。
-surface field:: 源文档表面的附加字段。标题字段可来自标题 attrlist 或标题下描述列表；xref 边字段来自 xref named attributes。
-
---- NUL
-+++ b/frontmatter/abstract.adoc
-@@ -0,0 +1,3 @@
-== 摘要
-
-本书展示标题、稳定 ID、role、xref、rel 和附加字段形成可读、可维护、可投影的源文档的方式。作者可按写作目的选择其中写法。
-
---- NUL
-+++ b/frontmatter/acknowledgments.adoc
-@@ -0,0 +1,3 @@
-== 致谢
-
-感谢 Asciidoctor 和 RDF 投影相关文档提供稳定术语和结构坐标。
-
---- NUL
-+++ b/frontmatter/colophon.adoc
-@@ -0,0 +1,5 @@
-== 版本说明
-
-本文档属于 `{series-name}`。colophon 位于书籍前置区域，记录本样本书的版本、来源或出版信息。
-
-示例版本：v0.1。
-
---- NUL
-+++ b/frontmatter/dedication.adoc
-@@ -0,0 +1,3 @@
-== 献辞
-
-献给每一位愿意为自己写下的标题、引用和标记负责的作者。
-
---- NUL
-+++ b/frontmatter/preface.adoc
-@@ -0,0 +1,14 @@
-== 前言
-
-这本书按源文档写法组织。阅读时先看源文档片段和投影片段，再对照后续章节理解每个标记承担的职责。
-
-实际书稿按写作目的选择这些写法。
-长期引用且标题文本可能变更的标题使用稳定 ID；
-若标题本身已是唯一且稳定的实体名称，标题文本直接作为引用地址。
-带有明确身份的标题使用 role；表达关系的引用使用 rel；
-随源稿保留的短字段使用 named attributes；字段较多或需要多行值的标题字段使用标题下描述列表。
-
-业务含义由书稿自己的约定承载。本书展示同一份 AsciiDoc 源文本如何同时服务阅读、维护和工具链投影。
-
-通过展示标题、稳定 ID、role、xref、rel 和附加字段如何形成可读、可维护、可投影的源文档，让你能够理解，你可以拥有一种这样的表达方式，可以按照某种约定，就能够提升你书籍的质量，能够让下游的工具链继续消费你的书。 你可以参考本书里你所需要的结构。
-合适的结构能够提升书籍的可阅读、可维护性。你可以按写作目的选择其中写法。
-
---- NUL
-+++ b/parts/010-source-surface/010-source-and-projection.adoc
-@@ -0,0 +1,83 @@
-[#source-and-projection]
-== 源文本与投影
-
-本章用一段示例展示结构化书写约定。Turtle 片段列出关键投影事实；完整投影还会保留 raw、路径、行号和边证据。
-希望你能通过本章节的演示来理解你写下的文字能够给未来的你提供稳定的查询与导航结构。
-
-[source,asciidoc]
-----
-= 结构化写作样例
-
-[#regular-heading.concept]
-== 常规标题
-
-常规标题提供可引用的阅读单位。
-
-[#basic-syntax.example]
-=== 基本语法
-
-基本语法是常规标题下的直接子标题。
-
-[#xref-rule.rule]
-== 引用规则
-
-引用规则参见 xref:regular-heading[常规标题]。
-引用规则依赖 xref:regular-heading[常规标题, rel=depends-on, weight=strong]。
-----
-
-源文档把 `常规标题` 写成可引用的阅读单位，在其下写出 `基本语法` 子标题，把 `引用规则` 写成规则说明，并在正文里写出参见和依赖两种引用。
-
-Turtle 示例中的 `<urn:aat:doc:...#heading-*>` 和 `<urn:aat:doc:...#xref-edge-*>` 表示投影生成的 IRI；`aat:addressLabel` 保留源文档中的寻址 label。
-
-[source,turtle]
-----
-<urn:aat:doc:...#heading-l3-o0> a aat:Heading ;
-  aat:headline "常规标题" ;
-  aat:addressLabel "regular-heading" ;
-  aat:role "concept" ;
-  aat:containsDirectly <urn:aat:doc:...#heading-l8-o0> .
-
-<urn:aat:doc:...#heading-l8-o0> a aat:Heading ;
-  aat:headline "基本语法" ;
-  aat:addressLabel "basic-syntax" ;
-  aat:role "example" .
-
-<urn:aat:doc:...#heading-l13-o0> a aat:Heading ;
-  aat:headline "引用规则" ;
-  aat:addressLabel "xref-rule" ;
-  aat:role "rule" ;
-  aat:references <urn:aat:doc:...#heading-l3-o0> ;
-  rel:depends-on <urn:aat:doc:...#heading-l3-o0> .
-
-<urn:aat:doc:...#xref-edge-l17-c8-o0> a aat:XrefEdge ;
-  aat:rel "depends-on" ;
-  aat:weight "strong" .
-----
-
-读者看源文档，能直接看到 [.concept]#常规标题# 是被引用的阅读单位，`基本语法` 是它的下级标题， [.rule]#引用规则# 说明引用写法。投影读取同一份源文档，为标题生成 IRI，并在标题节点上保留 `aat:headline`、`aat:addressLabel` 和 `aat:role`；标题层级投影为 `aat:containsDirectly`，xref 投影为 `aat:references` 和 `rel:depends-on`。
-
-[source,asciidoc]
-----
-[.concept]
-== 林黛玉
-
-林黛玉是……她与 xref:贾宝玉[rel=love] 有木石前盟。
-----
-
-此处的 `pass:[xref:贾宝玉]` 直接使用标题文本作为寻址地址，
-因为“贾宝玉”在本书范围内唯一且不会变更为其他名称。
-交叉引用宏语法是 `pass:[xref:target-id[optional-display-text]]` ，所以这里省略了别名，渲染引擎默认会展示标题文字。
-
-'''
-
-再来看看这样的场景： 标题是编号型标识符，且被交叉引用
-
-例如： `REQ-2024-0088`、`TC-AUTH-032`、`ADR-2024-015`，他们的标题本身就是编号，是人为设计的全局唯一标识符， 需要尊重他的原来的结构与语义。
-
-[source,asciidoc]
-----
-[.requirement, category=性能]
-== REQ-2024-0088
-----
-
-引用时可以这样： `pass:[xref:REQ-2024-0088[REQ-2024-0088, rel=constrains]]`
-
---- NUL
-+++ b/parts/010-source-surface/020-default-semantics.adoc
-@@ -0,0 +1,47 @@
-[#heading-and-xref]
-== 标题与引用
-
-等号行声明标题和层级。标题前的 attrlist 承载地址、role 和字段。
-
-[source,asciidoc]
-----
-[#regular-heading.concept]
-== 常规标题
-----
-
-`[#regular-heading]` 声明一个稳定地址。 `.concept` 标明标题身份。 `常规标题` 是标题文本。
-
-[source,asciidoc]
-----
-引用规则参见 xref:regular-heading[常规标题]。
-----
-
-该 xref 投影为 `aat:references`，即默认引用谓词。
-
-[source,asciidoc]
-----
-引用规则依赖 xref:regular-heading[常规标题, rel=depends-on]。
-----
-
-`rel=depends-on` 声明从当前标题到目标标题的依赖关系，投影为 `rel:depends-on`。
-
-[TIP]
-====
-1. 全书中手工声明的稳定地址至少需要一个 `xref` 消费。写法速查见 xref:structured-writing-quick-reference[附录 A：结构化写法速查]；完整判断流程见 xref:structured-writing-decision-trees[附录 B：结构化写法决策树]。
-2. 按照书籍结构，跨越 `= 书名`、`= 卷/部`、`== 章` 这些大跨度的指代均需要使用 `xref` 手动标注，平衡隐式上下文的阅读压力。
-====
-
-标题声明角色后，其下级标题默认属于同一角色范围。下级标题可声明不同角色以切换语境。
-
-例如:
-
-[source,asciidoc]
-----
-[.rule]
-== 引用规则
-
-=== 基本语法
-
-[.example]
-=== 一个完整示例
-----
-
---- NUL
-+++ b/parts/010-source-surface/030-source-order-notation.adoc
-@@ -0,0 +1,36 @@
-[#source-order-notation]
-== 源文件编排号
-
-源文件编排号写在 part 目录名和 chapter 文件名前部。
-
-Part 目录和 Chapter 文件统一使用三位数 `0X0` 格式进行编排。
-
-* 初始序列以 `10` 为步长：`010`、`020`、`030`……
-* 十位数字（`X`）用于线性递增，以追加新内容。
-* 个位数字（`0`）预留空间用于中间插入。
-
-[source,text]
-----
-parts/010-source-surface/
-parts/015-new-topic/       <1>
-parts/020-identity-and-relation/
-
-010-opening.adoc
-015-new-context.adoc       <2>
-020-main-flow.adoc
-----
-<1> 使用 `015` 在 `010` 和 `020` 两个 Part 之间插入。
-<2> 使用 `015` 在 `010` 和 `020` 两个 Chapter 之间插入。
-
-**操作规则：**
-
-作者需要两个原子操作：
-
-. **末尾追加**：取当前最大编号，将其十位数字加 `1`，个位保持 `0`。例如，`090` 之后是 `100`。
-. **中间插入**：在 A 与 B 之间插入时，新编号取 A 和 B 的**算术中间值**。例如，在 `010` 与 `020` 之间插入，使用 `015`。此策略可确保插入后仍为后续插入保留最大空间。
-
-使用三位数 `0X0` 格式，能够解决书籍动态维护过程中编号格式的稳定。
-
-标题文本保留语义名称。长期引用的标题使用显式 ID。
-
-编排号帮助维护者观察源文件顺序；显式 ID 帮助读者和工具链稳定引用标题。
-
---- NUL
-+++ b/parts/010-source-surface/_partintro.adoc
-@@ -0,0 +1,1 @@
-本部从一段源文档出发，展示读者看到的写作意图和投影得到的结构事实。
-
---- NUL
-+++ b/parts/020-identity-and-relation/010-role-identity.adoc
-@@ -0,0 +1,35 @@
-[#role-identity]
-== role 身份
-
-role 写在标题 attrlist 的点号 token 位置。
-
-[source,asciidoc]
-----
-[#regular-heading.concept]
-== 常规标题
-
-[#xref-rule.rule]
-== 引用规则
-----
-
-`#regular-heading` 和 `#xref-rule` 是稳定 ID，`.concept` 和 `.rule` 是 role，标明标题身份。
-
-[cols="1,2", options="header"]
-|===
-|写法 |读者看到的身份
-
-|`[.concept]`
-|标记概念说明。
-
-|`[.rule]`
-|标记规则说明。
-
-|`[.example]`
-|标记示例。
-|===
-
-role 的职责，是在全书范围内保持身份含义的稳定。
-
-一本书使用的 role 种类和数量，取决于该领域的概念结构。每种 role 的语义在全书中保持唯一。
-
-读者和工具链可以依据 role 进行导航文本和提取结构。
-
---- NUL
-+++ b/parts/020-identity-and-relation/020-relation-predicate.adoc
-@@ -0,0 +1,24 @@
-[#relation-predicate]
-== rel 关系谓词
-
-`rel` 是 xref 边上的关系谓词。包含 xref 的标题是关系起点，xref 指向的标题是关系终点。本书把这两个位置称为 source heading 和 target heading。
-
-[source,asciidoc]
-----
-引用规则参见 xref:regular-heading[常规标题]。
-引用规则依赖 xref:regular-heading[常规标题, rel=depends-on]。
-----
-
-第一行投影为 `aat:references`，即默认引用谓词。第二行声明 `rel=depends-on`，投影为 `rel:depends-on`。
-
-`rel` 可以被读者和工具当作关系谓词，所以在全书范围内，每种 `rel` 谓词的语义需要保持唯一且不变。
-
-[horizontal]
-depends-on:: 当前标题的判断、规则或操作以目标标题为依据。阅读顺序和先读建议使用普通 xref 表达。
-illustrates:: 当前标题提供目标标题的示例。
-defines:: 当前标题给出目标标题所代表对象的定义。
-constrains:: 当前标题对目标标题的合法写法或范围施加约束。
-
-关系谓词描述标题之间的边。标题自身的身份使用 role 表达。
-
-标题之间的阅读顺序和先读建议，使用普通 xref（默认 `aat:references`）表达。
-
---- NUL
-+++ b/parts/020-identity-and-relation/_partintro.adoc
-@@ -0,0 +1,1 @@
-本部展示标题身份和引用关系。role 标明标题身份；rel 标明引用关系。 在书籍中，你需要主动根据你当前所建模的概念结构对各类词表（`role`、`rel` 或者其他更多）进行建模与约定，需要专门的词表约定章节清晰的写出你需要使用的受控词表，方便后续的使用。
-
---- NUL
-+++ b/parts/030-fields-and-terminology/010-surface-fields.adoc
-@@ -0,0 +1,35 @@
-[#surface-fields]
-== 附加字段
-
-附加字段是写在源文档表面的键值信息。标题字段可以写在标题 attrlist 或标题下描述列表中；xref 边证据字段写在 xref named attributes 中。
-
-[source,asciidoc]
-----
-[#example.example, owner=writing-team]
-== 示例
-
-示例说明 xref:regular-heading[常规标题, rel=illustrates, weight=strong]。
-----
-
-`.example` 是 role。`owner=writing-team` 是标题附加字段。`weight=strong` 是 xref 边证据上的附加字段。
-
-`owner=writing-team` 写在标题 attrlist 中，投影时成为标题字段。`weight=strong` 写在 xref 中，投影时成为边证据字段。
-
-标题字段较少且值较短时，写在标题 attrlist 中。标题字段较多，或字段值需要换行时，写在标题下的第一个连续描述列表中。
-
-[source,asciidoc]
-----
-[#rule.example, status=active]
-== 示例规则
-
-priority:: normal
-summary::
-示例规则说明标题字段的描述列表写法。
-多行说明保留为同一个标题字段。
-
-示例规则正文从这里开始。
-----
-
-`priority:: normal` 和 `summary::` 属于 `示例规则` 标题的附加字段。投影时它们成为标题字段，例如 `aat:priority` 和 `aat:summary`。
-
-字段名和字段值来自本书自己的约定。同一本书使用附加字段时，应保持字段写法和字段含义稳定。
-
---- NUL
-+++ b/parts/030-fields-and-terminology/020-glossary.adoc
-@@ -0,0 +1,6 @@
-[#glossary-conventions]
-== 术语表
-
-术语表记录本书采用的关键用词，并为它们给出稳定定义。role 标明标题身份，rel 标明引用关系。
-
-稳定术语帮助作者、读者和维护者使用同一组词理解源文档。术语的定义集中维护在书后的术语表中。
-
---- NUL
-+++ b/parts/030-fields-and-terminology/_partintro.adoc
-@@ -0,0 +1,1 @@
-本部展示字段和术语表。字段随源文档保留；术语表帮助读者统一理解本书采用的用词。
-
---- NUL
-+++ b/book.adoc
-@@ -0,0 +1,71 @@
-= 结构化书写约定标本
-作者 <author@example.com>
-v0.1, 2026-05
-:doctype: book
-:toc: left
-:toclevels: 3
-:sectnums:
-:partnums:
-:part-signifier: Part
-:icons: font
-:experimental:
-:idprefix:
-:idseparator: -
-
-include::../../shared/attributes.adoc[]
-
-[abstract]
-include::frontmatter/abstract.adoc[]
-
-[colophon]
-include::frontmatter/colophon.adoc[]
-
-[dedication]
-include::frontmatter/dedication.adoc[]
-
-[preface]
-include::frontmatter/preface.adoc[]
-
-[acknowledgments]
-include::frontmatter/acknowledgments.adoc[]
-
-= 从源文档看结构
-
-[partintro]
-include::parts/010-source-surface/_partintro.adoc[]
-
-include::parts/010-source-surface/010-source-and-projection.adoc[]
-
-include::parts/010-source-surface/020-default-semantics.adoc[]
-
-include::parts/010-source-surface/030-source-order-notation.adoc[]
-
-= 给标题和引用加意图
-
-[partintro]
-include::parts/020-identity-and-relation/_partintro.adoc[]
-
-include::parts/020-identity-and-relation/010-role-identity.adoc[]
-
-include::parts/020-identity-and-relation/020-relation-predicate.adoc[]
-
-= 字段与术语
-
-[partintro]
-include::parts/030-fields-and-terminology/_partintro.adoc[]
-
-include::parts/030-fields-and-terminology/010-surface-fields.adoc[]
-
-include::parts/030-fields-and-terminology/020-glossary.adoc[]
-
-[appendix]
-include::backmatter/appendix-a.adoc[]
-
-[appendix]
-include::backmatter/appendix-b-decision-trees.adoc[]
-
-[glossary]
-include::backmatter/glossary.adoc[]
-
-[bibliography]
-include::backmatter/bibliography.adoc[]
-
-</file_contents>
-
-</document>
