@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.1 - 2026-10-15
+
+### Changed
+
+- Rework the structured writing conventions sample around names and addressing: headings now serve as the canonical name and default xref target, while `[#...]` is presented only as an explicit address label for existing technical or external addresses.
+- Reorganize part two of the structured writing conventions sample from identity-and-relation into names-roles-and-relations, adding guidance on renames, aliases, concept-boundary changes, splits, and retirements.
+- Update the quick reference, decision trees, glossary, part introductions, and catalog descriptions to drop the stable-ID teaching path.
+
 ## 0.3.0 - 2026-07-26
 
 ### Changed
