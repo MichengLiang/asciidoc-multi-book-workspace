@@ -13,6 +13,14 @@ pnpm install
 pnpm run build
 ```
 
+For a workspace with only the structured writing conventions book (shelved as book 01), add `--solo`:
+
+```bash
+pnpm create asciidoc-multi-book-workspace my-book --solo
+```
+
+See [Solo Workspace](#solo-workspace).
+
 npm users can run:
 
 ```bash

@@ -265,6 +265,10 @@ If a user writes an executable xref to a missing `.adoc` file or missing anchor,
 The initializer accepts one target path.
 Missing target arguments print usage and fail.
 
+`--solo` creates the <<solo-workspace>> instead of the default workspace.
+Without it, the initializer creates the default workspace.
+`--help` prints usage, including both options.
+
 Target handling rules:
 
 * A missing target directory is created.
