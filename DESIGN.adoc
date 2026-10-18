@@ -113,6 +113,7 @@ tsconfig.json
 ----
 
 `templates/default-workspace/` is the single source of truth for generated workspace content.
+`src/template-manifest.ts` declares which template paths a generated workspace receives.
 The repository root does not contain a second sample source under `books/`, `catalog.adoc`, or `shared/`.
 
 `src/runtime/adoc-books.mts` is the source for the user runtime script.
@@ -126,8 +127,15 @@ The TypeScript build emits `dist/runtime/adoc-books.mjs`, and the initializer co
 It contains the official sample books, `catalog.adoc`, shared assets, the user README, `package.json.template`, and `gitignore.template`.
 
 `package.json.template` renders to the generated `package.json`.
-`gitignore.template` renders to `.gitignore`.
-The template file names remain template-specific so the generated workspace receives ordinary project file names.
+`gitignore.template` is copied to `.gitignore`.
+The template keeps that file under a template-specific name because npm drops `.gitignore` files from published packages.
+
+=== Copy Table
+
+`src/template-manifest.ts` defines `defaultWorkspaceCopies`, a table of `{ from, to }` entries.
+`from` is a path under `templates/`; `to` is the path inside the generated workspace.
+The table is the complete list of template content the default workspace receives.
+The initializer copies every entry in table order and adds only the rendered `package.json` and `tools/adoc-books.mjs`.
 
 === User package.json
 
@@ -232,7 +240,7 @@ Target handling rules:
 * An existing non-empty target directory is rejected by default.
 * `--force` overwrites fixed template output paths and does not delete unknown user files.
 
-The initializer writes all template files, renders `package.json.template`, renders `gitignore.template`, copies the built runtime script to `tools/adoc-books.mjs`, and prints:
+The initializer copies every entry of the copy table, renders `package.json.template`, copies the built runtime script to `tools/adoc-books.mjs`, and prints:
 
 [source,text]
 ----

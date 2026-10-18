@@ -3,8 +3,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
-  defaultWorkspaceTemplate,
-  templatePackageNamePlaceholder
+  defaultWorkspaceCopies,
+  packageJsonTemplate,
+  templatePackageNamePlaceholder,
+  type TemplateCopy
 } from "./template-manifest.js";
 
 export interface InitWorkspaceOptions {
@@ -19,7 +21,7 @@ export interface InitWorkspaceResult {
 
 const sourceDir = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(sourceDir, "..");
-const templateRoot = path.join(packageRoot, "templates", defaultWorkspaceTemplate);
+const templatesRoot = path.join(packageRoot, "templates");
 const runtimeScript = path.join(packageRoot, "dist", "runtime", "adoc-books.mjs");
 
 async function exists(filePath: string): Promise<boolean> {
@@ -49,14 +51,10 @@ function safePackageName(rawName: string): string {
   return normalized || "asciidoc-books";
 }
 
-async function copyTemplatePath(name: string, targetDir: string): Promise<void> {
-  await cp(path.join(templateRoot, name), path.join(targetDir, name), {
-    force: true,
-    recursive: true
-  });
-}
-
-export async function initWorkspace(options: InitWorkspaceOptions): Promise<InitWorkspaceResult> {
+async function createWorkspace(
+  options: InitWorkspaceOptions,
+  copies: readonly TemplateCopy[]
+): Promise<InitWorkspaceResult> {
   const targetDir = path.resolve(options.targetDir);
   const targetExists = await exists(targetDir);
 
@@ -66,11 +64,14 @@ export async function initWorkspace(options: InitWorkspaceOptions): Promise<Init
 
   await mkdir(targetDir, { recursive: true });
 
-  for (const name of ["README.md", "catalog.adoc", "books", "shared"]) {
-    await copyTemplatePath(name, targetDir);
+  for (const { from, to } of copies) {
+    await cp(path.join(templatesRoot, from), path.join(targetDir, to), {
+      force: true,
+      recursive: true
+    });
   }
 
-  const packageTemplate = await readFile(path.join(templateRoot, "package.json.template"), "utf8");
+  const packageTemplate = await readFile(path.join(templatesRoot, packageJsonTemplate), "utf8");
   const packageName = safePackageName(path.basename(targetDir));
   await writeFile(
     path.join(targetDir, "package.json"),
@@ -78,13 +79,11 @@ export async function initWorkspace(options: InitWorkspaceOptions): Promise<Init
     "utf8"
   );
 
-  await writeFile(
-    path.join(targetDir, ".gitignore"),
-    await readFile(path.join(templateRoot, "gitignore.template"), "utf8"),
-    "utf8"
-  );
-
   await mkdir(path.join(targetDir, "tools"), { recursive: true });
   await cp(runtimeScript, path.join(targetDir, "tools", "adoc-books.mjs"), { force: true });
   return { targetDir, packageName };
+}
+
+export async function initWorkspace(options: InitWorkspaceOptions): Promise<InitWorkspaceResult> {
+  return createWorkspace(options, defaultWorkspaceCopies);
 }
