@@ -36,6 +36,8 @@ console.log(result.targetDir);
 
 The host CLI owns command parsing and user-facing output. This package owns the workspace files it creates.
 
+`initSoloWorkspace` takes the same options and creates the [solo workspace](#solo-workspace).
+
 The generated workspace contains:
 
 ```text
@@ -57,6 +59,23 @@ shared/images/workspace-map.svg
 ```
 
 It does not include this repository's `test/`, `.github/`, `src/`, `dist/`, `DESIGN.adoc`, or maintainer release checks.
+
+## Solo Workspace
+
+The solo workspace holds one book: sample book `07-structured-writing-conventions`, shelved as
+`books/01-structured-writing-conventions`, with a short catalog and README written for it:
+
+```text
+README.md
+catalog.adoc
+package.json
+.gitignore
+tools/adoc-books.mjs
+books/01-structured-writing-conventions
+shared/attributes.adoc
+```
+
+The other sample books stay in the template and are generated only by the default workspace.
 
 ## Generated Workspace
 
@@ -81,6 +100,7 @@ pnpm run clean
 ```text
 src/                         # TypeScript initializer and user runtime source
 templates/default-workspace/ # true source for the generated user workspace
+templates/solo-workspace/    # catalog and README written for the solo workspace
 test/                        # maintainer tests
 DESIGN.adoc                  # maintainer design specification
 .github/                     # maintainer CI

@@ -54,6 +54,8 @@ const result = await initWorkspace({ targetDir: "my-books", force: false });
 `initWorkspace` returns the resolved target directory and the generated package name.
 It creates the same default workspace as the published CLI command.
 
+`initSoloWorkspace` takes the same options, returns the same result shape, and creates the <<solo-workspace>>.
+
 === Generated Workspace
 
 The generated workspace is a standalone AsciiDoc multi-book project.
@@ -73,6 +75,7 @@ books/03-technical-book-workflow
 books/04-reference-manual
 books/05-upper-volume
 books/06-lower-volume
+books/07-structured-writing-conventions
 shared/attributes.adoc
 shared/images/workspace-map.svg
 ----
@@ -92,6 +95,32 @@ scripts/
 The generated workspace owns its local runtime script.
 `tools/adoc-books.mjs` is visible, editable, replaceable, and removable by the user.
 
+=== Solo Workspace
+
+The solo workspace is a one-book shelf.
+It contains:
+
+[source,text]
+----
+README.md
+catalog.adoc
+package.json
+.gitignore
+tools/adoc-books.mjs
+books/01-structured-writing-conventions
+shared/attributes.adoc
+----
+
+`books/01-structured-writing-conventions` is a byte-for-byte copy of the sample book `07-structured-writing-conventions`.
+The number prefix of a book ID is the book's position on its shelf; the sample book is the first and only book of this shelf, so it is shelved as `01`.
+The book's content does not reference its own book ID, so the copy needs no edits.
+
+`catalog.adoc` and `README.md` come from `templates/solo-workspace/` and are written for this shelf.
+`shared/images/` is not copied because only the default sample catalog uses it.
+The other sample books remain in `templates/default-workspace/books/` and are generated only by the default workspace.
+
+The runtime contract check keeps the hand-written catalog honest: if the catalog and `books/` disagree, `pnpm run check` fails.
+
 === Maintainer Repository
 
 The maintainer repository contains:
@@ -104,6 +133,7 @@ src/
   template-manifest.ts
   runtime/adoc-books.mts
 templates/default-workspace/
+templates/solo-workspace/
 test/
 .github/
 README.md
@@ -112,7 +142,8 @@ package.json
 tsconfig.json
 ----
 
-`templates/default-workspace/` is the single source of truth for generated workspace content.
+`templates/default-workspace/` is the single source of truth for the sample books, shared assets, and workspace files.
+`templates/solo-workspace/` holds only the catalog and README written for the solo workspace.
 `src/template-manifest.ts` declares which template paths a generated workspace receives.
 The repository root does not contain a second sample source under `books/`, `catalog.adoc`, or `shared/`.
 
@@ -132,9 +163,10 @@ The template keeps that file under a template-specific name because npm drops `.
 
 === Copy Table
 
-`src/template-manifest.ts` defines `defaultWorkspaceCopies`, a table of `{ from, to }` entries.
+`src/template-manifest.ts` defines one copy table per workspace shape: `defaultWorkspaceCopies` and `soloWorkspaceCopies`.
+Each table lists `{ from, to }` entries.
 `from` is a path under `templates/`; `to` is the path inside the generated workspace.
-The table is the complete list of template content the default workspace receives.
+A table is the complete list of template content its workspace shape receives.
 The initializer copies every entry in table order and adds only the rendered `package.json` and `tools/adoc-books.mjs`.
 
 === User package.json
@@ -392,6 +424,8 @@ The package must include:
 * `templates/default-workspace/catalog.adoc`
 * `templates/default-workspace/books/**`
 * `templates/default-workspace/shared/**`
+* `templates/solo-workspace/catalog.adoc`
+* `templates/solo-workspace/README.md`
 * `CHANGELOG.md`
 
 The package must not include:
@@ -455,6 +489,7 @@ The design is satisfied when these statements are true:
 * The generated `package.json` directly lists `asciidoctor`, `asciidoc-abundant-tree`, and `asciidoctor-kroki`.
 * The generated workspace builds with `pnpm install` followed by `pnpm run build`.
 * The generated workspace checks with `pnpm run check`.
+* `initSoloWorkspace` creates a workspace whose only book is sample book 07 shelved as `01-structured-writing-conventions`, and that workspace passes `pnpm run check`.
 * Deleting any one official sample book and removing its catalog entries leaves `pnpm run check` passing.
 * A user-authored executable xref to a missing book or missing anchor fails the check.
 * The user runtime does not use a global Asciidoctor CLI.

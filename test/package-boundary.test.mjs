@@ -30,6 +30,8 @@ test("pnpm pack dry-run contains release assets and excludes maintainer-only fil
     "templates/default-workspace/books/07-structured-writing-conventions/book.adoc",
     "templates/default-workspace/books/07-structured-writing-conventions/parts/010-source-surface/010-source-and-projection.adoc",
     "templates/default-workspace/shared/images/workspace-map.svg",
+    "templates/solo-workspace/catalog.adoc",
+    "templates/solo-workspace/README.md",
     "README.md",
     "CHANGELOG.md",
     "LICENSE",

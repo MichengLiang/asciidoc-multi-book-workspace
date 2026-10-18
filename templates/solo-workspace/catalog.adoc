@@ -1,0 +1,7 @@
+= AsciiDoc 书架
+:idprefix:
+:idseparator: -
+
+== 书目
+
+* xref:books/01-structured-writing-conventions/book.adoc[01 结构化书写约定标本]：标题、引用、role、xref、rel 和附加字段的结构化写法。

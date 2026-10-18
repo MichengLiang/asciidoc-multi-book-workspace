@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import {
   defaultWorkspaceCopies,
   packageJsonTemplate,
+  soloWorkspaceCopies,
   templatePackageNamePlaceholder,
   type TemplateCopy
 } from "./template-manifest.js";
@@ -86,4 +87,8 @@ async function createWorkspace(
 
 export async function initWorkspace(options: InitWorkspaceOptions): Promise<InitWorkspaceResult> {
   return createWorkspace(options, defaultWorkspaceCopies);
+}
+
+export async function initSoloWorkspace(options: InitWorkspaceOptions): Promise<InitWorkspaceResult> {
+  return createWorkspace(options, soloWorkspaceCopies);
 }

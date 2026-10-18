@@ -21,3 +21,16 @@ export const defaultWorkspaceCopies: readonly TemplateCopy[] = [
   { from: "default-workspace/shared", to: "shared" },
   { from: "default-workspace/gitignore.template", to: ".gitignore" }
 ];
+
+// One book on its own shelf: sample book 07 is shelved as 01. The catalog and README are
+// written for this shelf; shared/images/ stays behind because only the sample catalog uses it.
+export const soloWorkspaceCopies: readonly TemplateCopy[] = [
+  { from: "solo-workspace/README.md", to: "README.md" },
+  { from: "solo-workspace/catalog.adoc", to: "catalog.adoc" },
+  {
+    from: "default-workspace/books/07-structured-writing-conventions",
+    to: "books/01-structured-writing-conventions"
+  },
+  { from: "default-workspace/shared/attributes.adoc", to: "shared/attributes.adoc" },
+  { from: "default-workspace/gitignore.template", to: ".gitignore" }
+];
