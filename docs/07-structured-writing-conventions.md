@@ -61,6 +61,8 @@ include::parts/030-fields-and-terminology/010-surface-fields.adoc[]
 
 include::parts/030-fields-and-terminology/020-glossary.adoc[]
 
+include::parts/030-fields-and-terminology/030-declaring-conventions.adoc[]
+
 [appendix]
 include::backmatter/appendix-a.adoc[]
 
@@ -351,6 +353,8 @@ role 写在标题 attrlist 的点号 token 位置。
 
 一本书使用的 role 种类和数量，取决于该领域的概念结构。每种 role 的语义在全书中保持唯一。
 
+全书的 role 词表写成约定声明，见 xref:declaring-conventions[声明本书的约定]。
+
 读者和工具链可以依据 role 进行导航文本和提取结构。
 
 // file: books/07-structured-writing-conventions/parts/020-names-roles-and-relations/030-relation-predicate.adoc
@@ -369,6 +373,8 @@ role 写在标题 attrlist 的点号 token 位置。
 
 `rel` 可以被读者和工具当作关系谓词，所以在全书范围内，每种 `rel` 谓词的语义需要保持唯一且不变。
 
+全书采用的 rel 谓词写成约定声明，见 xref:declaring-conventions[声明本书的约定]。下面列出常用的几种：
+
 [horizontal]
 depends-on:: 当前标题的判断、规则或操作以目标标题为依据。阅读顺序和先读建议使用普通 xref 表达。
 illustrates:: 当前标题提供目标标题的示例。
@@ -380,7 +386,7 @@ constrains:: 当前标题对目标标题的合法写法或范围施加约束。
 标题之间的阅读顺序和先读建议，使用普通 xref（默认 `aat:references`）表达。
 
 // file: books/07-structured-writing-conventions/parts/030-fields-and-terminology/_partintro.adoc
-字段补充标题与引用已经表达的内容；术语表统一全书采用的名称。
+字段补充标题与引用已经表达的内容；术语表统一全书采用的名称；约定声明把本书的 role、rel 和字段写成工具可读的词表。
 
 // file: books/07-structured-writing-conventions/parts/030-fields-and-terminology/010-surface-fields.adoc
 [#surface-fields]
@@ -417,6 +423,27 @@ summary::
 
 `priority:: normal` 和 `summary::` 属于 `示例规则` 标题的附加字段。投影时它们成为标题字段，例如 `aat:priority` 和 `aat:summary`。
 
+字段值需要附带代码块、表格或另一段正文时，用 `+` 把块挂到字段上。挂上来的块属于这个字段的值。
+
+[source,asciidoc]
+------
+[.rule, verdict=adapt]
+== 关闭标签
+
+情况:: 关闭当前标签。
+出处:: `editorCommands.ts:835-839`。
++
+[source,ts]
+----
+closeActiveEditor()
+----
+判定:: 改写。
+------
+
+`出处` 的值是出处那一行文字和挂上来的代码块。字段值按作者写下的原文保存：反引号、xref 和 include 指令都保留原样。
+
+没有 `+` 的块不属于字段。字段列表在那个块之前结束，块和它之后的内容都是标题的正文；块之后再写的描述列表也不再是字段。字段之间需要代码时，用 `+` 挂上，不要直接插入代码块。
+
 字段名和字段值来自本书自己的约定。同一本书使用附加字段时，应保持字段写法和字段含义稳定。
 
 [source,asciidoc]
@@ -439,6 +466,71 @@ aliases::
 术语表记录本书采用的关键用词。规范名称、显式寻址标签、别名、role、rel 和附加字段分别指向不同对象。
 
 role 说明标题节点在书中的作用；rel 说明引用边表达的关系。术语的定义集中维护在书后的术语表中。
+
+// file: books/07-structured-writing-conventions/parts/030-fields-and-terminology/030-declaring-conventions.adoc
+[#declaring-conventions]
+== 声明本书的约定
+
+一本书采用的 role、rel、字段取值和字段构成它的约定。约定写在书里：读者从这里知道每个词的含义，检查脚本和查询工具从同一处读出受控词表。词表只写这一处，书和工具不会各说各的。
+
+声明约定的标题带 `.convention` role 和 `declares` 字段。声明的内容写成标题下的第一个连续描述列表：每个 term 是一个词，描述是这个词的含义。
+
+[source,asciidoc]
+----
+[.convention, declares=roles]
+=== 标题的 role
+
+concept:: 概念：本书使用的一个词及其含义。
+rule:: 规则：一条可检查的写法规定。
+example:: 示例：用一个具体场景说明抽象判断。
+convention:: 约定：声明本书的 role、rel、字段取值或字段。
+
+[.convention, declares=relations]
+=== 关系谓词
+
+depends-on:: 当前标题的判断、规则或操作以目标标题为依据。
+illustrates:: 当前标题提供目标标题的示例。
+----
+
+`declares` 的取值说明描述列表里的 term 是什么：
+
+[horizontal]
+roles:: role 名称。写作时用在 `[.concept]` 的位置。
+relations:: rel 谓词。写作时用在 `rel=depends-on` 的位置。
+values:: 某个 role 的某个附加字段允许的取值。`for` 写这个 role，`field` 写字段名。
+fields:: 某个 role 的标题下描述列表要写出的字段。`for` 写这个 role。
+
+字段取值和字段用同样的写法声明：
+
+[source,asciidoc]
+----
+[.convention, declares=values, for=rule, field=verdict]
+==== 规则的判定
+
+adopt:: 照搬：理由成立，形式也照搬。
+adapt:: 改写：理由成立，形式换成本项目更顺手的写法。
+skip:: 不搬：只服务于原来的处境。
+
+[.convention, declares=fields, for=rule]
+==== 规则的格式
+
+情况:: 在什么情况下。
+规则:: 发生什么。
+出处:: 依据的源文件与行号。
+----
+
+`规则的判定` 说明：带 `.rule` 的标题写 `verdict` 字段，取值是 `adopt`、`adapt` 或 `skip`。`规则的格式` 说明：带 `.rule` 的标题，标题下的描述列表写出 `情况`、`规则` 和 `出处`。xref:surface-fields[附加字段] 中的 `关闭标签` 就是一条符合这两项声明的规则。
+
+声明的写法：
+
+* term 写词本身：写 `concept`，不写 `.concept`，也不加反引号。term 就是写作时使用的那个词。
+* 声明的描述列表是声明标题下的第一个块，不带 `[horizontal]` 等 style。带 style 的描述列表是排版正文，不是声明。导语写在上一级标题里。
+* 一个声明标题只声明一种内容。同一个 role 的取值和字段分开声明。
+* `convention` 本身也写进 role 词表，因为声明标题使用这个 role。
+
+声明通常放在读者最先读到约定的地方，例如前言里的“本书的书写约定”一节；某个 role 的格式也可以放在最先使用这个 role 的部分。工具按 `.convention` role 找到声明，不依赖位置。
+
+检查脚本读出声明以后核对：每个标题的 role 在 role 词表中；每个 rel 在关系谓词词表中；`declares=values` 声明的 role 写了对应字段，取值在列表中；`declares=fields` 声明的 role 写出了全部字段。约定变化时只改声明，检查跟着变。
 
 // file: books/07-structured-writing-conventions/backmatter/appendix-a.adoc
 [#structured-writing-quick-reference]
@@ -487,8 +579,14 @@ role 说明标题节点在书中的作用；rel 说明引用边表达的关系�
 |`[.example, owner=writing-team]`
 |role 和 named attributes 保留标题的作用与附加字段。
 
+|`[.convention, declares=roles]`
+|约定声明。标题下的描述列表是本书的 role 词表；`declares` 还可以取 `relations`、`values`（配 `for` 与 `field`）和 `fields`（配 `for`）。
+
 |`summary::` + 下一行说明文本
 |标题下描述列表字段。用于较多字段或多行字段值。
+
+|字段文字之后的 `+` + 块
+|把代码块、表格等挂到字段上，块属于字段值。字段之间不插入不带 `+` 的块。
 
 |`pass:[xref:标题[显示文本]]`
 |显示为链接，投影为 references。
@@ -637,8 +735,37 @@ role 描述标题在书中的作用。rel 描述 xref 边上的关系谓词。�
    │      例如 `[owner=writing-team, status=active]`。流程结束。
    └─ 字段较多，或包含多行字段值：
           写入紧随标题下方的第一个连续描述列表。
-          例如 `key:: value`。流程结束。
+          例如 `key:: value`。进入块评估。
+
+3. 字段值是否需要附带代码块、表格或另一段正文？
+   ├─ 是：在字段文字之后写一行 `+`，再写块；块属于字段值。
+   │      字段之间不插入不带 `+` 的块，否则字段列表在块前结束。流程结束。
+   └─ 否：流程结束。
 ----
+
+== 约定的声明与维护
+
+触发场景:: 作者为本书引入或修改 role、rel 谓词、字段取值或字段。
+
+[source,text]
+----
+1. 本书是否已有对应的约定声明？
+   ├─ 是：在该声明的描述列表中增加、修改或删除 term；进入类型评估。
+   └─ 否：在“本书的书写约定”一节下新建声明标题，
+          写 `[.convention, declares=...]`；进入类型评估。
+
+2. 声明的是什么？
+   ├─ role：`declares=roles`。
+   ├─ rel 谓词：`declares=relations`。
+   ├─ 某个 role 的附加字段取值：`declares=values, for=<role>, field=<字段名>`。
+   └─ 某个 role 的标题下描述列表字段：`declares=fields, for=<role>`。
+
+3. term 是否写成写作时使用的那个词？
+   ├─ 否：去掉点号与反引号，例如 `.concept` 写成 `concept`。
+   └─ 是：在描述中写出这个词的含义。流程结束。
+----
+
+约定变化时只改声明。检查脚本和查询工具从声明读出词表，不另外维护一份。
 
 == 源文件物理编排与编号运算
 
@@ -696,6 +823,7 @@ relation predicate:: xref `rel` 字段选择的边谓词。
 source heading:: xref 所在的标题。
 target heading:: xref selector 指向的标题。
 surface field:: 源文档表面的附加字段。标题字段可来自标题 attrlist 或标题下描述列表；xref 边字段来自 xref named attributes。
+约定声明:: 带 `.convention` role 的标题。`declares` 字段说明它声明 role、rel 谓词、字段取值还是字段；标题下的描述列表是词表，term 是词，描述是含义。
 
 // file: books/07-structured-writing-conventions/backmatter/bibliography.adoc
 = 参考坐标
