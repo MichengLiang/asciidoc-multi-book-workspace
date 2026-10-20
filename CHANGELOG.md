@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.0 - 2026-10-21
+
+### Added
+
+- Add `--solo` to the `create` command and export `initSoloWorkspace` from the package root: generate a workspace that contains only the structured writing conventions book, shelved as book 01.
+- Add the chapter "声明本书的约定" (declaring the book's conventions) to the structured writing conventions sample: `.convention` headings with `declares=roles|relations|values|fields` write a book's controlled vocabularies in the book itself, so readers, check scripts, and query tools read one source. A `fields` declaration can carry `id-prefix` for roles whose address labels are existing technical addresses.
+
+### Changed
+
+- Show in the structured writing conventions sample how a field value attaches a code block or table with `+`, and list every way a description list stops counting as fields: an unattached block, another block between the heading and the list, block attributes on the list, or a nested description list. It also shows how to keep a description list under a heading as body text.
+- State that a heading's role scope is a reading context: projection, checks, and query tools read only the role written on each heading.
+- Add a decision tree for declaring and maintaining conventions, and update the quick reference, glossary, and part introductions.
+
 ## 0.3.1 - 2026-10-15
 
 ### Changed
