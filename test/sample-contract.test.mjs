@@ -111,6 +111,7 @@ const requiredPatterns = new Map([
       "[.convention, declares=values, for=rule, field=verdict]",
       "[.convention, declares=fields, for=rule]",
       "term 写词本身",
+      "id-prefix=rule-",
       "约定的声明与维护",
       "术语表记录本书采用的关键用词",
       "术语的定义集中维护在书后的术语表中",

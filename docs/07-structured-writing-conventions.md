@@ -498,7 +498,7 @@ illustrates:: 当前标题提供目标标题的示例。
 roles:: role 名称。写作时用在 `[.concept]` 的位置。
 relations:: rel 谓词。写作时用在 `rel=depends-on` 的位置。
 values:: 某个 role 的某个附加字段允许的取值。`for` 写这个 role，`field` 写字段名。
-fields:: 某个 role 的标题下描述列表要写出的字段。`for` 写这个 role。
+fields:: 某个 role 的标题下描述列表要写出的字段。`for` 写这个 role。这个 role 的标题带显式寻址标签、标签本身又是已有的技术地址时（例如规则的标签同时是测试的名字），可以再写 `id-prefix`，规定标签的开头，例如 `id-prefix=rule-`。
 
 字段取值和字段用同样的写法声明：
 
@@ -530,7 +530,7 @@ skip:: 不搬：只服务于原来的处境。
 
 声明通常放在读者最先读到约定的地方，例如前言里的“本书的书写约定”一节；某个 role 的格式也可以放在最先使用这个 role 的部分。工具按 `.convention` role 找到声明，不依赖位置。
 
-检查脚本读出声明以后核对：每个标题的 role 在 role 词表中；每个 rel 在关系谓词词表中；`declares=values` 声明的 role 写了对应字段，取值在列表中；`declares=fields` 声明的 role 写出了全部字段。约定变化时只改声明，检查跟着变。
+检查脚本读出声明以后核对：每个标题的 role 在 role 词表中；每个 rel 在关系谓词词表中；`declares=values` 声明的 role 写了对应字段，取值在列表中；`declares=fields` 声明的 role 写出了全部字段，声明了 `id-prefix` 时标签以它开头。约定变化时只改声明，检查跟着变。
 
 // file: books/07-structured-writing-conventions/backmatter/appendix-a.adoc
 [#structured-writing-quick-reference]
