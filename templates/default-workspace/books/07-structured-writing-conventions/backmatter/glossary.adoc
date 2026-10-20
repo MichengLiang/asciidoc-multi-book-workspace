@@ -16,3 +16,4 @@ relation predicate:: xref `rel` 字段选择的边谓词。
 source heading:: xref 所在的标题。
 target heading:: xref selector 指向的标题。
 surface field:: 源文档表面的附加字段。标题字段可来自标题 attrlist 或标题下描述列表；xref 边字段来自 xref named attributes。
+约定声明:: 带 `.convention` role 的标题。`declares` 字段说明它声明 role、rel 谓词、字段取值还是字段；标题下的描述列表是词表，term 是词，描述是含义。

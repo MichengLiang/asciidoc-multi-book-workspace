@@ -44,6 +44,9 @@
 |`[.example, owner=writing-team]`
 |role 和 named attributes 保留标题的作用与附加字段。
 
+|`[.convention, declares=roles]`
+|约定声明。标题下的描述列表是本书的 role 词表；`declares` 还可以取 `relations`、`values`（配 `for` 与 `field`）和 `fields`（配 `for`）。
+
 |`summary::` + 下一行说明文本
 |标题下描述列表字段。用于较多字段或多行字段值。
 

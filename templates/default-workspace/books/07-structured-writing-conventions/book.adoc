@@ -60,6 +60,8 @@ include::parts/030-fields-and-terminology/010-surface-fields.adoc[]
 
 include::parts/030-fields-and-terminology/020-glossary.adoc[]
 
+include::parts/030-fields-and-terminology/030-declaring-conventions.adoc[]
+
 [appendix]
 include::backmatter/appendix-a.adoc[]
 

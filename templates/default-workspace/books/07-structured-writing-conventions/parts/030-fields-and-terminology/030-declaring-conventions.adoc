@@ -1,0 +1,63 @@
+[#declaring-conventions]
+== 声明本书的约定
+
+一本书采用的 role、rel、字段取值和字段构成它的约定。约定写在书里：读者从这里知道每个词的含义，检查脚本和查询工具从同一处读出受控词表。词表只写这一处，书和工具不会各说各的。
+
+声明约定的标题带 `.convention` role 和 `declares` 字段。声明的内容写成标题下的第一个连续描述列表：每个 term 是一个词，描述是这个词的含义。
+
+[source,asciidoc]
+----
+[.convention, declares=roles]
+=== 标题的 role
+
+concept:: 概念：本书使用的一个词及其含义。
+rule:: 规则：一条可检查的写法规定。
+example:: 示例：用一个具体场景说明抽象判断。
+convention:: 约定：声明本书的 role、rel、字段取值或字段。
+
+[.convention, declares=relations]
+=== 关系谓词
+
+depends-on:: 当前标题的判断、规则或操作以目标标题为依据。
+illustrates:: 当前标题提供目标标题的示例。
+----
+
+`declares` 的取值说明描述列表里的 term 是什么：
+
+[horizontal]
+roles:: role 名称。写作时用在 `[.concept]` 的位置。
+relations:: rel 谓词。写作时用在 `rel=depends-on` 的位置。
+values:: 某个 role 的某个附加字段允许的取值。`for` 写这个 role，`field` 写字段名。
+fields:: 某个 role 的标题下描述列表要写出的字段。`for` 写这个 role。
+
+字段取值和字段用同样的写法声明：
+
+[source,asciidoc]
+----
+[.convention, declares=values, for=rule, field=verdict]
+==== 规则的判定
+
+adopt:: 照搬：理由成立，形式也照搬。
+adapt:: 改写：理由成立，形式换成本项目更顺手的写法。
+skip:: 不搬：只服务于原来的处境。
+
+[.convention, declares=fields, for=rule]
+==== 规则的格式
+
+情况:: 在什么情况下。
+规则:: 发生什么。
+出处:: 依据的源文件与行号。
+----
+
+`规则的判定` 说明：带 `.rule` 的标题写 `verdict` 字段，取值是 `adopt`、`adapt` 或 `skip`。`规则的格式` 说明：带 `.rule` 的标题，标题下的描述列表写出 `情况`、`规则` 和 `出处`。xref:surface-fields[附加字段] 中的 `关闭标签` 就是一条符合这两项声明的规则。
+
+声明的写法：
+
+* term 写词本身：写 `concept`，不写 `.concept`，也不加反引号。term 就是写作时使用的那个词。
+* 声明的描述列表是声明标题下的第一个块，不带 `[horizontal]` 等 style。带 style 的描述列表是排版正文，不是声明。导语写在上一级标题里。
+* 一个声明标题只声明一种内容。同一个 role 的取值和字段分开声明。
+* `convention` 本身也写进 role 词表，因为声明标题使用这个 role。
+
+声明通常放在读者最先读到约定的地方，例如前言里的“本书的书写约定”一节；某个 role 的格式也可以放在最先使用这个 role 的部分。工具按 `.convention` role 找到声明，不依赖位置。
+
+检查脚本读出声明以后核对：每个标题的 role 在 role 词表中；每个 rel 在关系谓词词表中；`declares=values` 声明的 role 写了对应字段，取值在列表中；`declares=fields` 声明的 role 写出了全部字段。约定变化时只改声明，检查跟着变。

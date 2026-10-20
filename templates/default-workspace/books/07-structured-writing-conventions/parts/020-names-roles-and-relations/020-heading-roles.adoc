@@ -32,4 +32,6 @@ role 写在标题 attrlist 的点号 token 位置。
 
 一本书使用的 role 种类和数量，取决于该领域的概念结构。每种 role 的语义在全书中保持唯一。
 
+全书的 role 词表写成约定声明，见 xref:declaring-conventions[声明本书的约定]。
+
 读者和工具链可以依据 role 进行导航文本和提取结构。
