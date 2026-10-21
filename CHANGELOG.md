@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.5.0 - 2026-10-21
+
+### Added
+
+- `adoc-books.config.mjs` accepts `documentRoot`: how far books may include files, relative to the workspace root (default `.`). A workspace that lives inside a project repository declares the project root (`".."`) so books can include the project's own code. Reader source paths and the `// file:` markers of copied source are relative to it. It must be a path string that contains the workspace root.
+- `adoc-books.config.mjs` accepts `includeResolvers`: `{ prefix, resolve }` objects in the shape `asciidoc-abundant-tree` 0.2.1 accepts. One resolver serves both the HTML build and the reader data, so `include::<prefix>…[]` shows the same lines in both. The runtime checks that a resolver returns real lines of a file inside `documentRoot`; the Configure section of the default workspace README lists the rules a resolver follows.
+
+### Changed
+
+- Generated workspaces depend on `asciidoc-abundant-tree` `^0.2.1` (Asciidoctor.js 4 inside, asynchronous parsing). HTML is still rendered by `@asciidoctor/core` 3.
+- A book whose include graph `asciidoc-abundant-tree` cannot parse now fails `build` and `check`, and the error starts with the book id. Previously the runtime printed one warning and fell back to a cover-only reader page while the build succeeded. If a book includes files outside the workspace, declare `documentRoot`.
+- Xref targets and anchors are checked only on the generated HTML. The source-level codes `XREF_TARGET_MISSING` and `MISSING_ANCHOR` are gone; a missing target or anchor is reported as `HTML_RESOURCE_MISSING` or `HTML_ANCHOR_MISSING`. An xref to a non-entry `.adoc` file of another book (for example `parts/…/x.adoc`) now fails, because no HTML page is generated for it; link `book.adoc#<id>` instead.
+
+### Fixed
+
+- Cross-book xrefs to IDs declared as `[.role#id]`, `[[id]]`, `[id=id]`, or generated from a title no longer fail `check` with `MISSING_ANCHOR`.
+
+### Upgrading an existing workspace
+
+A generated workspace owns its `tools/adoc-books.mjs`. To adopt this release, create a temporary workspace with `pnpm create asciidoc-multi-book-workspace@0.5.0 tmp-books`, copy its `tools/adoc-books.mjs` over yours, set `"asciidoc-abundant-tree": "^0.2.1"` in your `package.json`, and run `pnpm install`.
+
 ## 0.4.0 - 2026-10-21
 
 ### Added
