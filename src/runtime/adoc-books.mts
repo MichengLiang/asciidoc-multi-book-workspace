@@ -480,10 +480,10 @@ function fallbackReaderBookData(rootDir: string, book: BookEntry, fallbackSource
   };
 }
 
-function buildReaderBookData(rootDir: string, book: BookEntry, fallbackSource: string): ReaderBookData {
+async function buildReaderBookData(rootDir: string, book: BookEntry, fallbackSource: string): Promise<ReaderBookData> {
   let document: Record<string, unknown>;
   try {
-    document = parseAbundantTree({
+    document = await parseAbundantTree({
       sourcePath: book.input,
       mode: "book-entry",
       documentRoot: rootDir
@@ -1089,7 +1089,7 @@ async function addHomeLinks(rootDir: string, books: BookEntry[], homeLink: HomeL
     const html = await readFile(htmlFile, "utf8");
     const href = path.relative(path.dirname(htmlFile), catalog);
     const fallbackSource = await combinedBookSource(book.bookDir);
-    const readerData = buildReaderBookData(rootDir, book, fallbackSource);
+    const readerData = await buildReaderBookData(rootDir, book, fallbackSource);
     await writeFile(
       htmlFile,
       addBookControlsToBookHtml(html, href, homeLink, readerData.sourceBundle, readerData.pageMap, book.bookId),

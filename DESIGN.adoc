@@ -182,9 +182,9 @@ The generated `package.json` directly lists the AsciiDoc toolchain:
     "clean": "node tools/adoc-books.mjs clean"
   },
   "devDependencies": {
-    "asciidoc-abundant-tree": "0.1.14",
-    "asciidoctor": "3.0.4",
-    "asciidoctor-kroki": "0.18.1"
+    "@asciidoctor/core": "^3.0.4",
+    "asciidoc-abundant-tree": "^0.2.1",
+    "asciidoctor-kroki": "^0.18.1"
   }
 }
 ----
@@ -403,10 +403,11 @@ The official sample-book set requirement belongs to maintainer tests only.
 === Cheap Performance Rules
 
 The user runtime uses one Node process for the full build.
-It uses Asciidoctor.js in process through `require("asciidoctor")()`.
+It renders HTML with Asciidoctor.js 3 in process through the `@asciidoctor/core` factory.
 It does not depend on a global `asciidoctor` executable.
 
 The runtime uses `asciidoc-abundant-tree` in process to derive reader page maps and source bundles.
+`asciidoc-abundant-tree` 0.2 brings its own Asciidoctor.js 4 and parses asynchronously; the two Asciidoctor versions live side by side without sharing a runtime, because version 4 is plain JavaScript rather than an Opal build.
 It loads `asciidoctor-kroki` only when current `.adoc` sources contain supported diagram blocks.
 If diagram blocks exist and `asciidoctor-kroki` cannot be loaded, the runtime reports that the workspace contains diagram blocks and needs the Kroki dependency or needs those blocks removed.
 
@@ -535,7 +536,7 @@ The design is satisfied when these statements are true:
 * `pnpm create asciidoc-multi-book-workspace my-books` creates a complete user workspace.
 * The generated workspace contains the official sample books by default.
 * The generated workspace does not contain maintainer assets.
-* The generated `package.json` directly lists `asciidoctor`, `asciidoc-abundant-tree`, and `asciidoctor-kroki`.
+* The generated `package.json` directly lists `@asciidoctor/core`, `asciidoc-abundant-tree`, and `asciidoctor-kroki`.
 * The generated workspace builds with `pnpm install` followed by `pnpm run build`.
 * The generated workspace checks with `pnpm run check`.
 * `initSoloWorkspace` creates a workspace whose only book is sample book 07 shelved as `01-structured-writing-conventions`, and that workspace passes `pnpm run check`.

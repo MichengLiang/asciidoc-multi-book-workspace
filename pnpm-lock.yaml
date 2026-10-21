@@ -15,8 +15,8 @@ importers:
         specifier: ^24.10.1
         version: 24.10.1
       asciidoc-abundant-tree:
-        specifier: ^0.1.18
-        version: 0.1.18
+        specifier: ^0.2.1
+        version: 0.2.1
       asciidoctor-kroki:
         specifier: ^0.18.1
         version: 0.18.1(@asciidoctor/core@3.0.4)
@@ -33,6 +33,15 @@ packages:
     resolution: {integrity: sha512-41SDMi7iRRBViPe0L6VWFTe55bv6HEOJeRqMj5+E5wB1YPdUPuTucL4UAESPZM6OWmn4t/5qM5LusXomFUVwVQ==}
     engines: {node: '>=16', npm: '>=8'}
 
+  '@asciidoctor/core@4.1.1':
+    resolution: {integrity: sha512-kwynyx6FXXi985Q9tfIPUitZ/2vzISYmcUVVZXkSamwD91I5nL7TJt33HXjnBYwfzugLu36RZuhNA/DB4fogEA==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      highlight.js: ^11.0.0
+    peerDependenciesMeta:
+      highlight.js:
+        optional: true
+
   '@asciidoctor/opal-runtime@3.0.1':
     resolution: {integrity: sha512-iW7ACahOG0zZft4A/4CqDcc7JX+fWRNjV5tFAVkNCzwZD+EnFolPaUOPYt8jzadc0+Bgd80cQTtRMQnaaV1kkg==}
     engines: {node: '>=16'}
@@ -44,8 +53,8 @@ packages:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
     engines: {node: '>=6.5'}
 
-  asciidoc-abundant-tree@0.1.18:
-    resolution: {integrity: sha512-6oM7w23rrIPFruvRmLPek2LHXl7N6bhEV/PqsSo0pynFDepqwuErXEAQIMjRpRgE5K2780TvcStJICI75Y3VCA==}
+  asciidoc-abundant-tree@0.2.1:
+    resolution: {integrity: sha512-iAexlF0rvie7W45Jj68qHyEyUR8od65BgWmoLa+iEZUMxlj49Sd57KfMiCfKexdygvzyy3aU3ngz3S6k75mKyQ==}
     engines: {node: '>=20.19.0'}
     hasBin: true
 
@@ -183,6 +192,8 @@ snapshots:
       '@asciidoctor/opal-runtime': 3.0.1
       unxhr: 1.2.0
 
+  '@asciidoctor/core@4.1.1': {}
+
   '@asciidoctor/opal-runtime@3.0.1':
     dependencies:
       glob: 8.1.0
@@ -196,12 +207,14 @@ snapshots:
     dependencies:
       event-target-shim: 5.0.1
 
-  asciidoc-abundant-tree@0.1.18:
+  asciidoc-abundant-tree@0.2.1:
     dependencies:
-      '@asciidoctor/core': 3.0.4
+      '@asciidoctor/core': 4.1.1
       n3: 2.0.3
       parse5: 8.0.1
       yaml: 2.9.0
+    transitivePeerDependencies:
+      - highlight.js
 
   asciidoctor-kroki@0.18.1(@asciidoctor/core@3.0.4):
     dependencies:
