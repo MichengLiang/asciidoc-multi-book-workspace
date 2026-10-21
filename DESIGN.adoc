@@ -315,6 +315,44 @@ pnpm run check
 pnpm run clean
 ----
 
+=== Workspace Configuration
+
+The runtime reads an optional `adoc-books.config.mjs` at the workspace root.
+The file is an ES module whose default export is a plain object.
+Without the file, or for a key the object omits, the runtime uses the default.
+
+`rootIndex.redirectTo`, `rootIndex.title`::
+  Target and title of `build/html/index.html`.
+  Defaults: `catalog.html` and `AsciiDoc Multi-Book Workspace`.
+
+`homeLink.label`, `homeLink.subtitle`::
+  Text of the catalog link injected into every book.
+  Defaults: `Back to catalog` and `AsciiDoc multi-book workspace`.
+
+`documentRoot`::
+  The directory a book's include graph may reach, relative to the workspace root.
+  Default: `.`, the workspace root.
+
+`includeResolvers`::
+  Include resolvers registered by the workspace, in the shape `asciidoc-abundant-tree` accepts.
+  Default: none.
+
+Books include `../../shared/attributes.adoc`, so `documentRoot` is never smaller than the workspace root.
+A workspace that lives inside a project repository declares the project root, for example `documentRoot: ".."`, so books can include the project's own code instead of keeping a second copy of it.
+`documentRoot` is also the base of every source path the reader shows: page source spans, the page map's book entry, and the `// file:` markers of the copied source bundle are relative to it.
+Other tools that read the same books, such as structure checks or graph projections, read `documentRoot` and `includeResolvers` from this file, so every reader of the books agrees on one root and one set of resolvers.
+
+An include resolver is an object `{ prefix, resolve }`.
+An include directive whose target starts with a registered prefix is resolved by that resolver both when Asciidoctor renders HTML and when `asciidoc-abundant-tree` derives the reader data, so both read the same lines.
+`resolve` receives the target without the prefix, the directive's attributes, and the absolute path of the file that contains the directive.
+The attributes have the shape Asciidoctor.js 4 gives include processors: positional attributes keyed by position (`"1"`, `"2"`, ...), named attributes by name, and `opts` expanded to `<name>-option`.
+The HTML build runs on Asciidoctor.js 3, which keeps positional attributes in a separate list; the runtime reshapes them so that one resolver serves both sides.
+`resolve` returns contiguous whole lines of a source file together with that file's path (absolute, or relative to `documentRoot`) and the line the text starts at.
+Asciidoctor messages and reader source spans therefore point at the real lines of that file.
+
+Asciidoctor.js 3 runs include processors synchronously, so `resolve` must return its result directly.
+A resolver that returns a Promise fails the build with the resolver's prefix and the directive's location.
+
 === Build Outputs
 
 `build` creates:
@@ -348,9 +386,16 @@ It validates:
 * Each `books/*/book.adoc` entry has `:doctype: book`.
 * Catalog book links point to existing current books.
 * Existing current books are listed in the catalog.
-* Executable xrefs to `.adoc` files point to existing files.
-* Executable xrefs with anchors point to explicit anchors.
-* Generated HTML local `href` and `src` resources exist.
+* Generated HTML local `href` and `src` resources exist, including the HTML that executable xrefs to other books render to.
+* Fragments of local links in generated HTML name IDs that exist in the target HTML.
+* Each book's include graph parses within `documentRoot`, and the parse reports no error-level diagnostic.
+
+Xref targets and anchors are judged on the HTML Asciidoctor generates, not by scanning sources.
+AsciiDoc can declare an ID as `[#id]`, `[#id.role]`, `[.role#id]`, `[[id]]`, or `[id=id]`, or generate it from a title; only Asciidoctor knows all of these forms, and the HTML it writes carries every ID it assigned.
+
+A book whose include graph cannot be parsed fails the build.
+The runtime does not fall back to a cover-only reader page.
+A silently degraded reader hides the cause, typically an include that leaves `documentRoot`; the error names it, and the fix is to declare the larger root in `adoc-books.config.mjs`.
 
 The runtime does not require all official sample books to remain present.
 The official sample-book set requirement belongs to maintainer tests only.
@@ -496,6 +541,9 @@ The design is satisfied when these statements are true:
 * `initSoloWorkspace` creates a workspace whose only book is sample book 07 shelved as `01-structured-writing-conventions`, and that workspace passes `pnpm run check`.
 * Deleting any one official sample book and removing its catalog entries leaves `pnpm run check` passing.
 * A user-authored executable xref to a missing book or missing anchor fails the check.
+* An executable xref to an ID declared in any AsciiDoc form, or generated from a title, passes the check.
+* A book that includes a file outside `documentRoot` fails the check; declaring a larger `documentRoot` in `adoc-books.config.mjs` makes it pass, with reader source paths relative to that root.
+* An include resolver declared in `adoc-books.config.mjs` resolves its directives for both the HTML and the reader data.
 * The user runtime does not use a global Asciidoctor CLI.
 * The user runtime does not shell through multiple package-manager subcommands.
 * The user runtime does not fetch diagram images during ordinary build/check commands.

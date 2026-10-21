@@ -38,7 +38,7 @@
 
 `books/<book-id>/book.adoc` 可以 include book 目录内文件，也可以 include workspace 级共享文件，例如 `../../shared/attributes.adoc`。
 
-因此，解析书籍 include 图时的 `documentRoot` 是生成工作区根目录，不是单本书目录。
+因此，解析书籍 include 图时的 `documentRoot` 默认是生成工作区根目录，不是单本书目录。工作区放在项目仓库里、书要 include 项目自己的代码时，工作区在 `adoc-books.config.mjs` 里声明更大的根（例如 `documentRoot: ".."`），见 `DESIGN.adoc` 的 Workspace Configuration。
 
 ## 4. 必须引入的依赖
 
@@ -71,14 +71,15 @@ RDF 1.2 projection 不参与书籍双阅读视图的构建路径。
 对每本书执行：
 
 ```ts
-parseAbundantTree({
+await parseAbundantTree({
   sourcePath: book.input,
   mode: "book-entry",
-  documentRoot: rootDir,
+  documentRoot: config.documentRoot,
+  includeResolvers: config.includeResolvers,
 })
 ```
 
-`rootDir` 是生成工作区根目录。
+`config` 是工作区配置；`documentRoot` 已按工作区根目录解析为绝对路径，未声明时就是工作区根目录。`includeResolvers` 与 HTML 构建登记的是同一份。
 
 `book.input` 是当前书的 `books/<book-id>/book.adoc` 绝对路径。
 
@@ -855,7 +856,7 @@ function readerScript(): string
 
 如果 `book.html` 缺少 `#toc.toc2`，构建失败，错误消息包含 book id 和 `missing left TOC container`。
 
-如果 abundant-tree 解析 book entry 时抛出异常，运行时输出 warning，使用 cover-only page map 和 fallback source bundle 继续构建。
+如果 abundant-tree 解析 book entry 时抛出异常，构建失败，错误消息包含 book id 和异常消息。运行时不退回 cover-only page map：退回会让 include 越过 `documentRoot` 这类问题只剩一条控制台 warning，构建照常成功，没有人发现阅读页已经坏了。
 
 如果 abundant-tree 已返回 document 但包含 error 级 diagnostic，构建失败，错误消息包含 book id、diagnostic code 和 diagnostic message。
 

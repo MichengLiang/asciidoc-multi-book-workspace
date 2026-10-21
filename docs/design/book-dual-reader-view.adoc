@@ -192,8 +192,9 @@ That message does not appear in continuous view.
 
 If `book.html` does not contain `#toc.toc2`, the build fails with the book id and `missing left TOC container`.
 
-If abundant-tree throws while parsing a book entry, the runtime preserves the default build by emitting a cover-only page map and a fallback source bundle.
-This fallback covers parser-support gaps such as unsupported include attribute lists.
+If abundant-tree throws while parsing a book entry, the build fails with the book id and the error message.
+An earlier design emitted a cover-only page map instead, to cover parser-support gaps such as unsupported include attribute lists.
+Those gaps are now closed by include resolvers declared in `adoc-books.config.mjs`, and the fallback only hid real problems: an include outside `documentRoot` left a cover-only reader page and one console warning while the build still succeeded.
 
 If abundant-tree returns a document with an error-level diagnostic, the build fails with the book id, diagnostic code, and diagnostic message.
 
