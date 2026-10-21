@@ -511,18 +511,41 @@ test("runtime check fails for same-page missing anchors in generated HTML", asyn
   );
 });
 
-test("runtime check accepts typed explicit anchors in user-authored xrefs", async () => {
-  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-typed-anchor-${randomUUID()}`);
+test("runtime check accepts cross-book xrefs to IDs declared in any AsciiDoc form", async () => {
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-id-forms-${randomUUID()}`);
+  await initWorkspace({ targetDir: target });
+  const headings = [
+    ["[#id-shorthand]", "id-shorthand"],
+    ["[#id-with-role.adapter-contract, owner=query-runtime]", "id-with-role"],
+    ["[.adapter-contract#role-first]", "role-first"],
+    ["[[double-bracket]]", "double-bracket"],
+    ["[id=id-attribute]", "id-attribute"],
+    ["", "generated-heading"]
+  ];
+  const chapterPath = path.join(target, "books", "02-multipart-monograph", "parts", "01-domain", "02-boundary.adoc");
+  const sections = headings.map(([declaration, id]) => {
+    const title = id === "generated-heading" ? "Generated Heading" : `Heading ${id}`;
+    return `${declaration ? `${declaration}\n` : ""}=== ${title}\n\nText.\n`;
+  });
+  await writeFile(chapterPath, `${await readFile(chapterPath, "utf8")}\n\n${sections.join("\n")}`, "utf8");
+  const sourceChapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  const xrefs = headings.map(([, id]) => `See xref:../02-multipart-monograph/book.adoc#${id}[${id}].`);
+  await writeFile(sourceChapterPath, `${await readFile(sourceChapterPath, "utf8")}\n\n${xrefs.join("\n\n")}\n`, "utf8");
+
+  await checkWorkspace(target);
+});
+
+test("runtime check fails for a cross-book xref to a missing anchor", async () => {
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-missing-cross-book-anchor-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
   const sourceChapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
-  const sourceChapter = await readFile(sourceChapterPath, "utf8");
   await writeFile(
     sourceChapterPath,
-    `${sourceChapter}\n\nSee xref:../02-multipart-monograph/book.adoc#multipart-book-boundary[typed anchor].\n`,
+    `${await readFile(sourceChapterPath, "utf8")}\n\nSee xref:../02-multipart-monograph/book.adoc#no-such-anchor[missing].\n`,
     "utf8"
   );
 
-  await checkWorkspace(target);
+  await assert.rejects(() => checkWorkspace(target), /HTML local resource check failed/);
 });
 
 test("runtime removes stale HTML only for books that no longer exist", async () => {

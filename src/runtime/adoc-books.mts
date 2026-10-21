@@ -9,8 +9,6 @@ import { parseAbundantTree, type IncludeResolution, type IncludeResolver } from 
 const require = createRequire(import.meta.url);
 const DIAGRAM_BLOCK_PATTERN = /^\[(?:actdiag|blockdiag|bpmn|bytefield|c4plantuml|d2|dbml|ditaa|erd|excalidraw|graphviz|mermaid|nomnoml|nwdiag|packetdiag|pikchr|plantuml|rackdiag|seqdiag|svgbob|symbolator|umlet|vega|vegalite|wavedrom|structurizr|diagramsnet|wireviz)(?:,|\])/m;
 const CATALOG_BOOK_XREF_PATTERN = /xref:books\/([^/\]]+)\/book\.adoc(?:#[^\[]+)?\[/g;
-const XREF_PATTERN = /xref:([^\[#]+)(?:#([A-Za-z0-9_-]+))?\[/g;
-const ANCHOR_PATTERN = /^\[#([A-Za-z0-9_-]+)(?:[.,][^\]]*)?\]$/gm;
 const LOCAL_TARGET_PATTERN = /\b(href|src)="([^"]+)"/g;
 const HTML_ANCHOR_PATTERN = /\b(?:id|name)="([^"]+)"/g;
 const SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
@@ -1191,29 +1189,13 @@ function extractCatalogBookIds(catalogSource: string): string[] {
   return [...ids].sort((a, b) => a.localeCompare(b));
 }
 
-function explicitAnchors(source: string): Set<string> {
-  const anchors = new Set<string>();
-  for (const match of source.matchAll(ANCHOR_PATTERN)) anchors.add(match[1]);
-  return anchors;
-}
-
-function attributesFromBookSource(bookSource: string): Map<string, string> {
-  const attributes = new Map<string, string>();
-  for (const line of bookSource.split(/\r?\n/)) {
-    const match = line.match(/^:([A-Za-z0-9_-]+):\s+(.+)$/);
-    if (match) attributes.set(match[1], match[2]);
-  }
-  return attributes;
-}
-
-function expandXrefTarget(target: string, attributes: Map<string, string>): string {
-  return target.replaceAll(/\{([A-Za-z0-9_-]+)\}/g, (_, name) => attributes.get(name) ?? `{${name}}`);
-}
-
 function issue(code: string, detail: string): Issue {
   return { code, detail };
 }
 
+// xref 的目标与锚点不在这里查：Asciidoctor 把它们写成 HTML 里的链接与 ID，missingLocalResources 在生成的 HTML 上
+// 核对（DESIGN.adoc 的 Workspace Contract Checks）。ID 有 [#id]、[.role#id]、[[id]]、[id=id] 与标题生成等写法，
+// 只有 Asciidoctor 认得全。
 async function workspaceContractIssues(rootDir: string, books: BookEntry[]): Promise<Issue[]> {
   const issues: Issue[] = [];
   const catalogSource = await readIfExists(path.join(rootDir, "catalog.adoc"));
@@ -1231,30 +1213,7 @@ async function workspaceContractIssues(rootDir: string, books: BookEntry[]): Pro
 
   for (const book of books) {
     const bookSource = await readFile(book.input, "utf8");
-    const allSource = await combinedBookSource(book.bookDir);
-    const attributes = attributesFromBookSource(bookSource);
-
     if (!/^:doctype:\s+book$/m.test(bookSource)) issues.push(issue("MISSING_DOCTYPE", book.bookId));
-
-    for (const match of allSource.matchAll(XREF_PATTERN)) {
-      const [, target, anchor] = match;
-      if (/^https?:/.test(target)) continue;
-      const expandedTarget = expandXrefTarget(target, attributes);
-      if (!expandedTarget.endsWith(".adoc")) continue;
-      const resolved = path.resolve(book.bookDir, expandedTarget);
-      if (!await existsFile(resolved)) {
-        issues.push(issue("XREF_TARGET_MISSING", `${book.bookId} -> ${expandedTarget}`));
-        if (anchor) issues.push(issue("MISSING_ANCHOR", `${book.bookId} -> ${expandedTarget}#${anchor}`));
-        continue;
-      }
-
-      if (anchor) {
-        const targetSource = await combinedBookSource(path.dirname(resolved));
-        if (!explicitAnchors(targetSource).has(anchor)) {
-          issues.push(issue("MISSING_ANCHOR", `${book.bookId} -> ${expandedTarget}#${anchor}`));
-        }
-      }
-    }
   }
 
   return issues;
