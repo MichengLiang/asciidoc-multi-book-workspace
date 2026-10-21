@@ -35,7 +35,24 @@ ADOC_BOOKS_FETCH_DIAGRAMS=1 pnpm run build
 pnpm run check
 ```
 
-This checks the current catalog, existing books, book doctypes, cross-book xrefs, anchors, and local HTML resources.
+This checks the current catalog, existing books, book doctypes, cross-book xrefs, anchors, and local HTML resources, and that every book's includes stay within `documentRoot` (see Configure).
+
+## Configure
+
+An optional `adoc-books.config.mjs` at the workspace root adjusts the build. Every key is optional:
+
+```js
+export default {
+  // Where build/html/index.html redirects, and its page title.
+  rootIndex: { redirectTo: "catalog.html", title: "My Books" },
+  // The catalog link at the top of every book.
+  homeLink: { label: "Back to catalog", subtitle: "My Books" },
+  // How far books may include files, relative to this directory. Default: ".".
+  documentRoot: "..",
+};
+```
+
+`documentRoot` matters when this workspace lives inside a project repository. Set it to the project root (`".."` when the workspace is a direct subdirectory) and books can include the project's own code instead of a copy of it. Source paths in the reader and the `// file:` markers of copied source then start at that root. An include that leaves `documentRoot` fails `pnpm run check` and names the book.
 
 ## Clean
 

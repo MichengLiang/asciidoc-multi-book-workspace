@@ -17,6 +17,19 @@ To fetch diagram images into the local HTML output instead of linking Kroki URLs
 ADOC_BOOKS_FETCH_DIAGRAMS=1 pnpm run build
 ```
 
+## Configure
+
+An optional `adoc-books.config.mjs` at the workspace root adjusts the build. When this workspace lives inside a
+project repository, declare the project root so books can include the project's own code:
+
+```js
+export default {
+  documentRoot: "..", // relative to this directory; default "."
+};
+```
+
+The file also accepts `rootIndex: { redirectTo, title }` and `homeLink: { label, subtitle }`.
+
 ## Add A Book
 
 Copy `books/01-structured-writing-conventions` to `books/<NN-book-id>`, edit its `book.adoc`, then add an

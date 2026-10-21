@@ -60,3 +60,18 @@ include::../../../../../examples/gateway-board/commands/replay.ts[]
 - 把项目代码搬进书架。代码属于代码的工作区（pnpm 工作区、类型检查的项目引用），书架是独立的 pnpm 项目。
 - 片段在书里写一份、用测试比对代码。trestlework 现在这样做（仓库根目录的 `book-code.test.ts` 检查每个带 `file=` 的代码块原样出现在
   那个文件里），能防止两处走样，但文字仍是两份，是在这个限制下的绕行。
+
+## 解决
+
+- 解决：2026-10-21，create-asciidoc-multi-book-workspace 计划 #4 工作包 4.3；规约在 4.1（`DESIGN.adoc` 的
+  Workspace Configuration 与 Workspace Contract Checks）。
+- 照 trestlework 书架副本的做法：`adoc-books.config.mjs` 新增 `documentRoot`，相对工作区根解析，默认 `"."`；
+  构建器把它交给 asciidoc-abundant-tree，page map 的 book entry 也以它为基准。
+- 规约与实现不一致的那一处按“阻断”统一：解析失败时构建失败，错误消息以 book id 开头。三份设计文档原来有两份写
+  “退回 cover-only”，一起改了；退回当初是为了覆盖解析器不支持的 include 属性列表，这类写法现在由书架登记
+  include 解析器解决（工作包 4.4），退路只剩藏问题的作用。
+- 原文“推断、没有单独测过的”一段，实测确认：书架是项目下的 `shelf/` 时，页面来源路径、page map 的 book entry 与
+  复制纯文本里的 `// file:` 标记都带上 `shelf/` 前缀，被引用的项目文件写作 `// file: examples/hello.ts`；
+  页面标识取自标题 ID，不受影响。测试 `runtime build reads a larger documentRoot from the workspace config`
+  逐项断言；`runtime check fails when a book includes a file outside the default documentRoot` 守住失败一侧。
+- bookgraph 已经读同一份声明（workbench `.aktant/bookgraph_ipython/_project.mjs`），书架的结构检查照同样的方式读。

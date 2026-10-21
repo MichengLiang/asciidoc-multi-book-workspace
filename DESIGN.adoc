@@ -429,6 +429,7 @@ The test suite covers:
 * Runtime build outputs and copied assets.
 * Removal of each official sample book followed by catalog entry removal.
 * Failure on a user-authored real cross-book xref to a missing book.
+* Failure, naming the book, when a book includes a file outside the default `documentRoot`; a passing build once the workspace declares the project root as `documentRoot`, with reader source paths relative to it.
 * Stale HTML directory removal only for books no longer present.
 * Runtime clean behavior.
 * Official sample contract under `templates/default-workspace/books`.

@@ -30,11 +30,13 @@ interface HomeLinkConfig {
 }
 
 interface RuntimeConfig {
+  documentRoot: string;
   rootIndex: RootIndexConfig;
   homeLink: HomeLinkConfig;
 }
 
-const DEFAULT_CONFIG: RuntimeConfig = {
+const DEFAULT_CONFIG = {
+  documentRoot: ".",
   rootIndex: {
     redirectTo: "catalog.html",
     title: "AsciiDoc Multi-Book Workspace"
@@ -143,16 +145,13 @@ function stringValue(value: unknown, fallback: string): string {
 
 async function loadRuntimeConfig(rootDir: string): Promise<RuntimeConfig> {
   const configPath = path.join(rootDir, CONFIG_FILE);
-  if (!await existsFile(configPath)) return DEFAULT_CONFIG;
-
-  const configUrl = pathToFileURL(configPath);
-  configUrl.search = `mtime=${(await stat(configPath)).mtimeMs}`;
-  const module = await import(configUrl.href);
-  const rawConfig = objectValue(module.default ?? module);
+  const rawConfig = await existsFile(configPath) ? await importConfig(configPath) : {};
   const rawRootIndex = objectValue(rawConfig.rootIndex);
   const rawHomeLink = objectValue(rawConfig.homeLink);
 
   return {
+    // 相对工作区根解析：配置文件就在工作区根，".." 即项目根。
+    documentRoot: path.resolve(rootDir, stringValue(rawConfig.documentRoot, DEFAULT_CONFIG.documentRoot)),
     rootIndex: {
       redirectTo: stringValue(rawRootIndex.redirectTo, DEFAULT_CONFIG.rootIndex.redirectTo),
       title: stringValue(rawRootIndex.title, DEFAULT_CONFIG.rootIndex.title)
@@ -162,6 +161,13 @@ async function loadRuntimeConfig(rootDir: string): Promise<RuntimeConfig> {
       subtitle: stringValue(rawHomeLink.subtitle, DEFAULT_CONFIG.homeLink.subtitle)
     }
   };
+}
+
+async function importConfig(configPath: string): Promise<Record<string, unknown>> {
+  const configUrl = pathToFileURL(configPath);
+  configUrl.search = `mtime=${(await stat(configPath)).mtimeMs}`;
+  const module = await import(configUrl.href);
+  return objectValue(module.default ?? module);
 }
 
 async function existsFile(filePath: string): Promise<boolean> {
@@ -447,50 +453,28 @@ function assertNoToolErrors(bookId: string, diagnostics: unknown[]): void {
   }
 }
 
-function sourceBundleFromDocument(document: Record<string, unknown>, fallbackPath: string, fallbackSource: string): string {
+function sourceBundleFromDocument(document: Record<string, unknown>): string {
   const sourceFiles = Array.isArray(document.sourceFiles) ? document.sourceFiles as AbundantSourceFile[] : [];
   const files = sourceFiles.filter((file) => typeof file.relativePath === "string" && typeof file.raw === "string");
-  if (files.length === 0) return fallbackSource;
   return files.map((file) => {
     const body = file.raw?.endsWith("\n") ? file.raw : `${file.raw ?? ""}\n`;
-    return `// file: ${file.relativePath ?? fallbackPath}\n${body}`;
+    return `// file: ${file.relativePath}\n${body}`;
   }).join("\n");
 }
 
-function fallbackReaderBookData(rootDir: string, book: BookEntry, fallbackSource: string, reason: string): ReaderBookData {
-  console.warn(`${book.bookId}: reader page map fell back to cover-only mode: ${reason}`);
-  const entry = path.relative(rootDir, book.input).split(path.sep).join("/");
-  return {
-    pageMap: {
-      version: 1,
-      book: {
-        id: book.bookId,
-        title: book.bookId,
-        entry
-      },
-      pages: [{
-        id: "cover",
-        kind: "cover",
-        title: book.bookId,
-        anchors: [],
-        toc: []
-      }]
-    },
-    sourceBundle: fallbackSource
-  };
-}
-
-async function buildReaderBookData(rootDir: string, book: BookEntry, fallbackSource: string): Promise<ReaderBookData> {
+// 解析失败就让构建失败，不退回只有封面的阅读页：退回时 include 越过 documentRoot 只剩一条 warning，
+// 构建照常成功，没有人发现阅读页坏了（DESIGN.adoc 的 Workspace Contract Checks）。
+async function buildReaderBookData(config: RuntimeConfig, book: BookEntry): Promise<ReaderBookData> {
   let document: Record<string, unknown>;
   try {
     document = await parseAbundantTree({
       sourcePath: book.input,
       mode: "book-entry",
-      documentRoot: rootDir
+      documentRoot: config.documentRoot
     }) as Record<string, unknown>;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    return fallbackReaderBookData(rootDir, book, fallbackSource, message);
+    throw new Error(`${book.bookId}: ${message}`, { cause: error });
   }
 
   const diagnostics = Array.isArray(document.toolDiagnostics) ? document.toolDiagnostics : [];
@@ -556,14 +540,14 @@ async function buildReaderBookData(rootDir: string, book: BookEntry, fallbackSou
     book: {
       id: book.bookId,
       title: pages[0].title,
-      entry: path.relative(rootDir, book.input).split(path.sep).join("/")
+      entry: path.relative(config.documentRoot, book.input).split(path.sep).join("/")
     },
     pages
   };
 
   return {
     pageMap,
-    sourceBundle: sourceBundleFromDocument(document, pageMap.book.entry, fallbackSource)
+    sourceBundle: sourceBundleFromDocument(document)
   };
 }
 
@@ -1082,17 +1066,16 @@ ${readerStyles()}
   return `${html.slice(0, insertAt)}${withReaderScript}${html.slice(insertAt)}`;
 }
 
-async function addHomeLinks(rootDir: string, books: BookEntry[], homeLink: HomeLinkConfig): Promise<void> {
+async function addHomeLinks(rootDir: string, books: BookEntry[], config: RuntimeConfig): Promise<void> {
   const catalog = path.join(rootDir, "build", "html", "catalog.html");
   for (const book of books) {
     const htmlFile = path.join(book.htmlOutputDir, "book.html");
     const html = await readFile(htmlFile, "utf8");
     const href = path.relative(path.dirname(htmlFile), catalog);
-    const fallbackSource = await combinedBookSource(book.bookDir);
-    const readerData = await buildReaderBookData(rootDir, book, fallbackSource);
+    const readerData = await buildReaderBookData(config, book);
     await writeFile(
       htmlFile,
-      addBookControlsToBookHtml(html, href, homeLink, readerData.sourceBundle, readerData.pageMap, book.bookId),
+      addBookControlsToBookHtml(html, href, config.homeLink, readerData.sourceBundle, readerData.pageMap, book.bookId),
       "utf8"
     );
   }
@@ -1280,7 +1263,7 @@ export async function buildWorkspace(rootDir = process.cwd()): Promise<void> {
 
   await buildHtml(rootDir, books, asciidoctor, useKroki, fetchDiagrams);
   await copyAssets(rootDir, books);
-  await addHomeLinks(rootDir, books, config.homeLink);
+  await addHomeLinks(rootDir, books, config);
   await writeRootIndex(rootDir, config.rootIndex);
   await assertNoIssues("HTML local resource check", await missingLocalResources(rootDir));
   await assertNoIssues("workspace contract check", await workspaceContractIssues(rootDir, books));

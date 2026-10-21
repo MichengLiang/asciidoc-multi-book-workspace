@@ -106,6 +106,29 @@ function removeSampleFromCatalog(catalog, bookId) {
   return updated.join("\n");
 }
 
+function embeddedJson(html, id) {
+  const match = html.match(new RegExp(`<script type="application/json" id="${id}">([\\s\\S]*?)</script>`));
+  assert.notEqual(match, null, `${id} is embedded`);
+  return JSON.parse(match[1]);
+}
+
+// 书架放在项目仓库里：项目根下有 examples/hello.ts，书架是 shelf/，01 号书的一章 include 项目代码。
+async function initShelfInsideProject(name) {
+  const project = path.join(repoRoot, "tmp", "test-fixtures", `${name}-${randomUUID()}`);
+  const shelf = path.join(project, "shelf");
+  await initWorkspace({ targetDir: shelf });
+  await mkdir(path.join(project, "examples"), { recursive: true });
+  await writeFile(path.join(project, "examples", "hello.ts"), "export const hello = \"project code\";\n", "utf8");
+  const chapterPath = path.join(shelf, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  const chapter = await readFile(chapterPath, "utf8");
+  await writeFile(
+    chapterPath,
+    `${chapter}\n\n[source,ts]\n----\ninclude::../../../../examples/hello.ts[]\n----\n`,
+    "utf8"
+  );
+  return shelf;
+}
+
 test("runtime build creates HTML, assets, home links, source bundles, and root index without default ADOC output", async () => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-build-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
@@ -312,6 +335,33 @@ test("runtime build applies optional user workspace navigation config", async ()
   const starter = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
   assert.match(starter, /返回目录/);
   assert.match(starter, /自定义书架/);
+});
+
+test("runtime check fails when a book includes a file outside the default documentRoot", async () => {
+  const shelf = await initShelfInsideProject("runtime-outside-root");
+
+  await assert.rejects(
+    () => checkWorkspace(shelf),
+    /^Error: 01-starter-book: [\s\S]*include\.outside-document-root/
+  );
+});
+
+test("runtime build reads a larger documentRoot from the workspace config", async () => {
+  const shelf = await initShelfInsideProject("runtime-project-root");
+  await writeFile(path.join(shelf, "adoc-books.config.mjs"), `export default { documentRoot: ".." };\n`, "utf8");
+
+  await checkWorkspace(shelf);
+
+  const starter = await readFile(path.join(shelf, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
+  assert.match(starter, /project code/);
+  const pageMap = embeddedJson(starter, "multi-book-page-map");
+  assert.equal(pageMap.book.entry, "shelf/books/01-starter-book/book.adoc");
+  assert.ok(pageMap.pages.filter((page) => page.source).every((page) => page.source.relativePath.startsWith("shelf/books/01-starter-book/")));
+  assert.ok(pageMap.pages.length > 1, "the reader is not reduced to a cover page");
+  const source = embeddedJson(starter, "multi-book-source-data");
+  assert.match(source, /^\/\/ file: shelf\/books\/01-starter-book\/book\.adoc$/m);
+  assert.match(source, /^\/\/ file: shelf\/shared\/attributes\.adoc$/m);
+  assert.match(source, /^\/\/ file: examples\/hello\.ts\nexport const hello = "project code";$/m);
 });
 
 test("runtime check passes after deleting any one sample and removing its catalog entries", async () => {
