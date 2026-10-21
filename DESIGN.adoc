@@ -332,6 +332,7 @@ Without the file, or for a key the object omits, the runtime uses the default.
 `documentRoot`::
   The directory a book's include graph may reach, relative to the workspace root.
   Default: `.`, the workspace root.
+  It must be a path string and must contain the workspace root; any other value fails the build instead of falling back to the default.
 
 `includeResolvers`::
   Include resolvers registered by the workspace, in the shape `asciidoc-abundant-tree` accepts.
@@ -340,18 +341,28 @@ Without the file, or for a key the object omits, the runtime uses the default.
 Books include `../../shared/attributes.adoc`, so `documentRoot` is never smaller than the workspace root.
 A workspace that lives inside a project repository declares the project root, for example `documentRoot: ".."`, so books can include the project's own code instead of keeping a second copy of it.
 `documentRoot` is also the base of every source path the reader shows: page source spans, the page map's book entry, and the `// file:` markers of the copied source bundle are relative to it.
-Other tools that read the same books, such as structure checks or graph projections, read `documentRoot` and `includeResolvers` from this file, so every reader of the books agrees on one root and one set of resolvers.
+Other tools that read the same books, such as structure checks or graph projections, should read `documentRoot` and `includeResolvers` from this file rather than assume the workspace root, so every reader of the books agrees on one root and one set of resolvers.
 
 An include resolver is an object `{ prefix, resolve }`.
 An include directive whose target starts with a registered prefix is resolved by that resolver both when Asciidoctor renders HTML and when `asciidoc-abundant-tree` derives the reader data, so both read the same lines.
+Prefixes are matched with `startsWith`, so a prefix ends with a separator such as `:`; a prefix `snip` would also claim `include::snippets/x.adoc[]`.
+`resolve` runs once per directive on each side, twice per build, and must give the same result both times.
+
 `resolve` receives the target without the prefix, the directive's attributes, and the absolute path of the file that contains the directive.
+What the target means is the resolver's own decision; a resolver that wants Asciidoctor's rule, relative to the including file, resolves it against `path.dirname(sourcePath)`.
 The attributes have the shape Asciidoctor.js 4 gives include processors: positional attributes keyed by position (`"1"`, `"2"`, ...), named attributes by name, and `opts` expanded to `<name>-option`.
 The HTML build runs on Asciidoctor.js 3, which keeps positional attributes in a separate list; the runtime reshapes them so that one resolver serves both sides.
-`resolve` returns contiguous whole lines of a source file together with that file's path (absolute, or relative to `documentRoot`) and the line the text starts at.
-Asciidoctor messages and reader source spans therefore point at the real lines of that file.
+Attribute values are strings; a positional attribute left empty at the start (`[,x]`) is `null` on both sides.
+Positional attributes must not be left empty between others (`[a,,b]`): Asciidoctor.js 3 drops the gap and numbers the rest differently from version 4, and the runtime cannot restore it.
+
+`resolve` returns `{ text, origin: { path, startLine } }`: contiguous whole lines of one file, that file's path (absolute, or relative to `documentRoot`), and the 1-based line the text starts at.
+The file must lie within `documentRoot` and must be the real source of the text: the runtime reads it and checks that `text` equals its lines from `startLine` on.
+The check exists because the two sides use the result differently.
+The HTML shows only `text`, while `asciidoc-abundant-tree` records the origin file and puts the whole file into the copied source bundle; an origin that is not the text's source would make the two sides disagree while the build still succeeds.
+Asciidoctor messages and reader source spans point at the real lines of that file.
 
 Asciidoctor.js 3 runs include processors synchronously, so `resolve` must return its result directly.
-A resolver that returns a Promise fails the build with the resolver's prefix and the directive's location.
+A resolver that returns a Promise, throws, returns another shape, returns lines that are not the origin's lines, or points outside `documentRoot` fails the build with the resolver's prefix and the directive's location.
 
 === Build Outputs
 
@@ -367,7 +378,7 @@ build/html/books/<book-id>/assets/
 ----
 
 The build renders catalog HTML, renders each book HTML, copies shared images, copies book-local assets, injects a catalog home link and dual reader UI into book HTML, writes the root HTML index, checks local HTML resources, and checks the workspace contract.
-The copy-source control embeds an abundant-tree source bundle for the current book. The bundle preserves each participating source file with its workspace-relative path instead of pretending to be a single reduced AsciiDoc file.
+The copy-source control embeds an abundant-tree source bundle for the current book. The bundle preserves each participating source file, whole, with its path relative to `documentRoot` instead of pretending to be a single reduced AsciiDoc file.
 Default build and check commands do not write expanded ADOC outputs under `build/adoc/`.
 Diagram blocks render as Kroki image URLs by default, so ordinary builds do not depend on the Kroki service at build time.
 When `ADOC_BOOKS_FETCH_DIAGRAMS=1` is set, the runtime asks Kroki to fetch diagram images into the local HTML output.
@@ -409,6 +420,7 @@ It does not depend on a global `asciidoctor` executable.
 The runtime uses `asciidoc-abundant-tree` in process to derive reader page maps and source bundles.
 `asciidoc-abundant-tree` 0.2 brings its own Asciidoctor.js 4 and parses asynchronously; the two Asciidoctor versions live side by side without sharing a runtime, because version 4 is plain JavaScript rather than an Opal build.
 It loads `asciidoctor-kroki` only when current `.adoc` sources contain supported diagram blocks.
+It looks for those blocks in `catalog.adoc` and in the files under `books/`; a diagram block that reaches a book only through an include from elsewhere (shared files, project code, include resolvers) does not trigger loading.
 If diagram blocks exist and `asciidoctor-kroki` cannot be loaded, the runtime reports that the workspace contains diagram blocks and needs the Kroki dependency or needs those blocks removed.
 
 The runtime does not implement content hashing, watch mode, deep incremental graphs, or a custom cache system.
@@ -432,8 +444,10 @@ The test suite covers:
 * Failure on a cross-book xref to a missing anchor, and a passing check for cross-book xrefs to IDs declared as `[#id]`, `[#id.role, ...]`, `[.role#id]`, `[[id]]`, `[id=id]`, or generated from a title.
 * Failure, naming the book, when a book includes a file outside the default `documentRoot`; a passing build once the workspace declares the project root as `documentRoot`, with reader source paths relative to it.
 * One include resolver receiving identical requests from the HTML build and from the reader data, with Asciidoctor.js 4 attribute shape, and the HTML listing holding exactly the lines it returned.
-* Failure, naming the prefix and directive location, when an include resolver returns a Promise.
-* Asciidoctor messages inside resolved text reported at the source file's own lines.
+* Failure, naming the prefix and the directive's exact line, when an include resolver returns a Promise (resolving or rejecting), throws, returns another shape, returns lines that are not its origin's lines, or points outside `documentRoot`.
+* An empty leading positional attribute arriving as `null` on both sides.
+* Rejection of a `documentRoot` that is not a string or does not contain the workspace root.
+* Asciidoctor messages inside resolved text reported at the source file's own lines, under the path Asciidoctor uses for its own includes.
 * Stale HTML directory removal only for books no longer present.
 * Runtime clean behavior.
 * Official sample contract under `templates/default-workspace/books`.

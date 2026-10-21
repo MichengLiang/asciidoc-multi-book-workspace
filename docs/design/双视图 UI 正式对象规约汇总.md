@@ -145,7 +145,7 @@ type ReaderBookInfo = {
 
 `title` 来自 `AbundantDocument.title.text`。
 
-`entry` 是入口文件相对生成工作区根目录的路径，例如：
+`entry` 是入口文件相对 `documentRoot` 的路径（未声明时 `documentRoot` 就是生成工作区根目录），例如：
 
 ```text
 books/07-structured-writing-conventions/book.adoc
@@ -210,7 +210,7 @@ type ReaderSourceSpan = {
 };
 ```
 
-`relativePath` 使用相对生成工作区根目录的路径。
+`relativePath` 使用相对 `documentRoot` 的路径。
 
 `startLine` 和 `endLine` 来自 abundant-tree section source span。
 

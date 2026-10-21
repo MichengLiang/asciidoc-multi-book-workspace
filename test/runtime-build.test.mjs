@@ -130,7 +130,7 @@ async function initShelfInsideProject(name) {
 }
 
 // 一个按函数名选代码的解析器，交回 snippets/code.ts 里那一个声明的整行；收到的请求记在 globalThis 上，
-// 配置文件在同一个进程里 import，测试读得到。
+// 配置文件在同一个进程里 import，测试读得到。交回的文本带着末尾换行：运行时要去掉它再与来源逐行核对。
 const symbolResolverConfig = `import { readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -143,12 +143,13 @@ export default {
       const lines = readFileSync(path.join(import.meta.dirname, request.target), "utf8").split("\\n");
       const start = lines.findIndex((line) => line.startsWith(\`export function \${request.attributes["1"]}(\`));
       const end = lines.indexOf("}", start);
-      return { text: lines.slice(start, end + 1).join("\\n"), origin: { path: request.target, startLine: start + 1 } };
+      return { text: lines.slice(start, end + 1).join("\\n") + "\\n", origin: { path: request.target, startLine: start + 1 } };
     }
   }]
 };
 `;
 
+// directiveLine 是 directive 在章节文件里的行号，失败消息里的位置以它为准。
 async function initWorkspaceWithInclude(name, files, directive) {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `${name}-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
@@ -157,8 +158,9 @@ async function initWorkspaceWithInclude(name, files, directive) {
     await writeFile(path.join(target, relativePath), text, "utf8");
   }
   const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
-  await writeFile(chapterPath, `${await readFile(chapterPath, "utf8")}\n\n${directive}\n`, "utf8");
-  return { target, chapterPath };
+  const before = `${await readFile(chapterPath, "utf8")}\n\n`;
+  await writeFile(chapterPath, `${before}${directive}\n`, "utf8");
+  return { target, chapterPath, directiveLine: before.split("\n").length };
 }
 
 test("runtime build creates HTML, assets, home links, source bundles, and root index without default ADOC output", async () => {
@@ -399,7 +401,8 @@ test("runtime build reads a larger documentRoot from the workspace config", asyn
 test("runtime build gives one include resolver the same request for HTML and reader data", async () => {
   const { target, chapterPath } = await initWorkspaceWithInclude("runtime-include-resolver", {
     "adoc-books.config.mjs": symbolResolverConfig,
-    "snippets/code.ts": `// header\nexport function alpha() {\n  return "alpha";\n}\n\nexport function beta() {\n  return "beta";\n}\n`
+    // beta 后紧跟非空行：多出来的末尾空行会与它对不上。
+    "snippets/code.ts": `// header\nexport function alpha() {\n  return "alpha";\n}\n\nexport function beta() {\n  return "beta";\n}\n// trailer\n`
   }, "[source,ts]\n----\ninclude::symbol:snippets/code.ts[beta,opts=optional]\n----");
 
   await checkWorkspace(target);
@@ -420,28 +423,69 @@ test("runtime build gives one include resolver the same request for HTML and rea
   assert.match(source, /^\/\/ file: snippets\/code\.ts$/m);
 });
 
-test("runtime build fails when an include resolver returns a Promise", async () => {
-  const { target } = await initWorkspaceWithInclude("runtime-async-resolver", {
-    "adoc-books.config.mjs": `export default { includeResolvers: [{ prefix: "later:", resolve: async () => ({ text: "x", origin: { path: "x", startLine: 1 } }) }] };\n`
-  }, "include::later:anything[]");
+test("runtime build keeps an empty positional attribute as null on both sides", async () => {
+  const { target } = await initWorkspaceWithInclude("runtime-resolver-empty-positional", {
+    "adoc-books.config.mjs": `globalThis.emptyPositionalRequests = [];
+export default { includeResolvers: [{ prefix: "rec:", resolve(request) {
+  globalThis.emptyPositionalRequests.push(request.attributes);
+  return { text: "", origin: { path: "catalog.adoc", startLine: 1 } };
+} }] };\n`
+  }, "include::rec:anything[,beta]");
 
-  await assert.rejects(
-    () => buildWorkspace(target),
-    /include resolver 'later:' returned a Promise for include::later:anything\[\] in .*02-main-flow\.adoc: line \d+/
-  );
+  await buildWorkspace(target);
+
+  assert.deepEqual(globalThis.emptyPositionalRequests, [{ 1: null, 2: "beta" }, { 1: null, 2: "beta" }]);
+});
+
+test("runtime build names the resolver and the directive when a resolver result cannot be used", async () => {
+  const cases = [
+    ["returned a Promise for", "async () => ({ text: \"x\", origin: { path: \"catalog.adoc\", startLine: 1 } })"],
+    ["returned a Promise for", "async () => { throw new Error(\"async boom\"); }"],
+    ["failed for", "() => { throw new Error(\"boom\"); }", ": boom$"],
+    ["returned an invalid result for", "() => ({ text: 42 })"],
+    ["returned text that is not lines 1-1 of .*catalog\\.adoc for", "() => ({ text: \"not the first line\", origin: { path: \"catalog.adoc\", startLine: 1 } })"],
+    ["returned a source outside documentRoot .* for", "() => ({ text: \"x\", origin: { path: \"../elsewhere.txt\", startLine: 1 } })"]
+  ];
+  for (const [phrase, resolve, tail = ""] of cases) {
+    const { target, directiveLine } = await initWorkspaceWithInclude("runtime-resolver-failure", {
+      "adoc-books.config.mjs": `export default { includeResolvers: [{ prefix: "x:", resolve: ${resolve} }] };\n`
+    }, "include::x:anything[]");
+
+    await assert.rejects(
+      () => buildWorkspace(target),
+      new RegExp(`include resolver 'x:' ${phrase} include::x:anything\\[\\] in \\S*02-main-flow\\.adoc: line ${directiveLine}${tail}`),
+      resolve
+    );
+  }
+});
+
+test("runtime config rejects a documentRoot that is not a path containing the workspace", async () => {
+  for (const [value, message] of [
+    ["123", /documentRoot must be a path string relative to the workspace root/],
+    ["\"../elsewhere\"", /documentRoot must contain the workspace root/]
+  ]) {
+    const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-bad-document-root-${randomUUID()}`);
+    await initWorkspace({ targetDir: target });
+    await writeFile(path.join(target, "adoc-books.config.mjs"), `export default { documentRoot: ${value} };\n`, "utf8");
+
+    await assert.rejects(() => buildWorkspace(target), message);
+  }
 });
 
 test("runtime reports Asciidoctor messages inside resolved text at the source file's lines", async () => {
+  const draft = `${Array.from({ length: 39 }, (_, index) => `Line ${index + 1}.`).join("\n")}\nText.\n\n----\nnever closed\n`;
   const { target } = await initWorkspaceWithInclude("runtime-resolver-lines", {
+    "notes/draft.adoc": draft,
     "adoc-books.config.mjs": `export default { includeResolvers: [{ prefix: "verbatim:", resolve: ({ target }) => ({
   text: "Text.\\n\\n----\\nnever closed",
   origin: { path: target, startLine: 40 }
 }) }] };\n`
   }, "include::verbatim:notes/draft.adoc[]");
 
+  // 显示路径照 Asciidoctor 自己 include 文件的写法，相对书目录（base_dir）。
   await assert.rejects(
     () => buildWorkspace(target),
-    /notes\/draft\.adoc: line 42: unterminated listing block/
+    /WARN: \.\.\/\.\.\/notes\/draft\.adoc: line 42: unterminated listing block/
   );
 });
 
@@ -535,7 +579,7 @@ test("runtime check accepts cross-book xrefs to IDs declared in any AsciiDoc for
   await checkWorkspace(target);
 });
 
-test("runtime check fails for a cross-book xref to a missing anchor", async () => {
+test("runtime check fails for a cross-book xref to a missing anchor", async (t) => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-missing-cross-book-anchor-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
   const sourceChapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
@@ -545,7 +589,12 @@ test("runtime check fails for a cross-book xref to a missing anchor", async () =
     "utf8"
   );
 
+  const reported = t.mock.method(console, "error", () => {});
   await assert.rejects(() => checkWorkspace(target), /HTML local resource check failed/);
+  assert.deepEqual(
+    reported.mock.calls.map((call) => call.arguments[0]),
+    ["HTML_ANCHOR_MISSING: books/01-starter-book/book.html -> ../02-multipart-monograph/book.html#no-such-anchor"]
+  );
 });
 
 test("runtime removes stale HTML only for books that no longer exist", async () => {

@@ -29,15 +29,15 @@ The generated workspace lists the AsciiDoc toolchain directly:
 ----
 {
   "devDependencies": {
-    "asciidoc-abundant-tree": "0.1.14",
-    "asciidoctor": "3.0.4",
-    "asciidoctor-kroki": "0.18.1"
+    "@asciidoctor/core": "^3.0.4",
+    "asciidoc-abundant-tree": "^0.2.1",
+    "asciidoctor-kroki": "^0.18.1"
   }
 }
 ----
 
 `asciidoc-abundant-tree` supplies source-aware document facts for page maps and source bundles.
-`asciidoctor` renders the book HTML.
+`@asciidoctor/core` renders the book HTML.
 `asciidoctor-kroki` is loaded only when current sources contain supported diagram blocks.
 
 The default generated workspace does not depend on `@asciidoctor/reducer`.
@@ -128,8 +128,8 @@ index: 索引
 
 The copy-source control copies the book's source bundle as plain text.
 
-When abundant-tree parses the book entry, the bundle is built from `document.sourceFiles`.
-Each source file is emitted with a workspace-relative marker:
+The bundle is built from abundant-tree's `document.sourceFiles`.
+Each source file is emitted whole, with a marker relative to `documentRoot` (the workspace root unless the workspace declares another root):
 
 [source,text]
 ----
@@ -139,9 +139,6 @@ Each source file is emitted with a workspace-relative marker:
 // file: shared/attributes.adoc
 ...
 ----
-
-When abundant-tree cannot parse the full book entry, the runtime falls back to collected `.adoc` and `.mjs` files under the book directory.
-The fallback keeps the same `// file: <relativePath>` marker format.
 
 The source bundle is embedded in:
 

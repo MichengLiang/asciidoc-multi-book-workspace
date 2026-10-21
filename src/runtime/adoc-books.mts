@@ -1,10 +1,11 @@
 #!/usr/bin/env node
+import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import asciidoctorFactory from "@asciidoctor/core";
-import { parseAbundantTree, type IncludeResolution, type IncludeResolver } from "asciidoc-abundant-tree";
+import { parseAbundantTree, type IncludeResolver } from "asciidoc-abundant-tree";
 
 const require = createRequire(import.meta.url);
 const DIAGRAM_BLOCK_PATTERN = /^\[(?:actdiag|blockdiag|bpmn|bytefield|c4plantuml|d2|dbml|ditaa|erd|excalidraw|graphviz|mermaid|nomnoml|nwdiag|packetdiag|pikchr|plantuml|rackdiag|seqdiag|svgbob|symbolator|umlet|vega|vegalite|wavedrom|structurizr|diagramsnet|wireviz)(?:,|\])/m;
@@ -35,7 +36,6 @@ interface RuntimeConfig {
 }
 
 const DEFAULT_CONFIG = {
-  documentRoot: ".",
   rootIndex: {
     redirectTo: "catalog.html",
     title: "AsciiDoc Multi-Book Workspace"
@@ -149,8 +149,7 @@ async function loadRuntimeConfig(rootDir: string): Promise<RuntimeConfig> {
   const rawHomeLink = objectValue(rawConfig.homeLink);
 
   return {
-    // 相对工作区根解析：配置文件就在工作区根，".." 即项目根。
-    documentRoot: path.resolve(rootDir, stringValue(rawConfig.documentRoot, DEFAULT_CONFIG.documentRoot)),
+    documentRoot: documentRootValue(rootDir, rawConfig.documentRoot),
     includeResolvers: includeResolversValue(rawConfig.includeResolvers),
     rootIndex: {
       redirectTo: stringValue(rawRootIndex.redirectTo, DEFAULT_CONFIG.rootIndex.redirectTo),
@@ -168,6 +167,25 @@ async function importConfig(configPath: string): Promise<Record<string, unknown>
   configUrl.search = `mtime=${(await stat(configPath)).mtimeMs}`;
   const module = await import(configUrl.href);
   return objectValue(module.default ?? module);
+}
+
+// 相对工作区根解析：配置文件就在工作区根，".." 即项目根。书要 include ../../shared/attributes.adoc，所以根必须
+// 包含工作区；不合规的值直接报错，悄悄退回默认值时，使用者只会看到 include 越界，想不到是配置没生效。
+function documentRootValue(rootDir: string, value: unknown): string {
+  if (value === undefined) return rootDir;
+  if (typeof value !== "string" || value === "") {
+    throw new Error(`${CONFIG_FILE}: documentRoot must be a path string relative to the workspace root`);
+  }
+  const documentRoot = path.resolve(rootDir, value);
+  if (!isWithin(documentRoot, rootDir)) {
+    throw new Error(`${CONFIG_FILE}: documentRoot must contain the workspace root ${rootDir}, got ${documentRoot}`);
+  }
+  return documentRoot;
+}
+
+function isWithin(root: string, filePath: string): boolean {
+  const relative = path.relative(root, filePath);
+  return relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
 }
 
 function includeResolversValue(value: unknown): IncludeResolver[] {
@@ -286,41 +304,84 @@ function includeResolverRegistry(asciidoctor: any, config: RuntimeConfig): any {
         const sourcePath: string = cursor.getFile();
         // 游标已越过 directive 这一行。
         const location = `include::${target}[] in ${sourcePath}: line ${cursor.getLineNumber() - 1}`;
-        let resolution: IncludeResolution | Promise<IncludeResolution>;
+        let resolution: unknown;
         try {
           resolution = resolver.resolve({
             target: target.slice(resolver.prefix.length),
-            attributes: includeAttributes(attributes),
+            // aat 一侧对留空的位置属性同样交 null，它的类型声明没有写出来。
+            attributes: includeAttributes(attributes) as Record<string, string>,
             sourcePath
           });
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
           throw new Error(`include resolver '${resolver.prefix}' failed for ${location}: ${message}`, { cause: error });
         }
-        if (resolution instanceof Promise) {
+        if (typeof objectValue(resolution).then === "function") {
+          // 不再等它：它若 reject，没人接住就成了进程级的未处理 rejection。
+          Promise.resolve(resolution).catch(() => {});
           throw new Error(
             `include resolver '${resolver.prefix}' returned a Promise for ${location}; ` +
             "the HTML build runs on Asciidoctor.js 3, whose include processors are synchronous"
           );
         }
-        const absolutePath = path.resolve(config.documentRoot, resolution.origin.path);
-        // 与 aat 相同：末尾的换行是最后一行的结束，留着会让 Reader 多切出一个空行。
-        const text = resolution.text.replace(/\r?\n$/u, "");
+        const { text, absolutePath, startLine } = checkedResolution(resolution, config.documentRoot, `include resolver '${resolver.prefix}'`, location);
         // 显示用的路径照 Asciidoctor 自己 include 文件时的写法，相对文档的 base_dir。
         const displayPath = path.relative(document.getBaseDir(), absolutePath).split(path.sep).join("/");
-        reader.pushInclude(text, absolutePath, displayPath, resolution.origin.startLine, attributes);
+        reader.pushInclude(text, absolutePath, displayPath, startLine, attributes);
       });
     });
   });
 }
 
+// 解析器交回的是来源文件里从 startLine 起连续的整行。这里逐行核对：两侧读同一份行的前提是 origin 就是 text 的
+// 出处——aat 把 origin 指向的文件全文收进复制纯文本，HTML 只用 text，两者对不上时构建也会成功，读者却看到两份
+// 不同的东西（aat 对此只报 warning）。
+function checkedResolution(
+  resolution: unknown,
+  documentRoot: string,
+  who: string,
+  location: string
+): { text: string; absolutePath: string; startLine: number } {
+  const shaped = objectValue(resolution);
+  const origin = objectValue(shaped.origin);
+  const startLine = origin.startLine;
+  if (typeof shaped.text !== "string" || typeof origin.path !== "string" || !Number.isInteger(startLine) || (startLine as number) < 1) {
+    throw new Error(`${who} returned an invalid result for ${location}; expected { text, origin: { path, startLine } }`);
+  }
+  const absolutePath = path.resolve(documentRoot, origin.path);
+  if (!isWithin(documentRoot, absolutePath)) {
+    throw new Error(`${who} returned a source outside documentRoot ${documentRoot} for ${location}: ${absolutePath}`);
+  }
+  // 与 aat 相同：末尾的换行是最后一行的结束，留着会让 Reader 多切出一个空行。
+  const text = shaped.text.replace(/\r?\n$/u, "");
+  if (text !== "") {
+    const lines = text.split(/\r?\n/u);
+    let source: string;
+    try {
+      source = readFileSync(absolutePath, "utf8");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`${who} returned a source that cannot be read for ${location}: ${message}`, { cause: error });
+    }
+    const first = (startLine as number) - 1;
+    const expected = source.split(/\r?\n/u).slice(first, first + lines.length);
+    if (expected.length !== lines.length || expected.some((line, index) => line !== lines[index])) {
+      throw new Error(
+        `${who} returned text that is not lines ${first + 1}-${first + lines.length} of ${absolutePath} for ${location}`
+      );
+    }
+  }
+  return { text, absolutePath, startLine: startLine as number };
+}
+
 // Asciidoctor.js 3 把位置属性放在 $positional 列表里；aat 跑在 4 上，位置属性以 "1"、"2" 为键。
-// 解析器只认后一种形状，同一个解析器才能服务两侧。
-function includeAttributes(attributes: Record<string, unknown>): Record<string, string> {
+// 解析器只认后一种形状，同一个解析器才能服务两侧。留空的位置属性（[,x]）在 3 里是 undefined、在 4 里是 null，
+// 这里交 null；中间留空（[a,,b]）时 3 已把空位丢掉、编号与 4 不同，无从还原，规约写明位置属性不能留空。
+function includeAttributes(attributes: Record<string, unknown>): Record<string, string | null> {
   const { $positional, ...named } = attributes;
   const positional = Array.isArray($positional) ? $positional : [];
   return {
-    ...Object.fromEntries(positional.map((value, index) => [String(index + 1), String(value)])),
+    ...Object.fromEntries(positional.map((value, index) => [String(index + 1), value === undefined ? null : String(value)])),
     ...Object.fromEntries(Object.entries(named).map(([name, value]) => [name, String(value)]))
   };
 }
