@@ -54,6 +54,23 @@ export default {
 
 `documentRoot` matters when this workspace lives inside a project repository. Set it to the project root (`".."` when the workspace is a direct subdirectory) and books can include the project's own code instead of a copy of it. Source paths in the reader and the `// file:` markers of copied source then start at that root. An include that leaves `documentRoot` fails `pnpm run check` and names the book.
 
+`includeResolvers` lets books include lines chosen by your own code, for example one function out of a source file:
+
+```js
+export default {
+  includeResolvers: [{
+    prefix: "symbol:",
+    // include::symbol:src/math.ts[add] arrives as { target: "src/math.ts", attributes: { 1: "add" }, sourcePath }
+    resolve({ target, attributes, sourcePath }) {
+      // ...find the lines of the function...
+      return { text, origin: { path: target, startLine } };
+    },
+  }],
+};
+```
+
+The same resolver serves the HTML build and the reader, so both show the same lines. It returns whole consecutive lines of one file, that file's path (relative to `documentRoot`), and the line the text starts at; build messages about those lines point into that file. `resolve` must return its result directly, not a Promise.
+
 ## Clean
 
 ```bash

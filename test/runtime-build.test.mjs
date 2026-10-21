@@ -129,6 +129,38 @@ async function initShelfInsideProject(name) {
   return shelf;
 }
 
+// 一个按函数名选代码的解析器，交回 snippets/code.ts 里那一个声明的整行；收到的请求记在 globalThis 上，
+// 配置文件在同一个进程里 import，测试读得到。
+const symbolResolverConfig = `import { readFileSync } from "node:fs";
+import path from "node:path";
+
+globalThis.includeResolverRequests = [];
+export default {
+  includeResolvers: [{
+    prefix: "symbol:",
+    resolve(request) {
+      globalThis.includeResolverRequests.push(request);
+      const lines = readFileSync(path.join(import.meta.dirname, request.target), "utf8").split("\\n");
+      const start = lines.findIndex((line) => line.startsWith(\`export function \${request.attributes["1"]}(\`));
+      const end = lines.indexOf("}", start);
+      return { text: lines.slice(start, end + 1).join("\\n"), origin: { path: request.target, startLine: start + 1 } };
+    }
+  }]
+};
+`;
+
+async function initWorkspaceWithInclude(name, files, directive) {
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `${name}-${randomUUID()}`);
+  await initWorkspace({ targetDir: target });
+  for (const [relativePath, text] of Object.entries(files)) {
+    await mkdir(path.dirname(path.join(target, relativePath)), { recursive: true });
+    await writeFile(path.join(target, relativePath), text, "utf8");
+  }
+  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  await writeFile(chapterPath, `${await readFile(chapterPath, "utf8")}\n\n${directive}\n`, "utf8");
+  return { target, chapterPath };
+}
+
 test("runtime build creates HTML, assets, home links, source bundles, and root index without default ADOC output", async () => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-build-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
@@ -362,6 +394,55 @@ test("runtime build reads a larger documentRoot from the workspace config", asyn
   assert.match(source, /^\/\/ file: shelf\/books\/01-starter-book\/book\.adoc$/m);
   assert.match(source, /^\/\/ file: shelf\/shared\/attributes\.adoc$/m);
   assert.match(source, /^\/\/ file: examples\/hello\.ts\nexport const hello = "project code";$/m);
+});
+
+test("runtime build gives one include resolver the same request for HTML and reader data", async () => {
+  const { target, chapterPath } = await initWorkspaceWithInclude("runtime-include-resolver", {
+    "adoc-books.config.mjs": symbolResolverConfig,
+    "snippets/code.ts": `// header\nexport function alpha() {\n  return "alpha";\n}\n\nexport function beta() {\n  return "beta";\n}\n`
+  }, "[source,ts]\n----\ninclude::symbol:snippets/code.ts[beta,opts=optional]\n----");
+
+  await checkWorkspace(target);
+
+  const requests = globalThis.includeResolverRequests;
+  assert.equal(requests.length, 2, "Asciidoctor renders the HTML and aat derives the reader data");
+  assert.deepEqual(requests[0], requests[1]);
+  assert.deepEqual(requests[0], {
+    target: "snippets/code.ts",
+    attributes: { 1: "beta", "optional-option": "" },
+    sourcePath: chapterPath
+  });
+  const starter = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
+  const listings = [...starter.matchAll(/<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/g)].map((match) => match[1]);
+  assert.ok(listings.includes(`export function beta() {\n  return "beta";\n}`), "the listing holds exactly the selected declaration");
+  // 复制纯文本收录参与构建的源文件全文，解析器取的那个文件也在其中。
+  const source = embeddedJson(starter, "multi-book-source-data");
+  assert.match(source, /^\/\/ file: snippets\/code\.ts$/m);
+});
+
+test("runtime build fails when an include resolver returns a Promise", async () => {
+  const { target } = await initWorkspaceWithInclude("runtime-async-resolver", {
+    "adoc-books.config.mjs": `export default { includeResolvers: [{ prefix: "later:", resolve: async () => ({ text: "x", origin: { path: "x", startLine: 1 } }) }] };\n`
+  }, "include::later:anything[]");
+
+  await assert.rejects(
+    () => buildWorkspace(target),
+    /include resolver 'later:' returned a Promise for include::later:anything\[\] in .*02-main-flow\.adoc: line \d+/
+  );
+});
+
+test("runtime reports Asciidoctor messages inside resolved text at the source file's lines", async () => {
+  const { target } = await initWorkspaceWithInclude("runtime-resolver-lines", {
+    "adoc-books.config.mjs": `export default { includeResolvers: [{ prefix: "verbatim:", resolve: ({ target }) => ({
+  text: "Text.\\n\\n----\\nnever closed",
+  origin: { path: target, startLine: 40 }
+}) }] };\n`
+  }, "include::verbatim:notes/draft.adoc[]");
+
+  await assert.rejects(
+    () => buildWorkspace(target),
+    /notes\/draft\.adoc: line 42: unterminated listing block/
+  );
 });
 
 test("runtime check passes after deleting any one sample and removing its catalog entries", async () => {

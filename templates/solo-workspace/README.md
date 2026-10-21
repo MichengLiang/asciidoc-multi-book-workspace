@@ -28,7 +28,8 @@ export default {
 };
 ```
 
-The file also accepts `rootIndex: { redirectTo, title }` and `homeLink: { label, subtitle }`.
+The file also accepts `rootIndex: { redirectTo, title }`, `homeLink: { label, subtitle }`, and
+`includeResolvers: [{ prefix, resolve }]` for include directives whose lines your own code selects.
 
 ## Add A Book
 
