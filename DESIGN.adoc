@@ -356,7 +356,7 @@ Attribute values are strings; a positional attribute left empty at the start (`[
 Positional attributes must not be left empty between others (`[a,,b]`): Asciidoctor.js 3 drops the gap and numbers the rest differently from version 4, and the runtime cannot restore it.
 
 `resolve` returns `{ text, origin: { path, startLine } }`: contiguous whole lines of one file, that file's path (absolute, or relative to `documentRoot`), and the 1-based line the text starts at.
-The file must lie within `documentRoot` and must be the real source of the text: the runtime reads it and checks that `text` equals its lines from `startLine` on.
+The file must lie within `documentRoot`, not be `documentRoot` itself, and must be the real source of the text: the runtime reads it and checks that `text`, without one final line break, equals its lines from `startLine` on, character for character, naming the first line that differs.
 The check exists because the two sides use the result differently.
 The HTML shows only `text`, while `asciidoc-abundant-tree` records the origin file and puts the whole file into the copied source bundle; an origin that is not the text's source would make the two sides disagree while the build still succeeds.
 Asciidoctor messages and reader source spans point at the real lines of that file.

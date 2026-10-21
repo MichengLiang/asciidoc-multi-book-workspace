@@ -30,6 +30,8 @@ export default {
 
 The file also accepts `rootIndex: { redirectTo, title }`, `homeLink: { label, subtitle }`, and
 `includeResolvers: [{ prefix, resolve }]` for include directives whose lines your own code selects.
+The rules a resolver follows are in the
+[Configure section of the default workspace README](https://github.com/MichengLiang/asciidoc-multi-book-workspace/blob/main/templates/default-workspace/README.md#configure).
 
 ## Add A Book
 

@@ -443,11 +443,15 @@ test("runtime build names the resolver and the directive when a resolver result 
     ["returned a Promise for", "async () => { throw new Error(\"async boom\"); }"],
     ["failed for", "() => { throw new Error(\"boom\"); }", ": boom$"],
     ["returned an invalid result for", "() => ({ text: 42 })"],
-    ["returned text that is not lines 1-1 of .*catalog\\.adoc for", "() => ({ text: \"not the first line\", origin: { path: \"catalog.adoc\", startLine: 1 } })"],
-    ["returned a source outside documentRoot .* for", "() => ({ text: \"x\", origin: { path: \"../elsewhere.txt\", startLine: 1 } })"]
+    ["returned text that is not lines 2-2 of \\S*two\\.txt for", "() => ({ text: \"L2\", origin: { path: \"notes/two.txt\", startLine: 2 } })", ": line 2 is \"l2\", the resolver returned \"L2\"$"],
+    // 来源末尾的换行之后没有第 3 行。
+    ["returned text that is not lines 2-3 of \\S*two\\.txt for", "() => ({ text: \"l2\\n\\n\", origin: { path: \"notes/two.txt\", startLine: 2 } })", ": the file has only 2 lines$"],
+    ["returned a source outside documentRoot .* for", "() => ({ text: \"x\", origin: { path: \"../elsewhere.txt\", startLine: 1 } })"],
+    ["returned a source outside documentRoot .* for", "() => ({ text: \"\", origin: { path: \".\", startLine: 1 } })"]
   ];
   for (const [phrase, resolve, tail = ""] of cases) {
     const { target, directiveLine } = await initWorkspaceWithInclude("runtime-resolver-failure", {
+      "notes/two.txt": "l1\nl2\n",
       "adoc-books.config.mjs": `export default { includeResolvers: [{ prefix: "x:", resolve: ${resolve} }] };\n`
     }, "include::x:anything[]");
 

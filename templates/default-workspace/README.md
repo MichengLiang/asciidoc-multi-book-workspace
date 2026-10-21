@@ -76,9 +76,9 @@ The same resolver serves the HTML build and the reader, so both show the same li
 
 - End `prefix` with a separator such as `:`. Prefixes match the start of the include target, so `snip` would also take `include::snippets/x.adoc[]`.
 - Decide what `target` is relative to. The example uses the workspace root; for Asciidoctor's own rule use `path.dirname(sourcePath)`.
-- Return whole consecutive lines of one file inside `documentRoot`, that file's path (absolute, or relative to `documentRoot`), and the line number (from 1) where the text starts. The build checks that the text really is those lines of that file, and build messages about them point into it. Copied source includes that whole file.
+- Return whole consecutive lines of one file inside `documentRoot`, that file's path (absolute, or relative to `documentRoot`), and the line number (from 1) where the text starts. The build checks that the text is exactly those lines of that file, trailing spaces and a leading byte order mark included, and names the first line that differs. Build messages about those lines point into the file. Copied source includes that whole file.
 - Return the result directly, not a Promise, and return the same result every time: `resolve` runs twice per directive, once for the HTML and once for the reader.
-- Attribute values are strings. Do not leave a positional attribute empty between others (`[a,,b]`); the two sides would number them differently.
+- Attribute values are strings, except that an empty leading positional attribute (`[,x]`) is `null`. Do not leave a positional attribute empty between others (`[a,,b]`); the two sides would number them differently.
 
 ## Clean
 

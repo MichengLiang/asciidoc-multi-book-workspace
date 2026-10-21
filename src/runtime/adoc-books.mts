@@ -349,11 +349,11 @@ function checkedResolution(
     throw new Error(`${who} returned an invalid result for ${location}; expected { text, origin: { path, startLine } }`);
   }
   const absolutePath = path.resolve(documentRoot, origin.path);
-  if (!isWithin(documentRoot, absolutePath)) {
+  // 来源是根之内的一个文件，不能是根本身；aat 同样拒绝。
+  if (absolutePath === documentRoot || !isWithin(documentRoot, absolutePath)) {
     throw new Error(`${who} returned a source outside documentRoot ${documentRoot} for ${location}: ${absolutePath}`);
   }
-  // 与 aat 相同：末尾的换行是最后一行的结束，留着会让 Reader 多切出一个空行。
-  const text = shaped.text.replace(/\r?\n$/u, "");
+  const text = withoutFinalNewline(shaped.text);
   if (text !== "") {
     const lines = text.split(/\r?\n/u);
     let source: string;
@@ -363,15 +363,32 @@ function checkedResolution(
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`${who} returned a source that cannot be read for ${location}: ${message}`, { cause: error });
     }
+    const sourceLines = withoutFinalNewline(source).split(/\r?\n/u);
     const first = (startLine as number) - 1;
-    const expected = source.split(/\r?\n/u).slice(first, first + lines.length);
-    if (expected.length !== lines.length || expected.some((line, index) => line !== lines[index])) {
+    const mismatch = lines.findIndex((line, index) => sourceLines[first + index] !== line);
+    if (mismatch !== -1) {
+      const lineNumber = first + mismatch + 1;
+      const detail = lineNumber > sourceLines.length
+        ? `the file has only ${sourceLines.length} lines`
+        : `line ${lineNumber} is ${shown(sourceLines[lineNumber - 1])}, the resolver returned ${shown(lines[mismatch])}`;
       throw new Error(
-        `${who} returned text that is not lines ${first + 1}-${first + lines.length} of ${absolutePath} for ${location}`
+        `${who} returned text that is not lines ${first + 1}-${first + lines.length} of ${absolutePath} for ${location}: ${detail}`
       );
     }
   }
   return { text, absolutePath, startLine: startLine as number };
+}
+
+// 末尾的换行是最后一行的结束，不是多出来的一行：留着会让 Reader 多切出一个空行（aat 同样去掉一个）。来源文件按同一
+// 规则切行，文件最后一行之后才不会多出一个并不存在的空行。
+function withoutFinalNewline(text: string): string {
+  return text.replace(/\r?\n$/u, "");
+}
+
+// 消息里的一行：截短，BOM 与控制字符写成可见的转义，行尾空白看得出来。
+function shown(line: string): string {
+  const clipped = line.length > 60 ? `${line.slice(0, 60)}…` : line;
+  return JSON.stringify(clipped).replaceAll("﻿", "\\uFEFF");
 }
 
 // Asciidoctor.js 3 把位置属性放在 $positional 列表里；aat 跑在 4 上，位置属性以 "1"、"2" 为键。
