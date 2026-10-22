@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.1 - 2026-10-23
+
+### Changed
+
+- Generated workspaces depend on `asciidoc-abundant-tree` `^0.2.6`. Releases 0.2.2–0.2.6 correct facts the reader pages are built from: edges with no source heading in included files, bibliography references, the Asciidoctor binding (`href`, reftext) of xrefs in descriptions and list items, and the span of description lists. The type of the attributes an include resolver receives now admits `null` (a blank positional attribute), as the runtime already passed it.
+
+### Upgrading an existing workspace
+
+Set `"asciidoc-abundant-tree": "^0.2.6"` in your `package.json` and run `pnpm install`. `tools/adoc-books.mjs` is unchanged in behavior; there is no need to copy it.
+
 ## 0.5.0 - 2026-10-21
 
 ### Added
