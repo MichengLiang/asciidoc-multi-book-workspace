@@ -44,12 +44,12 @@
 
 生成工作区必须直接依赖 `asciidoc-abundant-tree`。
 
-依赖范围是 `^0.2.1`：0.2.0 起解析入口返回 Promise，0.2.1 起 book-entry 接受宿主登记的 `includeResolvers`。
+依赖范围是 `^0.2.6`：0.2.0 起解析入口返回 Promise，0.2.1 起 book-entry 接受宿主登记的 `includeResolvers`，0.2.2 起解析器请求的属性类型写出留空位置属性的 `null`。0.2.2 到 0.2.6 修正的都是阅读数据依赖的事实：被引入文件里没有起点的边、描述与列表条目里 xref 的官方结果、描述列表的范围；下限取到 0.2.6，生成的工作区不会装到这些修正之前的版本。
 
 生成工作区的 `package.json` devDependencies 必须包含：
 
 ```json
-"asciidoc-abundant-tree": "^0.2.1"
+"asciidoc-abundant-tree": "^0.2.6"
 ```
 
 维护者仓库的开发依赖也必须包含同一版本，用于测试、预览构建和 TypeScript 编译。
@@ -719,7 +719,7 @@ build/html/books/<book-id>/book.html
 测试必须断言生成 workspace 的 package.json devDependencies 包含：
 
 ```json
-"asciidoc-abundant-tree": "^0.2.1"
+"asciidoc-abundant-tree": "^0.2.6"
 ```
 
 测试必须断言 maintainer package boundary 包含运行时构建产物，且不要求额外 reader asset 文件进入包，因为 reader CSS/JS 内联在 runtime script 中。

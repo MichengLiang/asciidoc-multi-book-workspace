@@ -308,8 +308,7 @@ function includeResolverRegistry(asciidoctor: any, config: RuntimeConfig): any {
         try {
           resolution = resolver.resolve({
             target: target.slice(resolver.prefix.length),
-            // aat 一侧对留空的位置属性同样交 null，它的类型声明没有写出来。
-            attributes: includeAttributes(attributes) as Record<string, string>,
+            attributes: includeAttributes(attributes),
             sourcePath
           });
         } catch (error) {

@@ -30,7 +30,7 @@ The generated workspace lists the AsciiDoc toolchain directly:
 {
   "devDependencies": {
     "@asciidoctor/core": "^3.0.4",
-    "asciidoc-abundant-tree": "^0.2.1",
+    "asciidoc-abundant-tree": "^0.2.6",
     "asciidoctor-kroki": "^0.18.1"
   }
 }
