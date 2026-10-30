@@ -112,7 +112,7 @@ const requiredPatterns = new Map([
       "[.concept]",
       "[.dish]",
       "[.technique]",
-      "[#红烧肉的火候]",
+      "xref:红烧肉::火候[红烧肉·火候]",
       "rel=depends-on",
       "aat:references",
       "rel:depends-on",
@@ -196,11 +196,9 @@ test("default workspace template satisfies the official sample contract", async 
     if (bookId === "00-book-anatomy") {
       assert.doesNotMatch(allSource, /\(\([^)]*\)\)/);
     }
-    // 样本示范的是「标题就是地址」：不为了被引用而给标题打 ID（DESIGN.adoc 的 Sample Addressing）。07 号书在寻址一章
-    // 里专门示范 custom ID 的用法，由它自己的断言守着。
-    if (bookId !== "07-structured-writing-conventions") {
-      assert.doesNotMatch(allSource, /^\[#[^\]]*\]$/m, `${bookId} declares a heading ID`);
-    }
+    // 样本示范的是「标题就是地址」：不为了被引用而给标题打 ID，同名的标题用限定地址引用（DESIGN.adoc 的
+    // Sample Addressing）。07 号书讲 custom ID 只讲它何时当第二个地址，自己的标题一个也不写。
+    assert.doesNotMatch(allSource, /^\[#[^\]]*\]$/m, `${bookId} declares a heading ID`);
     // 书没有摘要：[abstract] 是 article 的样式，book 里会被编成一章（DESIGN.adoc 的 Sample Front Matter）。
     // 00 号书在前置内容地图里讲这件事，所以只禁止独占一行、真正作用在 section 上的写法。
     assert.doesNotMatch(allSource, /^\[abstract\]$/m, `${bookId} writes an [abstract] section`);
@@ -232,12 +230,8 @@ test("default workspace template satisfies the official sample contract", async 
         allSource,
         /\bstable ID\b|stable-id|稳定 ID|稳定地址|regular-heading|basic-syntax|xref-rule|寻址标签|id-prefix|aliases::/
       );
-      // 07 号书在「标题、寻址与引用」里示范 custom ID：同名的「火候」要单独引用时才加。除这一处示例外，
-      // 书里的标题都按标题寻址（DESIGN.adoc 的 Sample Addressing）。
-      assert.deepEqual(
-        allSource.match(/^\[#[^\]]*\]$/gm),
-        ["[#红烧肉的火候]"]
-      );
+      // 同名的「火候」用限定地址引用，显示文本用间隔号（DESIGN.adoc 的 Sample Addressing）。
+      assert.match(allSource, /《xref:红烧肉::火候\[红烧肉·火候\]》/);
       // 书教约定声明，自己也声明：《凡例》写出它标题上真正用到的 role。示例代码块里的声明不算，
       // 所以先去掉 ---- 定界的块再找。
       const outsideListings = allSource.replace(/^(-{4,})$[\s\S]*?^\1$/gm, "");

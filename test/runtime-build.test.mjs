@@ -285,7 +285,8 @@ test("runtime reader UI supports desktop and mobile paged reading behavior", asy
 
     await desktop.locator("[data-multi-book-page-nav]").getByRole("link", { name: "源文本与投影", exact: true }).click();
     await assertVisibleText(desktop, "#content", "源文本与投影");
-    await assertHiddenText(desktop, "#content", "标题、寻址与引用");
+    // 下一章的标题不显示；正文里指向它的链接文字照常显示，所以只看章标题。
+    await assertHiddenText(desktop, "#content h2", "标题、寻址与引用");
     await assertVisibleText(desktop, "[data-multi-book-page-toc]", "概述");
     const desktopContentBox = await desktop.locator("#content").boundingBox();
     const codeBox = await desktop.locator("#content .listingblock").first().boundingBox();

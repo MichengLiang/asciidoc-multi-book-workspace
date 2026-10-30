@@ -218,7 +218,7 @@ The default workspace contains these sample books:
   An independent lower volume that demonstrates cross-volume writing conventions by literal example.
 
 `07-structured-writing-conventions`::
-  A structured writing conventions specimen: a heading's title is its address, with a custom ID only for a heading that must be referred to on its own and shares its title; roles on headings, relation predicates on xrefs, fields, and convention declarations kept in a 凡例; and a part of touchstones for the judgments of writing a book. Every example comes from one home cookbook.
+  A structured writing conventions specimen: a heading's title is its address, and a heading that shares its title is reached by a qualified address that adds the titles above it (`红烧肉::火候`); roles on headings, relation predicates on xrefs, fields, and convention declarations kept in a 凡例; and a part of touchstones for the judgments of writing a book. Every example comes from one home cookbook.
 
 === Sample Independence
 
@@ -243,8 +243,12 @@ They are the only default links from `catalog.adoc` to sample book entries, and 
 The sample books are copied into every generated workspace, and authors copy them again when they start a book, so what the samples show is what new books do.
 They follow <<reference-binding>>: a heading is referred to by its title, and no heading declares an ID only so that it can be referred to.
 
-Where a sample teaches the `[#id]` syntax (`00-book-anatomy` in its inline structure table, `07-structured-writing-conventions` in its addressing chapter), it teaches it as one more address for a heading that must be referred to on its own and shares its title with another heading.
+A heading that shares its title with others is referred to by its qualified address.
+`07-structured-writing-conventions` teaches it in its addressing chapter with the 火候 under three dishes, and has the link text name both titles with the interpunct GB/T 15834—2011 sets between a work and its section, as in `xref:红烧肉::火候[红烧肉·火候]`, because the link would otherwise show the last title alone.
+
+Where a sample teaches the `[#id]` syntax (`00-book-anatomy` in its inline structure table, `04-reference-manual` in its glossary, `07-structured-writing-conventions` in its addressing chapter), it teaches it as a second address for a heading whose title cannot serve: two headings under the same parent share it, or it contains `#` or `::`.
 Asciidoctor calls this a custom ID; the samples use that name and do not describe it as a stable target.
+The samples do not call it an alias, because 别名 is already the field for another name of the thing a heading names.
 
 Bibliography entries keep their `[[[id]]]` anchors.
 An entry is not a heading, and the anchor is how AsciiDoc cites it.
@@ -301,7 +305,7 @@ The cookbook carries every case the book teaches:
 * fields: 主料 and 用时 under a dish, a value list for 难度 (易, 中, 难), and 出处 with a passage of 《随园食单》 attached by `+`;
 * an alias: 番茄炒蛋, also called 西红柿炒鸡蛋;
 * a rename whose boundary changes: 凉拌与腌制 becoming 凉拌菜;
-* titles shared by several headings: the 火候 subsection under each of three dishes;
+* titles shared by several headings: the 火候 subsection under each of three dishes, one of them referred to as `红烧肉::火候`;
 * a title that is itself an identifier: GB 2760—2014.
 
 The 火候 subsections are the shared titles, so no other example heading is titled 火候; a concept titled 火候 would make the concept and the subsections one more set of shared titles.
@@ -489,7 +493,7 @@ A book refers to one of them by writing the titles of the headings above it befo
 A qualified address adds parents only until it names one heading, and may go up to the full path from the top level.
 `::` is already AsciiDoc's description list separator and does not occur in ordinary titles, so it costs no punctuation a title might use.
 
-An ID declared on a heading is an alias, one more address for the same heading.
+An ID declared on a heading is a second address for the same heading.
 An author declares one only where the title cannot serve: two headings under the same parent share a title, or the title itself contains `#` or `::`.
 No heading declares an ID so that a reference keeps working after the title changes; the check reporting the old title is how the author finds every reference that must be reconsidered.
 

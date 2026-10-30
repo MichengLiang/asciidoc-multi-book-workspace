@@ -30,35 +30,37 @@
 
 作者用 `[.technique]` 和 `[.dish]` 表明《炒糖色》是一种技法、《红烧肉》《红烧排骨》是菜；《火候》用 `===` 写在《红烧肉》下面，是它的下级标题。做红烧肉离不开炒糖色，作者便在《红烧肉》里写 `pass:[xref:炒糖色[rel=depends-on]]`，用 `rel` 表明这层依据；《红烧排骨》只是请读者参看《红烧肉》，写普通的 `pass:[xref:红烧肉[]]` 就够了。两处引用都没有写显示文本，链接上显示的就是目标标题。
 
-asciidoc-abundant-tree 把这份源文本投影成 RDF。下面摘出与这些写法对应的几行，`<…>` 是投影给每个标题和每条引用起的节点名：
+asciidoc-abundant-tree 把这份源文本投影成 RDF。下面摘出与这些写法对应的几行：
 
 [source,turtle]
 ----
-<…#heading-l3-o0> a aat:Heading ;
+<#炒糖色> a aat:Heading ;
   aat:headline "炒糖色" ;
   aat:role "technique" .
 
-<…#heading-l8-o0> a aat:Heading ;
+<#红烧肉> a aat:Heading ;
   aat:headline "红烧肉" ;
   aat:role "dish" ;
-  aat:containsDirectly <…#heading-l13-o0> ;
-  rel:depends-on <…#heading-l3-o0> .
+  aat:containsDirectly <#火候> ;
+  rel:depends-on <#炒糖色> .
 
-<…#heading-l13-o0> a aat:Heading ;
+<#火候> a aat:Heading ;
   aat:headline "火候" .
 
-<…#heading-l17-o0> a aat:Heading ;
+<#红烧排骨> a aat:Heading ;
   aat:headline "红烧排骨" ;
   aat:role "dish" ;
-  aat:references <…#heading-l8-o0> .
+  aat:references <#红烧肉> .
 
-<…#xref-edge-l11-c15-o0> a aat:XrefEdge ;
+<…/projection#xref-edge-l11-c15-o0> a aat:XrefEdge ;
   aat:targetSelector "炒糖色" ;
-  aat:targetHeading <…#heading-l3-o0> ;
+  aat:targetHeading <#炒糖色> ;
   aat:rel "depends-on" .
 ----
 
-每个标题的原文记在 `aat:headline`，role 记在 `aat:role`，上下级记成 `aat:containsDirectly`。普通 xref 投影为 `aat:references`；写了 `rel` 的 xref 投影为以谓词命名的边，这里是 `rel:depends-on`。每条 xref 另有一个节点，记下源文本里写的目标 `aat:targetSelector` 和它找到的标题 `aat:targetHeading`。引用写的是标题原文，所以找到的就是那个标题。
+标题节点以它的地址命名：`<#炒糖色>` 是这份源文件里地址为“炒糖色”的那一节。几个标题同名时，节点名用限定地址，例如三道菜都有《火候》时，红烧肉下的那一节是 `<#红烧肉::火候>`（见《xref:标题、寻址与引用[]》）。
+
+每个标题的原文记在 `aat:headline`，role 记在 `aat:role`，上下级记成 `aat:containsDirectly`。普通 xref 投影为 `aat:references`；写了 `rel` 的 xref 投影为以谓词命名的边，这里是 `rel:depends-on`。每条 xref 另有一个节点（`<…>` 处省去了它名字前面的文件部分），记下源文本里写的目标 `aat:targetSelector` 和它找到的标题 `aat:targetHeading`。引用写的是标题原文，所以找到的就是那个标题。
 
 写书的人不必自己运行投影。工作区的构建核对引用时读的是这张图，查询工具按 role 列出标题时读的也是这张图。源文本怎样写，决定了它们能从书里读出什么。
 
