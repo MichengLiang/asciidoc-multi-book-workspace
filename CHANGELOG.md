@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.0 - 2026-10-31
+
+### Added
+
+- `pnpm run check` binds a qualified address: when several headings share a title, a book refers to one of them by writing the titles above it, joined with `::`, as in `xref:红烧肉::火候[]` or, across books, `xref:{dish-book}#红烧肉::火候[]`. The HTML link reaches that heading.
+
+### Changed
+
+- Generated workspaces depend on `asciidoc-abundant-tree` `^0.3.0`. Which xrefs exist and what their targets say are now read by Asciidoctor inside it, and the runtime no longer works around its gaps: xrefs inside passthroughs (`pass:[…]`, `+++…+++`, `$$…$$`, `` `+…+` ``) or escaped with `\` are not checked; `xref:` targets with spaces are bound and checked; `xref:#id[]` names `id`; an attribute reference in a target takes its value at the xref's position, where it used to take the value the book held after conversion; `xref:other#x[]` without `.adoc` names the document `other`, as Asciidoctor links it. The projection itself changed in 0.3.0 (fields are `field:<name>`, heading nodes are named by their address); tools that read it follow that release's changelog.
+- The structured writing conventions sample teaches qualified addresses for shared titles, written with link text that joins the titles with an interpunct (《红烧肉·火候》). Two headings that share a title under one parent are renamed so each title says what its section is (糖醋排骨's two 炸 become 初炸 and 复炸); a custom ID is the second address only for a title that cannot serve, with rules for naming it. After a rename, an author also searches the book for the old name in link text and prose, which the check does not report. The projection example shows heading nodes named by their address and the field predicate `field:难度`, and the fields chapter states that a field name in an attrlist uses only letters, digits, `_`, and `-`. `00-book-anatomy` and the `04-reference-manual` glossary say the same about custom IDs.
+
+### Upgrading an existing workspace
+
+A generated workspace owns its `tools/adoc-books.mjs`, and this release changes it. Create a temporary workspace with `pnpm create asciidoc-multi-book-workspace@0.6.0 tmp-books`, copy its `tools/adoc-books.mjs` over yours, set `"asciidoc-abundant-tree": "^0.3.0"` in your `package.json`, and run `pnpm install`. Books need no change; a heading that declares an ID only to tell it apart from others with the same title can drop the ID once its references use the qualified address.
+
 ## 0.5.1 - 2026-10-23
 
 ### Changed
