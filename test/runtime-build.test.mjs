@@ -13,19 +13,19 @@ const structuredWritingPageSequence = [
   ["cover", "cover", "结构化书写约定标本"],
   ["frontmatter", "frontmatter", "前置"],
   ["part", "part-从源文档看结构", "从源文档看结构"],
-  ["chapter", "source-and-projection", "源文本与投影"],
-  ["chapter", "heading-address-and-xref", "标题、寻址与引用"],
-  ["chapter", "source-order-notation", "源文件编排号"],
+  ["chapter", "源文本与投影", "源文本与投影"],
+  ["chapter", "标题寻址与引用", "标题、寻址与引用"],
+  ["chapter", "源文件编排号", "源文件编排号"],
   ["part", "part-名称角色与关系", "名称、角色与关系"],
-  ["chapter", "names-and-address-labels", "名称变化与寻址标签"],
-  ["chapter", "heading-roles", "标题的 role"],
-  ["chapter", "relation-predicate", "rel 关系谓词"],
+  ["chapter", "名称与地址", "名称与地址"],
+  ["chapter", "标题的-role", "标题的 role"],
+  ["chapter", "rel-关系谓词", "rel 关系谓词"],
   ["part", "part-字段与术语", "字段与术语"],
-  ["chapter", "surface-fields", "附加字段"],
-  ["chapter", "glossary-conventions", "术语表"],
-  ["chapter", "declaring-conventions", "声明本书的约定"],
-  ["appendix", "structured-writing-quick-reference", "结构化写法速查"],
-  ["appendix", "structured-writing-decision-trees", "结构化写法决策树"],
+  ["chapter", "附加字段", "附加字段"],
+  ["chapter", "统一用词", "统一用词"],
+  ["chapter", "声明本书的约定", "声明本书的约定"],
+  ["appendix", "结构化写法速查", "结构化写法速查"],
+  ["appendix", "结构化写法决策树", "结构化写法决策树"],
   ["glossary", "术语表", "术语表"],
   ["bibliography", "参考坐标", "参考坐标"]
 ];
@@ -297,7 +297,7 @@ test("runtime reader UI supports desktop and mobile paged reading behavior", asy
 
     await desktop.locator("[data-multi-book-page-nav]").getByRole("link", { name: "标题、寻址与引用", exact: true }).click();
     await assertVisibleText(desktop, "#content", "标题、寻址与引用");
-    assert.match(desktop.url(), /[?&]page=heading-address-and-xref/);
+    assert.match(decodeURIComponent(desktop.url()), /[?&]page=标题寻址与引用/);
 
     await desktop.getByRole("button", { name: "连续" }).click();
     await assertVisibleText(desktop, "#content", "源文本与投影");
@@ -311,7 +311,7 @@ test("runtime reader UI supports desktop and mobile paged reading behavior", asy
     );
 
     const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
-    await mobile.goto(`${bookUrl}?view=paged&page=source-and-projection`);
+    await mobile.goto(`${bookUrl}?view=paged&page=${encodeURIComponent("源文本与投影")}`);
     await assertVisibleText(mobile, "#content", "源文本与投影");
     assert.equal(
       await mobile.locator("#toc > :not([data-multi-book-controls]):not([data-multi-book-page-nav])").evaluateAll((nodes) => {

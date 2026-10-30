@@ -43,7 +43,7 @@ include::parts/010-source-surface/030-source-order-notation.adoc[]
 [partintro]
 include::parts/020-names-roles-and-relations/_partintro.adoc[]
 
-include::parts/020-names-roles-and-relations/010-names-and-address-labels.adoc[]
+include::parts/020-names-roles-and-relations/010-names-and-addresses.adoc[]
 
 include::parts/020-names-roles-and-relations/020-heading-roles.adoc[]
 
@@ -56,7 +56,7 @@ include::parts/030-fields-and-terminology/_partintro.adoc[]
 
 include::parts/030-fields-and-terminology/010-surface-fields.adoc[]
 
-include::parts/030-fields-and-terminology/020-glossary.adoc[]
+include::parts/030-fields-and-terminology/020-consistent-terms.adoc[]
 
 include::parts/030-fields-and-terminology/030-declaring-conventions.adoc[]
 

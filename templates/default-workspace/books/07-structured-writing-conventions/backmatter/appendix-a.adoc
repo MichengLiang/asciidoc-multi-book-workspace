@@ -1,4 +1,3 @@
-[#structured-writing-quick-reference]
 = 结构化写法速查
 
 [cols="1,2", options="header"]
@@ -33,13 +32,13 @@
 |Chapter 文件的源文件编排号。规则与 Part 目录编排号一致。
 
 |`== 标题`
-|创建标题节点；标题给出当前规范名称。
+|创建标题节点；标题给出当前规范名称，标题原文也是它的地址。
 
 |`[.concept]`
 |用 role 标记标题在书中的作用。
 
-|`[#address-label]`
-|为标题附加显式寻址标签。它用于找到标题。
+|`[#红烧肉的火候]`
+|custom ID：给标题加第二个地址。只在一节需要被单独引用、又与别的标题同名时写。
 
 |`[.example, owner=writing-team]`
 |role 和 named attributes 保留标题的作用与附加字段。
@@ -79,4 +78,4 @@ role 描述标题在书中的作用。rel 描述 xref 边上的关系谓词。�
 
 如果遇到“代码/日志”与其“文字解释”需要分离的场景，可以考虑使用 Asciidoc 的 Callouts。
 
-结构化写法的选择由当前对象、引用需求、投影需求和维护成本共同决定。具体判定流程见 xref:structured-writing-decision-trees[附录 B：结构化写法决策树]。
+结构化写法的选择由当前对象、引用需求、投影需求和维护成本共同决定。具体判定流程见 xref:结构化写法决策树[]。

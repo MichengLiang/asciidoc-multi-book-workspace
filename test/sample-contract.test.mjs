@@ -85,13 +85,13 @@ const requiredPatterns = new Map([
       "从源文档看结构",
       "标题保存当前规范名称",
       "源文档把 `常规标题` 写成可引用的阅读单位",
-      "显式寻址标签",
+      "custom ID 只在一节需要被单独引用、又与别的标题同名时出现",
       "源文件编排号",
       "source-order notation",
       "Part 目录和 Chapter 文件统一使用三位数 `0X0` 格式进行编排",
       "末尾追加",
       "中间插入",
-      "标题保存当前规范名称；引用用标题或已有的显式寻址标签找到标题",
+      "标题保存当前规范名称，引用用标题找到它；同名而需要单独引用时，才用 custom ID",
       "include::parts/010-source-surface/030-source-order-notation.adoc[]",
       "标题的 role",
       "该 xref 投影为 `aat:references`",
@@ -114,8 +114,7 @@ const requiredPatterns = new Map([
       "[.convention, declares=values, for=rule, field=verdict]",
       "[.convention, declares=fields, for=rule]",
       "term 写词本身",
-      "id-prefix=rule-",
-      "不论它写没写寻址标签",
+      "检查脚本读出声明以后，对每个带 role 的标题核对：",
       "约定的声明与维护",
       "术语表记录本书采用的关键用词",
       "术语的定义集中维护在书后的术语表中",
@@ -126,9 +125,13 @@ const requiredPatterns = new Map([
       "aat:containsDirectly",
       "[.concept]",
       "[.rule]",
-      "附录 B：结构化写法决策树",
+      ":appendix-caption: 附录",
+      "xref:结构化写法决策树[]",
       "标题生成与层级拓扑控制",
-      "名称变化与寻址标签",
+      "== 名称与地址",
+      "== 统一用词",
+      "=== 改名时的判断",
+      "[#红烧肉的火候]",
       "role 的作用域与语境管理",
       "xref 与 rel 关系谓词建立",
       "surface field 落位策略",
@@ -237,7 +240,13 @@ test("default workspace template satisfies the official sample contract", async 
     if (bookId === "07-structured-writing-conventions") {
       assert.doesNotMatch(
         allSource,
-        /\bstable ID\b|stable-id|稳定 ID|稳定地址|regular-heading|basic-syntax|xref-rule/
+        /\bstable ID\b|stable-id|稳定 ID|稳定地址|regular-heading|basic-syntax|xref-rule|寻址标签|id-prefix/
+      );
+      // 07 号书在「标题、寻址与引用」里示范 custom ID：同名的「火候」要单独引用时才加。除这一处示例外，
+      // 书里的标题都按标题寻址（DESIGN.adoc 的 Sample Addressing）。
+      assert.deepEqual(
+        allSource.match(/^\[#[^\]]*\]$/gm),
+        ["[#红烧肉的火候]"]
       );
     }
   }

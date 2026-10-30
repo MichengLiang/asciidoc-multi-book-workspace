@@ -1,4 +1,3 @@
-[#source-and-projection]
 == 源文本与投影
 
 本章用一段示例展示结构化书写约定。Turtle 片段列出关键投影事实；完整投影还会保留 raw、路径、行号和边证据。
@@ -27,34 +26,36 @@
 
 源文档把 `常规标题` 写成可引用的阅读单位，在其下写出 `基本语法` 子标题，把 `引用规则` 写成规则说明，并在正文里写出参见和依赖两种引用。
 
-Turtle 示例中的 `<urn:aat:doc:...#heading-*>` 和 `<urn:aat:doc:...#xref-edge-*>` 表示投影生成的文档节点 IRI。本例没有为标题附加显式寻址标签，因此 `aat:addressLabel` 与标题文字一致。
+Turtle 示例中的 `<urn:aat:doc:...#heading-*>` 和 `<urn:aat:doc:...#xref-edge-*>` 表示投影生成的文档节点 IRI。本例没有写 custom ID：`aat:headline` 是标题原文，`aat:generatedAddressLabel` 是 Asciidoctor 从标题生成的 ID（这份样例没有设 `:idprefix:`，所以带前缀 `_`），两者都是这个标题的地址。`pass:[xref:常规标题[]]` 的 `aat:targetSelector` 是 `常规标题`，按标题原文绑定到 `aat:targetHeading`。
 
 [source,turtle]
 ----
 <urn:aat:doc:...#heading-l3-o0> a aat:Heading ;
   aat:headline "常规标题" ;
-  aat:addressLabel "常规标题" ;
+  aat:generatedAddressLabel "_常规标题" ;
   aat:role "concept" ;
   aat:containsDirectly <urn:aat:doc:...#heading-l8-o0> .
 
 <urn:aat:doc:...#heading-l8-o0> a aat:Heading ;
   aat:headline "基本语法" ;
-  aat:addressLabel "基本语法" ;
+  aat:generatedAddressLabel "_基本语法" ;
   aat:role "example" .
 
 <urn:aat:doc:...#heading-l13-o0> a aat:Heading ;
   aat:headline "引用规则" ;
-  aat:addressLabel "引用规则" ;
+  aat:generatedAddressLabel "_引用规则" ;
   aat:role "rule" ;
   aat:references <urn:aat:doc:...#heading-l3-o0> ;
   rel:depends-on <urn:aat:doc:...#heading-l3-o0> .
 
 <urn:aat:doc:...#xref-edge-l17-c8-o0> a aat:XrefEdge ;
+  aat:targetSelector "常规标题" ;
+  aat:targetHeading <urn:aat:doc:...#heading-l3-o0> ;
   aat:rel "depends-on" ;
   aat:weight "strong" .
 ----
 
-源文档中的 [.concept]#常规标题# 是被引用的阅读单位，`基本语法` 是它的下级标题， [.rule]#引用规则# 说明引用写法。投影读取同一份源文档，为标题生成 IRI，并在标题节点上保留 `aat:headline`、`aat:addressLabel` 和 `aat:role`；标题层级投影为 `aat:containsDirectly`，xref 投影为 `aat:references` 和 `rel:depends-on`。
+源文档中的 [.concept]#常规标题# 是被引用的阅读单位，`基本语法` 是它的下级标题， [.rule]#引用规则# 说明引用写法。投影读取同一份源文档，为标题生成 IRI，并在标题节点上保留 `aat:headline`、`aat:generatedAddressLabel` 和 `aat:role`；标题层级投影为 `aat:containsDirectly`，xref 投影为 `aat:references` 和 `rel:depends-on`，每条 xref 边记下它写的 `aat:targetSelector` 与绑定到的 `aat:targetHeading`。
 
 [source,asciidoc]
 ----

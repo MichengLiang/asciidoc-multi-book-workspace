@@ -1,4 +1,3 @@
-[#surface-fields]
 == 附加字段
 
 附加字段是写在源文档表面的键值信息。标题字段可以写在标题 attrlist 或标题下描述列表中；xref 边证据字段写在 xref named attributes 中。

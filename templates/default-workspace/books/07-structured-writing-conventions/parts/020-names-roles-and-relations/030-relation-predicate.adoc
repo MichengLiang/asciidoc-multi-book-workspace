@@ -1,4 +1,3 @@
-[#relation-predicate]
 == rel 关系谓词
 
 `rel` 是 xref 边上的关系谓词。包含 xref 的标题是关系起点，xref 指向的标题是关系终点。本书把这两个位置称为 source heading 和 target heading。
@@ -13,7 +12,7 @@
 
 `rel` 可以被读者和工具当作关系谓词，所以在全书范围内，每种 `rel` 谓词的语义需要保持唯一且不变。
 
-全书采用的 rel 谓词写成约定声明，见 xref:declaring-conventions[声明本书的约定]。下面列出常用的几种：
+全书采用的 rel 谓词写成约定声明，见 xref:声明本书的约定[]。下面列出常用的几种：
 
 [horizontal]
 depends-on:: 当前标题的判断、规则或操作以目标标题为依据。阅读顺序和先读建议使用普通 xref 表达。
