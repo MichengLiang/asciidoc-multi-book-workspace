@@ -1,11 +1,10 @@
-[#xref-patterns]
 == 引用模式
 
-书内引用使用本书内 anchor：
+书内引用写目标那一节的标题：
 
 [source,asciidoc]
 ----
-xref:#decision-table[结构选择表]
+xref:结构选择表[]
 ----
 
 跨书引用写向 AsciiDoc 源文件，`#` 后面写目标书里那一节的标题：

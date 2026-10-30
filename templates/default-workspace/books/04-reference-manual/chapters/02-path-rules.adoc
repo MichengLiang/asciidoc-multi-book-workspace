@@ -1,4 +1,3 @@
-[#path-rules]
 == 路径规则
 
 Book directory:: `books/<book-id>/`，一本独立 book 的边界。

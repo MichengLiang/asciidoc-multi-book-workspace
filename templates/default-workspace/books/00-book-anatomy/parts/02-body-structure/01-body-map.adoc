@@ -1,4 +1,3 @@
-[#body-map]
 == 正文结构地图
 
 part 是 book doctype 中 document title 之后的 level 0 section。level 1 section 通常形成 chapter；multipart book 中 chapter 位于 part 下，普通 book 中 chapter 可以直接位于 book 下。

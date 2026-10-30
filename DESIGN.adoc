@@ -238,6 +238,17 @@ Book-to-book teaching material uses book IDs, paths, prose, or literal examples 
 Catalog links are the workspace navigation surface.
 They are the only default links from `catalog.adoc` to sample book entries, and each sample must have catalog entries that can be removed without editing another sample book.
 
+=== Sample Addressing
+
+The sample books are copied into every generated workspace, and authors copy them again when they start a book, so what the samples show is what new books do.
+They follow <<reference-binding>>: a heading is referred to by its title, and no heading declares an ID only so that it can be referred to.
+
+Where a sample teaches the `[#id]` syntax (`00-book-anatomy` in its inline structure table, `07-structured-writing-conventions` in its addressing chapter), it teaches it as one more address for a heading that must be referred to on its own and shares its title with another heading.
+Asciidoctor calls this a custom ID; the samples use that name and do not describe it as a stable target.
+
+Bibliography entries keep their `[[[id]]]` anchors.
+An entry is not a heading, and the anchor is how AsciiDoc cites it.
+
 === Cross-Book Xref Teaching
 
 Cross-book xref syntax is taught as literal source text.

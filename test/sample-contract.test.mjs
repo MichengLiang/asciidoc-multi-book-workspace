@@ -64,10 +64,10 @@ const requiredPatterns = new Map([
       "parts/<part-id>/",
       "目录约定服务维护边界",
       "连续 chapter 编号",
-      "[#inline-structure-map]",
+      "custom ID：给标题再加一个地址",
       "[.term]#inline role#",
       "[.path]`parts/02-body-structure/`",
-      "xref:#body-map[正文结构地图]",
+      "xref:正文结构地图[]",
       "{series-name}",
       "语义身份",
       "具体视觉效果取决于输出样式"
@@ -202,6 +202,11 @@ test("default workspace template satisfies the official sample contract", async 
     if (bookId === "01-starter-book") assert.equal(partCount(bookSource), 0);
     if (bookId === "00-book-anatomy") {
       assert.doesNotMatch(allSource, /\(\([^)]*\)\)/);
+    }
+    // 样本示范的是「标题就是地址」：不为了被引用而给标题打 ID（DESIGN.adoc 的 Sample Addressing）。07 号书在寻址一章
+    // 里专门示范 custom ID 的用法，由它自己的断言守着。
+    if (bookId !== "07-structured-writing-conventions") {
+      assert.doesNotMatch(allSource, /^\[#[^\]]*\]$/m, `${bookId} declares a heading ID`);
     }
     if (bookId === "02-multipart-monograph") {
       assert.equal(partCount(bookSource) >= 2, true);
