@@ -5,7 +5,7 @@ import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promi
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import asciidoctorFactory from "@asciidoctor/core";
-import { parseAbundantTree, type IncludeResolver } from "asciidoc-abundant-tree";
+import { parseAbundantTree, rdf12, type AbundantDocument, type IncludeResolver } from "asciidoc-abundant-tree";
 
 const require = createRequire(import.meta.url);
 const DIAGRAM_BLOCK_PATTERN = /^\[(?:actdiag|blockdiag|bpmn|bytefield|c4plantuml|d2|dbml|ditaa|erd|excalidraw|graphviz|mermaid|nomnoml|nwdiag|packetdiag|pikchr|plantuml|rackdiag|seqdiag|svgbob|symbolator|umlet|vega|vegalite|wavedrom|structurizr|diagramsnet|wireviz)(?:,|\])/m;
@@ -13,6 +13,10 @@ const CATALOG_BOOK_XREF_PATTERN = /xref:books\/([^/\]]+)\/book\.adoc(?:#[^\[]+)?
 const LOCAL_TARGET_PATTERN = /\b(href|src)="([^"]+)"/g;
 const HTML_ANCHOR_PATTERN = /\b(?:id|name)="([^"]+)"/g;
 const SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
+const AAT_NAMESPACE = "https://micheng.dev/ns/asciidoc-abundant-tree#";
+const DOCUMENT_TARGET_PATTERN = /\.adoc(?:#|$)/;
+const PASSTHROUGH_MACRO_PATTERN = /pass:[a-z,]*\[/g;
+const HTML_FRAGMENT_LINK_PATTERN = /<a href="#([^"]*)"([^>]*)>([\s\S]*?)<\/a>/g;
 const HOME_MARKER = "data-multi-book-home";
 const CONTROLS_MARKER = "data-multi-book-controls";
 const FETCH_DIAGRAMS_ENV = "ADOC_BOOKS_FETCH_DIAGRAMS";
@@ -111,6 +115,18 @@ interface ReaderPageMap {
 interface ReaderBookData {
   pageMap: ReaderPageMap;
   sourceBundle: string;
+  references: ReferenceBinding;
+}
+
+interface BoundHeading {
+  id: string;
+  title: string;
+}
+
+interface ReferenceBinding {
+  // 键是 Asciidoctor 写进 href 的片段（原文与 HTML 转义后的两种写法都登记）。
+  headingsByFragment: Map<string, BoundHeading>;
+  issues: Issue[];
 }
 
 interface AbundantSection {
@@ -625,14 +641,16 @@ function sourceBundleFromDocument(document: Record<string, unknown>): string {
 // 解析失败就让构建失败，不退回只有封面的阅读页：退回时 include 越过 documentRoot 只剩一条 warning，
 // 构建照常成功，没有人发现阅读页坏了（DESIGN.adoc 的 Workspace Contract Checks）。
 async function buildReaderBookData(config: RuntimeConfig, book: BookEntry): Promise<ReaderBookData> {
+  let parsed: AbundantDocument;
   let document: Record<string, unknown>;
   try {
-    document = await parseAbundantTree({
+    parsed = await parseAbundantTree({
       sourcePath: book.input,
       mode: "book-entry",
       documentRoot: config.documentRoot,
       includeResolvers: config.includeResolvers
-    }) as Record<string, unknown>;
+    });
+    document = parsed as unknown as Record<string, unknown>;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`${book.bookId}: ${message}`, { cause: error });
@@ -708,8 +726,112 @@ async function buildReaderBookData(config: RuntimeConfig, book: BookEntry): Prom
 
   return {
     pageMap,
-    sourceBundle: sourceBundleFromDocument(document)
+    sourceBundle: sourceBundleFromDocument(document),
+    references: bindReferences(config, parsed)
   };
+}
+
+// 书内 xref 指向谁，以 aat 的绑定为准（DESIGN.adoc 的 Reference Binding）：标题原文、手写 ID、生成的 ID 都在它的
+// label space 里，重名给出候选而不替人挑。这里只读投影里每条 xref 边的结果，不自己匹配选择器。
+function bindReferences(config: RuntimeConfig, document: AbundantDocument): ReferenceBinding {
+  const projection = rdf12(document, { documentRoot: config.documentRoot });
+  const graph = projection.graph;
+  const values = (subject: { termType: "iri"; value: string }, name: string): string[] => {
+    return graph.match({ subject, predicate: { termType: "iri", value: `${AAT_NAMESPACE}${name}` } })
+      .map((triple) => triple.object.termType === "triple" ? "" : triple.object.value);
+  };
+  const headings = new Map(projection.nodeIndex.entries()
+    .filter((entry) => entry.kind === "section")
+    .map((entry) => [entry.iri.value, entry]));
+  const sourceLines = new Map((document.sourceFiles ?? []).map((file) => [file.relativePath, file.raw.split(/\r?\n/)]));
+  const located = (iris: string[]): string => iris
+    .map((iri) => headings.get(iri))
+    .filter((entry) => entry !== undefined)
+    .map((entry) => ({ title: entry.node.title ?? "", relativePath: entry.relativePath ?? "", line: entry.sourceStartLine ?? entry.startLine }))
+    .sort((left, right) => left.relativePath.localeCompare(right.relativePath) || left.line - right.line)
+    .map((entry) => `${entry.title} (${entry.relativePath}:${entry.line})`)
+    .join(", ");
+
+  const edges = graph.match({ predicate: { termType: "iri", value: `${AAT_NAMESPACE}targetSelector` } }).map((triple) => ({
+    iri: triple.subject,
+    selector: triple.object.termType === "triple" ? "" : triple.object.value,
+    relativePath: values(triple.subject, "relativePath")[0] ?? "",
+    line: Number(values(triple.subject, "startLine")[0] ?? 0),
+    column: Number(values(triple.subject, "startColumn")[0] ?? 0)
+  })).sort((left, right) => left.relativePath.localeCompare(right.relativePath) || left.line - right.line || left.column - right.column);
+
+  const headingsByFragment = new Map<string, BoundHeading>();
+  const issues: Issue[] = [];
+  for (const edge of edges) {
+    // 指向别的文档的 xref 由 HTML 本地资源检查判断（DESIGN.adoc 的 Reference Binding）。
+    if (DOCUMENT_TARGET_PATTERN.test(edge.selector)) continue;
+    // aat 0.2.6 的扫描器把 pass:[…] 里透传的文字也当作 xref 收下，Asciidoctor 并不为它生成链接；
+    // 这些是书在展示写法，不是引用。aat 不再收它们以后，这一条可以去掉。
+    if (insidePassthroughMacro(sourceLines.get(edge.relativePath)?.[edge.line - 1] ?? "", edge.column)) continue;
+
+    let fragment = edge.selector;
+    let targets = values(edge.iri, "targetHeading");
+    let candidates = values(edge.iri, "candidateHeading");
+    // xref:#id[] 与 <<#id>> 在 Asciidoctor 里指本文档的 id，aat 0.2.6 却拿带 # 的整串去绑定、落空；
+    // 去掉 # 以后仍在 aat 的 label space 里认。aat 自己认这种写法以后，这一段可以去掉。
+    if (targets.length === 0 && candidates.length === 0 && fragment.startsWith("#")) {
+      fragment = fragment.slice(1);
+      const owners = projection.labelCatalog.owners(fragment).map((owner) => owner.value);
+      if (owners.length === 1) targets = owners;
+      else candidates = owners;
+    }
+
+    const where = `${edge.relativePath}:${edge.line} ${values(edge.iri, "raw")[0] ?? edge.selector}`;
+    if (targets.length === 1) {
+      const entry = headings.get(targets[0]);
+      const id = entry?.node.ids?.[0];
+      if (entry !== undefined && id !== undefined) {
+        const heading = { id, title: entry.node.title ?? id };
+        headingsByFragment.set(fragment, heading);
+        headingsByFragment.set(escapeHtmlAttribute(fragment), heading);
+      }
+      continue;
+    }
+    if (candidates.length > 1) {
+      issues.push(issue("XREF_AMBIGUOUS", `${where} -> ${located(candidates)}`));
+      continue;
+    }
+    issues.push(issue("XREF_UNRESOLVED", where));
+  }
+  return { headingsByFragment, issues };
+}
+
+function insidePassthroughMacro(line: string, column: number): boolean {
+  const position = column - 1;
+  for (const match of line.matchAll(PASSTHROUGH_MACRO_PATTERN)) {
+    const open = (match.index ?? 0) + match[0].length;
+    if (position < open) continue;
+    let depth = 1;
+    for (let index = open; index < line.length; index += 1) {
+      if (line[index] === "[") depth += 1;
+      if (line[index] === "]") depth -= 1;
+      if (depth === 0) {
+        if (position < index) return true;
+        break;
+      }
+    }
+  }
+  return false;
+}
+
+// Asciidoctor 把它解析不了的书内 xref 写成 <a href="#选择器">[选择器]</a>；aat 绑定上的，改成指向绑定的标题，
+// 显示标题。片段已经是 HTML 里某个元素的 id 时，保持 Asciidoctor 写下的样子。
+function rewriteBoundXrefs(html: string, headingsByFragment: Map<string, BoundHeading>): string {
+  if (headingsByFragment.size === 0) return html;
+  const anchors = htmlAnchors(html);
+  return html.replace(HTML_FRAGMENT_LINK_PATTERN, (whole: string, fragment: string, rest: string, text: string) => {
+    const decoded = decodeUrlFragment(fragment);
+    if (anchors.has(fragment) || anchors.has(decoded)) return whole;
+    const heading = headingsByFragment.get(fragment) ?? headingsByFragment.get(decoded);
+    if (heading === undefined) return whole;
+    const shown = text === `[${fragment}]` ? escapeHtmlAttribute(heading.title) : text;
+    return `<a href="#${escapeHtmlAttribute(heading.id)}"${rest}>${shown}</a>`;
+  });
 }
 
 function readerStyles(): string {
@@ -1227,19 +1349,22 @@ ${readerStyles()}
   return `${html.slice(0, insertAt)}${withReaderScript}${html.slice(insertAt)}`;
 }
 
-async function addHomeLinks(rootDir: string, books: BookEntry[], config: RuntimeConfig): Promise<void> {
+async function addHomeLinks(rootDir: string, books: BookEntry[], config: RuntimeConfig): Promise<Issue[]> {
   const catalog = path.join(rootDir, "build", "html", "catalog.html");
+  const issues: Issue[] = [];
   for (const book of books) {
     const htmlFile = path.join(book.htmlOutputDir, "book.html");
-    const html = await readFile(htmlFile, "utf8");
     const href = path.relative(path.dirname(htmlFile), catalog);
     const readerData = await buildReaderBookData(config, book);
+    issues.push(...readerData.references.issues);
+    const html = rewriteBoundXrefs(await readFile(htmlFile, "utf8"), readerData.references.headingsByFragment);
     await writeFile(
       htmlFile,
       addBookControlsToBookHtml(html, href, config.homeLink, readerData.sourceBundle, readerData.pageMap, book.bookId),
       "utf8"
     );
   }
+  return issues;
 }
 
 async function writeRootIndex(rootDir: string, rootIndex: RootIndexConfig): Promise<void> {
@@ -1270,9 +1395,8 @@ function issue(code: string, detail: string): Issue {
   return { code, detail };
 }
 
-// xref 的目标与锚点不在这里查：Asciidoctor 把它们写成 HTML 里的链接与 ID，missingLocalResources 在生成的 HTML 上
-// 核对（DESIGN.adoc 的 Workspace Contract Checks）。ID 有 [#id]、[.role#id]、[[id]]、[id=id] 与标题生成等写法，
-// 只有 Asciidoctor 认得全。
+// xref 不在这里查：书内的引用以 aat 的绑定为准（bindReferences），跨书链接与其余锚点由 missingLocalResources
+// 在生成的 HTML 上核对（DESIGN.adoc 的 Workspace Contract Checks 与 Reference Binding）。
 async function workspaceContractIssues(rootDir: string, books: BookEntry[]): Promise<Issue[]> {
   const issues: Issue[] = [];
   const catalogSource = await readIfExists(path.join(rootDir, "catalog.adoc"));
@@ -1385,8 +1509,9 @@ export async function buildWorkspace(rootDir = process.cwd()): Promise<void> {
 
   await buildHtml(rootDir, books, asciidoctor, includeResolverRegistry(asciidoctor, config), useKroki, fetchDiagrams);
   await copyAssets(rootDir, books);
-  await addHomeLinks(rootDir, books, config);
+  const referenceIssues = await addHomeLinks(rootDir, books, config);
   await writeRootIndex(rootDir, config.rootIndex);
+  await assertNoIssues("reference binding check", referenceIssues);
   await assertNoIssues("HTML local resource check", await missingLocalResources(rootDir));
   await assertNoIssues("workspace contract check", await workspaceContractIssues(rootDir, books));
 }

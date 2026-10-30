@@ -542,14 +542,14 @@ test("runtime check fails for missing include targets reported by Asciidoctor", 
   );
 });
 
-test("runtime check fails for same-page missing anchors in generated HTML", async () => {
+test("runtime check fails for same-page links to missing anchors in generated HTML", async () => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-missing-same-page-anchor-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
   const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
   const chapter = await readFile(chapterPath, "utf8");
   await writeFile(
     chapterPath,
-    `${chapter}\n\nSee xref:missing-anchor[missing anchor].\n`,
+    `${chapter}\n\nSee link:#missing-anchor[missing anchor].\n`,
     "utf8"
   );
 
@@ -598,6 +598,78 @@ test("runtime check fails for a cross-book xref to a missing anchor", async (t) 
   assert.deepEqual(
     reported.mock.calls.map((call) => call.arguments[0]),
     ["HTML_ANCHOR_MISSING: books/01-starter-book/book.html -> ../02-multipart-monograph/book.html#no-such-anchor"]
+  );
+});
+
+test("runtime binds xrefs to headings through asciidoc-abundant-tree and points HTML links at them", async () => {
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-reference-binding-${randomUUID()}`);
+  await initWorkspace({ targetDir: target });
+  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  await writeFile(chapterPath, `${await readFile(chapterPath, "utf8")}
+
+=== 名称、角色与关系
+
+Text.
+
+[#src]
+=== 源文本与投影
+
+Text.
+
+=== 引用处
+
+按标题：xref:名称、角色与关系[] 与 xref:源文本与投影[]。
+
+按 ID：xref:src[] 与 xref:#src[井号写法]。
+
+展示写法：\`pass:[xref:不存在的标题[显示文本]]\`。
+`, "utf8");
+
+  await checkWorkspace(target);
+
+  const html = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
+  assert.match(html, /<a href="#名称角色与关系">名称、角色与关系<\/a>/);
+  assert.equal(html.match(/<a href="#src">源文本与投影<\/a>/g)?.length, 2);
+  assert.match(html, /<a href="#src">井号写法<\/a>/);
+  assert.doesNotMatch(html, /href="#名称、角色与关系"|href="#源文本与投影"/);
+  assert.match(html, /xref:不存在的标题\[显示文本\]/);
+});
+
+test("runtime check fails, naming file, line and candidates, for xrefs that bind to no heading or to a shared title", async (t) => {
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-reference-unbound-${randomUUID()}`);
+  await initWorkspace({ targetDir: target });
+  const relativeChapter = "books/01-starter-book/chapters/02-main-flow.adoc";
+  const chapterPath = path.join(target, relativeChapter);
+  const source = `${await readFile(chapterPath, "utf8")}
+
+=== 同名
+
+Text.
+
+=== 同名
+
+Text.
+
+=== 引用处
+
+见 xref:同名[]。
+
+见 xref:不存在的标题[]。
+`;
+  await writeFile(chapterPath, source, "utf8");
+  const lines = source.split("\n");
+  const lineOf = (text, from = 0) => lines.indexOf(text, from) + 1;
+  const first = lineOf("=== 同名");
+  const second = lineOf("=== 同名", first);
+
+  const reported = t.mock.method(console, "error", () => {});
+  await assert.rejects(() => checkWorkspace(target), /reference binding check failed with 2 issue\(s\)/);
+  assert.deepEqual(
+    reported.mock.calls.map((call) => call.arguments[0]),
+    [
+      `XREF_AMBIGUOUS: ${relativeChapter}:${lineOf("见 xref:同名[]。")} xref:同名[] -> 同名 (${relativeChapter}:${first}), 同名 (${relativeChapter}:${second})`,
+      `XREF_UNRESOLVED: ${relativeChapter}:${lineOf("见 xref:不存在的标题[]。")} xref:不存在的标题[]`
+    ]
   );
 });
 

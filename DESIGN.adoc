@@ -399,10 +399,8 @@ It validates:
 * Existing current books are listed in the catalog.
 * Generated HTML local `href` and `src` resources exist, including the HTML that executable xrefs to other books render to.
 * Fragments of local links in generated HTML name IDs that exist in the target HTML.
+* Every xref inside a book binds to exactly one heading of that book, as `asciidoc-abundant-tree` binds it (see <<reference-binding>>).
 * Each book's include graph parses within `documentRoot`, and the parse reports no error-level diagnostic.
-
-Xref targets and anchors are judged on the HTML Asciidoctor generates, not by scanning sources.
-AsciiDoc can declare an ID as `[#id]`, `[#id.role]`, `[.role#id]`, `[[id]]`, or `[id=id]`, or generate it from a title; only Asciidoctor knows all of these forms, and the HTML it writes carries every ID it assigned.
 
 A book whose include graph cannot be parsed fails the build.
 The runtime does not fall back to a cover-only reader page.
@@ -410,6 +408,41 @@ A silently degraded reader hides the cause, typically an include that leaves `do
 
 The runtime does not require all official sample books to remain present.
 The official sample-book set requirement belongs to maintainer tests only.
+
+=== Reference Binding
+
+A heading's address is its title as written.
+A book refers to a heading by writing that title as the xref target.
+An ID declared on a heading is one more address for the same heading; an author adds it when a heading that must be referred to on its own shares its title with another heading.
+
+Whether a reference holds is decided by `asciidoc-abundant-tree`, the projection the reader data and the graph tools read.
+Its label space for a book holds every heading's title as written, its declared IDs, and its generated ID.
+A selector binds to the one heading that owns it, has candidates when several headings own it, and is unresolved when none does.
+The runtime takes these results from the RDF 1.2 projection (`rdf12`) of the document it already parses for the reader data; it does not match selectors itself, so the rule lives in one place.
+
+Asciidoctor resolves the same xrefs by different rules.
+A target with no space and no uppercase letter is taken as an ID, and generated IDs drop punctuation, so `xref:名称、角色与关系[]` links to `#名称、角色与关系`, which no element carries.
+A declared ID replaces the generated one, so the title of a heading that declares `[#src]` stops working as a target in the HTML.
+Two headings with the same title resolve to the first one, without a message.
+Judging references on that HTML would make authors bend titles to Asciidoctor's ID rules.
+
+The check therefore fails:
+
+* with `XREF_UNRESOLVED` for an xref whose selector binds to no heading, naming the source file and line;
+* with `XREF_AMBIGUOUS` for an xref whose selector names several headings, naming the source file and line and each candidate's title and source location.
+
+Headings that share a title are not an error by themselves; the ambiguity matters only when an xref names that title.
+Binding issues are reported before the HTML local resource check.
+
+The HTML follows the binding.
+For each bound xref whose fragment names no element in the book HTML, the runtime rewrites `href="#<selector>"` to the bound heading's HTML ID and replaces Asciidoctor's unresolved link text `[<selector>]` with the heading's title.
+Fragments that already name an element are left as Asciidoctor wrote them.
+The HTML local resource check still runs afterwards and fails on any link that neither side resolved.
+
+Xrefs whose target names another document are not bound here; the HTML local resource check judges them.
+
+`asciidoc-abundant-tree` 0.2.6 does not collect `xref:` macros whose target contains a space (its issue 018).
+Asciidoctor resolves those by title on its own, so they pass the HTML check, but they carry no binding until the parser collects them.
 
 === Cheap Performance Rules
 
@@ -442,6 +475,8 @@ The test suite covers:
 * Removal of each official sample book followed by catalog entry removal.
 * Failure on a user-authored real cross-book xref to a missing book.
 * Failure on a cross-book xref to a missing anchor, and a passing check for cross-book xrefs to IDs declared as `[#id]`, `[#id.role, ...]`, `[.role#id]`, `[[id]]`, `[id=id]`, or generated from a title.
+* A passing check for xrefs to a title containing punctuation, to the title of a heading that declares an ID, and to that ID, with each HTML link pointing at the bound heading and showing its title.
+* Failure naming the file and line for an xref that binds to no heading, and naming every candidate for an xref to a title that two headings share.
 * Failure, naming the book, when a book includes a file outside the default `documentRoot`; a passing build once the workspace declares the project root as `documentRoot`, with reader source paths relative to it.
 * One include resolver receiving identical requests from the HTML build and from the reader data, with Asciidoctor.js 4 attribute shape, and the HTML listing holding exactly the lines it returned.
 * Failure, naming the prefix and the directive's exact line, when an include resolver returns a Promise (resolving or rejecting), throws, returns another shape, returns lines that are not its origin's lines, or points outside `documentRoot`.
@@ -562,6 +597,7 @@ The design is satisfied when these statements are true:
 * Deleting any one official sample book and removing its catalog entries leaves `pnpm run check` passing.
 * A user-authored executable xref to a missing book or missing anchor fails the check.
 * An executable xref to an ID declared in any AsciiDoc form, or generated from a title, passes the check.
+* An xref to a heading's title as written passes the check and its HTML link reaches that heading; an xref that binds to no heading, or to a title several headings share, fails it.
 * A book that includes a file outside `documentRoot` fails the check; declaring a larger `documentRoot` in `adoc-books.config.mjs` makes it pass, with reader source paths relative to that root.
 * An include resolver declared in `adoc-books.config.mjs` resolves its directives for both the HTML and the reader data.
 * The user runtime does not use a global Asciidoctor CLI.
