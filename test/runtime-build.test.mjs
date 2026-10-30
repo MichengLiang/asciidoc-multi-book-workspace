@@ -681,17 +681,65 @@ Text.
 
 按 ID：xref:src[] 与 xref:#src[井号写法]。
 
+:sec: 名称、角色与关系
+
+按属性：xref:{sec}[属性写法]。
+
 展示写法：\`pass:[xref:不存在的标题[显示文本]]\`。
+
+转义与透传：\\xref:不存在的标题[] 与 +++xref:不存在的标题[]+++ 与 $$xref:不存在的标题[]$$。
 `, "utf8");
 
   await checkWorkspace(target);
 
   const html = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
   assert.match(html, /<a href="#名称角色与关系">名称、角色与关系<\/a>/);
+  assert.match(html, /<a href="#名称角色与关系">属性写法<\/a>/);
   assert.equal(html.match(/<a href="#src">源文本与投影<\/a>/g)?.length, 2);
   assert.match(html, /<a href="#src">井号写法<\/a>/);
   assert.doesNotMatch(html, /href="#名称、角色与关系"|href="#源文本与投影"/);
   assert.match(html, /xref:不存在的标题\[显示文本\]/);
+});
+
+test("runtime binds qualified addresses to one of several headings that share a title, inside a book and across books", async () => {
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-qualified-address-${randomUUID()}`);
+  await initWorkspace({ targetDir: target });
+  const shared = `
+
+=== 红烧肉
+
+==== 火候
+
+Text.
+
+=== 清蒸鲈鱼
+
+==== 火候
+
+Text.
+`;
+  const targetChapterPath = path.join(target, "books", "02-multipart-monograph", "parts", "010-domain", "020-boundary.adoc");
+  await writeFile(targetChapterPath, `${await readFile(targetChapterPath, "utf8")}${shared}`, "utf8");
+  const sourceChapterPath = path.join(target, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
+  await writeFile(sourceChapterPath, `${await readFile(sourceChapterPath, "utf8")}${shared}
+=== 引用处
+
+书内：xref:清蒸鲈鱼::火候[鲈鱼的火候]。
+
+跨书：xref:../02-multipart-monograph/book.adoc#清蒸鲈鱼::火候[那本书里鲈鱼的火候]。
+`, "utf8");
+
+  await checkWorkspace(target);
+
+  const idsOf = (html) => [...html.matchAll(/<h4 id="([^"]+)">(?:[\d.]+ )?火候<\/h4>/g)].map((match) => match[1]);
+  const sourceHtml = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
+  const targetHtml = await readFile(path.join(target, "build", "html", "books", "02-multipart-monograph", "book.html"), "utf8");
+  const [, sourceFish] = idsOf(sourceHtml);
+  const [, targetFish] = idsOf(targetHtml);
+  assert.ok(sourceFish && targetFish);
+  assert.match(sourceHtml, new RegExp(`<a href="#${sourceFish}">鲈鱼的火候</a>`));
+  assert.match(sourceHtml, new RegExp(`<a href="\\.\\./02-multipart-monograph/book\\.html#${targetFish}">那本书里鲈鱼的火候</a>`));
+  assert.doesNotMatch(sourceHtml, /清蒸鲈鱼::火候"/);
 });
 
 test("runtime check fails, naming file, line and candidates, for xrefs that bind to no heading or to a shared title", async (t) => {

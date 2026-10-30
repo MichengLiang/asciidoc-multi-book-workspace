@@ -183,7 +183,7 @@ The generated `package.json` directly lists the AsciiDoc toolchain:
   },
   "devDependencies": {
     "@asciidoctor/core": "^3.0.4",
-    "asciidoc-abundant-tree": "^0.2.6",
+    "asciidoc-abundant-tree": "^0.3.0",
     "asciidoctor-kroki": "^0.18.1"
   }
 }
@@ -484,15 +484,23 @@ The official sample-book set requirement belongs to maintainer tests only.
 
 A heading's address is its title as written.
 A book refers to a heading by writing that title as the xref target.
-An ID declared on a heading is one more address for the same heading; an author adds it when a heading that must be referred to on its own shares its title with another heading.
+Headings may share a title, such as the 火候 subsection under each of several dishes.
+A book refers to one of them by writing the titles of the headings above it before its own title, joined with `::`, as in `xref:红烧肉::火候[]`; this is its qualified address.
+A qualified address adds parents only until it names one heading, and may go up to the full path from the top level.
+`::` is already AsciiDoc's description list separator and does not occur in ordinary titles, so it costs no punctuation a title might use.
+
+An ID declared on a heading is an alias, one more address for the same heading.
+An author declares one only where the title cannot serve: two headings under the same parent share a title, or the title itself contains `#` or `::`.
+No heading declares an ID so that a reference keeps working after the title changes; the check reporting the old title is how the author finds every reference that must be reconsidered.
 
 Whether a reference holds is decided by `asciidoc-abundant-tree`, the projection the reader data and the graph tools read.
-Its label space for a book holds every heading's title as written, its declared IDs, and its generated ID.
+Its label space for a book holds every heading's title as written, every `::`-joined suffix of its title path, its declared IDs, and its generated ID.
 A selector binds to the one heading that owns it, has candidates when several headings own it, and is unresolved when none does.
-The runtime takes these results from the RDF 1.2 projection (`rdf12`) of the document it already parses for the reader data; it does not match selectors itself, so the rule lives in one place.
+What an xref is, and what its target says, is also read by Asciidoctor inside `asciidoc-abundant-tree`: an xref in a passthrough or escaped with `\` is not one, `xref:#id[]` names `id`, and attribute references in the target are expanded with their value at the xref's position.
+The runtime takes these results from the RDF 1.2 projection (`rdf12`) of the document it already parses for the reader data; it does not find xrefs, expand targets, or match selectors itself, so each rule lives in one place.
 
 Asciidoctor resolves the same xrefs by different rules.
-A target with no space and no uppercase letter is taken as an ID, and generated IDs drop punctuation, so `xref:名称、角色与关系[]` links to `#名称、角色与关系`, which no element carries.
+A target with no space and no uppercase letter is taken as an ID, and generated IDs drop punctuation, so `xref:名称、角色与关系[]` links to `#名称、角色与关系` and `xref:红烧肉::火候[]` to `#红烧肉::火候`, which no element carries.
 A declared ID replaces the generated one, so the title of a heading that declares `[#src]` stops working as a target in the HTML.
 Two headings with the same title resolve to the first one, without a message.
 Judging references on that HTML would make authors bend titles to Asciidoctor's ID rules.
@@ -507,6 +515,7 @@ Binding issues are reported before the HTML local resource check.
 
 The HTML follows the binding.
 For each bound xref whose fragment names no element in the book HTML, the runtime rewrites `href="#<selector>"` to the bound heading's HTML ID and replaces Asciidoctor's unresolved link text `[<selector>]` with the heading's title.
+For a qualified address that title is the last part alone, so a book that refers to one of several 火候 writes the link text it wants shown.
 Fragments that already name an element are left as Asciidoctor wrote them.
 The HTML local resource check still runs afterwards and fails on any link that neither side resolved.
 
@@ -515,39 +524,12 @@ The fragment after `#` is the address, so a book refers to a heading of another 
 `asciidoc-abundant-tree` deliberately does not open the other document, but the runtime parses every book of the workspace, so it holds each book's projection.
 It therefore parses all books before it binds or rewrites anything.
 
-Which book an xref names follows from its target.
-Attribute references in the target, such as `{upper-book}`, are expanded with Asciidoctor's own attribute substitution on the book's converted document, the same expansion Asciidoctor applied when it wrote the link.
-A path ending in `.adoc` is resolved against the book's directory, because the HTML output keeps the layout of `books/`; it names a workspace book when it is that book's `book.adoc`.
+Which document an xref names is read by Asciidoctor: the projection records it as the xref's `aat:targetDocument`, with attribute references such as `{upper-book}` already expanded, and keeps only the fragment as its selector.
+The document path is resolved against the book's directory, because the HTML output keeps the layout of `books/`; it names a workspace book when it is that book's `book.adoc`.
 The fragment is then bound in that book's label space.
 An unbound fragment fails with `XREF_UNRESOLVED` and an ambiguous one with `XREF_AMBIGUOUS`, naming the target book besides the source file and line.
 A bound fragment that names no element in the target book's HTML is rewritten to the bound heading's HTML ID, as inside one book.
 A path to a book that does not exist is left to the HTML local resource check, which reports `HTML_RESOURCE_MISSING`; so is an xref to a whole book, which has no fragment to bind.
-
-`asciidoc-abundant-tree` 0.2.6 has four gaps in collecting and binding xrefs, each reported in its issue ledger.
-Until each is fixed there, the runtime handles it as follows:
-
-Targets with spaces (its issue 018)::
-  `xref:` macros whose target contains a space, such as `xref:role 的作用域[]`, are not collected.
-  The runtime has no workaround: these xrefs carry no binding and are not checked here.
-  Asciidoctor resolves them by title on its own, so the HTML local resource check still judges their links.
-
-Xrefs inside passthroughs (its issue 020)::
-  Text inside `pass:[…]` is output as written and Asciidoctor makes no link of it, but the parser collects xrefs there and binds them.
-  A book that shows xref syntax in a passthrough would get a false reference, or an unresolved one.
-  The runtime skips an xref whose source position falls inside a `pass:[…]` macro on its source line (`insidePassthroughMacro`).
-  Remove that skip once the parser stops collecting them.
-
-Targets written with `#` (its issue 021)::
-  `xref:#id[]` and `<<#id>>` name `id` in the same document, but the parser binds the whole `#id` and finds nothing.
-  When a selector starting with `#` is left unbound, the runtime looks the rest up in the projection's `labelCatalog`: one owner binds it, several make it ambiguous.
-  Remove that lookup once the parser binds these selectors itself.
-
-Attribute references in targets (its issue 022)::
-  The parser keeps `{upper-book}` unexpanded in the target of `xref:{upper-book}#上册核心模型[]`, and its official `href` becomes `#{upper-book}#上册核心模型`; Asciidoctor links it to `../05-upper-volume/book.html#上册核心模型`.
-  Such an xref would bind to nothing and could not be recognized as naming another book.
-  The runtime expands a target that contains `{` with Asciidoctor's attribute substitution on the book's converted document before it classifies and binds it, inside one book as well as across books.
-  The expansion uses the attribute values the book holds after conversion, so an attribute redefined in the body after the xref is expanded with its final value rather than the value at the xref's position.
-  Remove that expansion once the parser expands attribute references in targets.
 
 === Cheap Performance Rules
 
@@ -556,7 +538,7 @@ It renders HTML with Asciidoctor.js 3 in process through the `@asciidoctor/core`
 It does not depend on a global `asciidoctor` executable.
 
 The runtime uses `asciidoc-abundant-tree` in process to derive reader page maps and source bundles.
-`asciidoc-abundant-tree` 0.2 brings its own Asciidoctor.js 4 and parses asynchronously; the two Asciidoctor versions live side by side without sharing a runtime, because version 4 is plain JavaScript rather than an Opal build.
+`asciidoc-abundant-tree` brings its own Asciidoctor.js 4 and parses asynchronously; the two Asciidoctor versions live side by side without sharing a runtime, because version 4 is plain JavaScript rather than an Opal build.
 It loads `asciidoctor-kroki` only when current `.adoc` sources contain supported diagram blocks.
 It looks for those blocks in `catalog.adoc` and in the files under `books/`; a diagram block that reaches a book only through an include from elsewhere (shared files, project code, include resolvers) does not trigger loading.
 If diagram blocks exist and `asciidoctor-kroki` cannot be loaded, the runtime reports that the workspace contains diagram blocks and needs the Kroki dependency or needs those blocks removed.
@@ -582,6 +564,8 @@ The test suite covers:
 * A passing check for cross-book xrefs to a heading's title, including a title with punctuation, and to IDs declared as `[#id]`, `[#id.role, ...]`, `[.role#id]`, `[[id]]`, `[id=id]`, or generated from a title, with each HTML link reaching the heading in the other book.
 * Failure naming the source file and line and the target book for a cross-book xref to a heading the other book does not have, and for one to a title two of its headings share.
 * A passing check for xrefs to a title containing punctuation, to the title of a heading that declares an ID, and to that ID, with each HTML link pointing at the bound heading and showing its title.
+* A passing check for a qualified address (`xref:红烧肉::火候[]`) to one of several headings that share a title, inside a book and across books, with each HTML link reaching that heading.
+* No binding issue for xref syntax shown in a passthrough or escaped with `\`, and a passing check for `xref:#id[]` and for a target written with an attribute reference, inside a book and across books.
 * Failure naming the file and line for an xref that binds to no heading, and naming every candidate for an xref to a title that two headings share.
 * Failure, naming the book, when a book includes a file outside the default `documentRoot`; a passing build once the workspace declares the project root as `documentRoot`, with reader source paths relative to it.
 * One include resolver receiving identical requests from the HTML build and from the reader data, with Asciidoctor.js 4 attribute shape, and the HTML listing holding exactly the lines it returned.

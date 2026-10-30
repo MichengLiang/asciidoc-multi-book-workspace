@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@asciidoctor/core": "^3.0.4",
-    "asciidoc-abundant-tree": "^0.2.6",
+    "asciidoc-abundant-tree": "^0.3.0",
     "asciidoctor-kroki": "^0.18.1"
   }
 }
