@@ -86,6 +86,9 @@ const requiredPatterns = new Map([
       "标题保存当前规范名称",
       "源文档把 `常规标题` 写成可引用的阅读单位",
       "custom ID 只在一节需要被单独引用、又与别的标题同名时出现",
+      "这不是写错，以工作区的构建为准",
+      "取比当前最大编号大的下一个整十",
+      "引用写这个 ID，并写上显示文本",
       "源文件编排号",
       "source-order notation",
       "Part 目录和 Chapter 文件统一使用三位定宽的编排号，默认步长为 10",
@@ -240,7 +243,7 @@ test("default workspace template satisfies the official sample contract", async 
     if (bookId === "07-structured-writing-conventions") {
       assert.doesNotMatch(
         allSource,
-        /\bstable ID\b|stable-id|稳定 ID|稳定地址|regular-heading|basic-syntax|xref-rule|寻址标签|id-prefix/
+        /\bstable ID\b|stable-id|稳定 ID|稳定地址|regular-heading|basic-syntax|xref-rule|寻址标签|id-prefix|aliases::/
       );
       // 07 号书在「标题、寻址与引用」里示范 custom ID：同名的「火候」要单独引用时才加。除这一处示例外，
       // 书里的标题都按标题寻址（DESIGN.adoc 的 Sample Addressing）。

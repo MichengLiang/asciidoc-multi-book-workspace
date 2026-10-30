@@ -61,10 +61,10 @@ include::parts/030-fields-and-terminology/020-consistent-terms.adoc[]
 include::parts/030-fields-and-terminology/030-declaring-conventions.adoc[]
 
 [appendix]
-include::backmatter/appendix-a.adoc[]
+include::backmatter/appendix-quick-reference.adoc[]
 
 [appendix]
-include::backmatter/appendix-b-decision-trees.adoc[]
+include::backmatter/appendix-decision-trees.adoc[]
 
 [glossary]
 include::backmatter/glossary.adoc[]

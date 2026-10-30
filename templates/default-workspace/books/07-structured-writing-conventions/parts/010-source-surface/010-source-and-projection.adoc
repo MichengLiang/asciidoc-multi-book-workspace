@@ -26,7 +26,7 @@
 
 源文档把 `常规标题` 写成可引用的阅读单位，在其下写出 `基本语法` 子标题，把 `引用规则` 写成规则说明，并在正文里写出参见和依赖两种引用。
 
-Turtle 示例中的 `<urn:aat:doc:...#heading-*>` 和 `<urn:aat:doc:...#xref-edge-*>` 表示投影生成的文档节点 IRI。本例没有写 custom ID：`aat:headline` 是标题原文，`aat:generatedAddressLabel` 是 Asciidoctor 从标题生成的 ID（这份样例没有设 `:idprefix:`，所以带前缀 `_`），两者都是这个标题的地址。`pass:[xref:常规标题[]]` 的 `aat:targetSelector` 是 `常规标题`，按标题原文绑定到 `aat:targetHeading`。
+Turtle 示例中的 `<urn:aat:doc:...#heading-*>` 和 `<urn:aat:doc:...#xref-edge-*>` 表示投影生成的文档节点 IRI。本例没有写 custom ID：`aat:headline` 是标题原文，引用写的就是它；`aat:generatedAddressLabel` 是 Asciidoctor 从标题生成的 ID（这份样例没有设 `:idprefix:`，所以带前缀 `_`），投影也把它记下来，但它随标题和位置变，引用不写它。`pass:[xref:常规标题[]]` 的 `aat:targetSelector` 是 `常规标题`，按标题原文绑定到 `aat:targetHeading`。
 
 [source,turtle]
 ----

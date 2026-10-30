@@ -26,8 +26,8 @@ illustrates:: 当前标题提供目标标题的示例。
 [horizontal]
 roles:: role 名称。写作时用在 `[.concept]` 的位置。
 relations:: rel 谓词。写作时用在 `rel=depends-on` 的位置。
-values:: 某个 role 的某个附加字段允许的取值。`for` 写这个 role，`field` 写字段名。
-fields:: 某个 role 的标题下描述列表要写出的字段。`for` 写这个 role。
+values:: 某个 role 的某个 attrlist 字段允许的取值。`for` 写这个 role，`field` 写字段名。带这个 role 的标题必须写这个字段，取值在列表中。
+fields:: 某个 role 的标题下第一个描述列表里必须写出的字段。`for` 写这个 role。写在 attrlist 里的同名字段不算。
 
 字段取值和字段用同样的写法声明：
 
@@ -62,7 +62,7 @@ skip:: 不搬：只服务于原来的处境。
 检查脚本读出声明以后，对每个带 role 的标题核对：
 
 * role 在 role 词表中。
-* `declares=values` 声明的字段写了，取值在列表中。没有声明的附加字段（如 `owner`）不受约束；`.convention` 标题例外，它只带 `declares`、`for` 和 `field`。
-* `declares=fields` 声明的字段全部写出。
+* `declares=values` 声明的字段写在标题 attrlist 里，取值在列表中。没有声明的附加字段（如 `owner`）不受约束；`.convention` 标题例外，它只带 `declares`、`for` 和 `field`。
+* `declares=fields` 声明的字段全部写在标题下的第一个描述列表里。
 
 正文中的每个 xref，若带 `rel`，谓词在关系谓词词表中。约定变化时只改声明，检查跟着变。
