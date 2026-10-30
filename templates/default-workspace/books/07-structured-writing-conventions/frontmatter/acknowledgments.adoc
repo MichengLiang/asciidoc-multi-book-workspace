@@ -1,3 +1,3 @@
 == 致谢
 
-感谢 Asciidoctor 和 RDF 投影相关文档提供术语与结构坐标。
+感谢 Asciidoctor 项目和它的文档。本书讲到的每一种 AsciiDoc 写法，都先在那里查过官方的说法。

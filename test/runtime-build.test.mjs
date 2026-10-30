@@ -31,7 +31,7 @@ const structuredWritingPageSequence = [
   ["appendix", "结构化写法速查", "结构化写法速查"],
   ["appendix", "结构化写法决策树", "结构化写法决策树"],
   ["glossary", "术语表", "术语表"],
-  ["bibliography", "参考坐标", "参考坐标"]
+  ["bibliography", "参考文献", "参考文献"]
 ];
 const expectedBooks = [
   "00-book-anatomy",

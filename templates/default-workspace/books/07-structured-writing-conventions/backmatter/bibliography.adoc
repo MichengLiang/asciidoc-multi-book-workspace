@@ -1,4 +1,4 @@
-= 参考坐标
+= 参考文献
 
 [bibliography]
 * [[[asciidoctor-xref]]] Asciidoctor Docs, Cross References, https://docs.asciidoctor.org/asciidoc/latest/macros/xref/

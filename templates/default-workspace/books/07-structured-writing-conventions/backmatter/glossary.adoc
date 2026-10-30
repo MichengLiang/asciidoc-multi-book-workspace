@@ -1,19 +1,15 @@
 = 术语表
 
-本术语表记录结构化书写约定中的核心术语。
-
 [glossary]
-heading:: 使用等号标题创建的书稿结构单位。
-规范名称:: 当前书稿采用的标题名称。
-custom ID:: 作者用 `[#id]` 给标题加的第二个地址。一节需要被单独引用、又与别的标题同名时才加；标题原文本身就是地址。
-别名:: 标题以外仍有检索、历史或语境价值的名称。
-不透明记录键:: 工具层用于跨改名追踪同一条记录的机器键。
-内容哈希:: 标识某次冻结内容的校验值。
-source-order notation:: 写在源文件路径表面的排序符号。
-role:: 标题节点在书中承担的叙述作用，例如 `.concept`、`.rule` 或 `.example`。
-ordinary reference:: 普通 xref。投影时使用默认谓词 `aat:references`。
-relation predicate:: xref `rel` 字段选择的边谓词。
-source heading:: xref 所在的标题。
-target heading:: xref selector 指向的标题。
-surface field:: 源文档表面的附加字段。标题字段可来自标题 attrlist 或标题下描述列表；xref 边字段来自 xref named attributes。
-约定声明:: 带 `.convention` role 的标题。`declares` 字段说明它声明 role、rel 谓词、字段取值还是字段；标题下的描述列表是词表，term 是词，描述是含义。
+标题:: 用等号写出的一节的名字。标题原文也是这一节的地址，引用写它。
+custom ID:: 作者用 `[#…]` 给标题加的第二个地址。一节要被单独引用、又与别的标题同名时才加。
+别名:: 一样东西在标题以外的叫法，值得让读者查到时，写进标题下的别名字段。
+role:: 写在标题 attrlist 里点号开头的位置，说这一节在书里是什么，例如 `dish`、`technique`。
+关系谓词:: 写在 xref 的 `rel` 里，说当前标题和目标标题之间是什么关系，例如 `depends-on`。
+当前标题:: xref 所在的那一节。
+目标标题:: xref 指向的那一节。
+字段:: 一节或一条引用上的一项信息，写在 attrlist、标题下第一个描述列表或 xref 的方括号里。
+约定声明:: 带 `.convention` 的标题。`declares` 说它声明的是 role、关系谓词、字段还是字段的取值；标题下的描述列表是词表，条目的词是声明的词，描述是它的意思。
+投影:: asciidoc-abundant-tree 从源文件读出的 RDF 图：标题是节点，role 和字段是节点上的值，xref 是节点之间的边。
+编排号:: 部目录和章文件名前面的三位编号，让编辑器文件树里的顺序就是书的阅读顺序。
+试金石:: 一条写书的判断，写成带 `.touchstone` 的标题：出处给出它来自的作品，自问给出下笔时要问的问题。
