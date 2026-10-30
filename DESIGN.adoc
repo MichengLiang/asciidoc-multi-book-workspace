@@ -212,7 +212,7 @@ The default workspace contains these sample books:
   A reference-style book with decision tables, path rules, xref patterns, and glossary material.
 
 `05-upper-volume`::
-  An independent upper volume with its own book entry and a stable anchor used in examples.
+  An independent upper volume with its own book entry and a core-model chapter that the lower volume refers to by title in its examples.
 
 `06-lower-volume`::
   An independent lower volume that demonstrates cross-volume writing conventions by literal example.
@@ -245,20 +245,20 @@ Default samples do not contain executable cross-book xrefs such as:
 
 [source,asciidoc]
 ----
-xref:../other-book/book.adoc#stable-anchor[Target]
+xref:../other-book/book.adoc#目标章节[]
 ----
 
 Instead, samples use separated literal forms such as:
 
 [source,asciidoc]
 ----
-xref + : + ../other-book/book.adoc#stable-anchor[Target]
+xref + : + ../other-book/book.adoc#目标章节[]
 ----
 
 This preserves the teaching surface without creating a real dependency between default samples.
 
 The user runtime still validates real cross-book xrefs.
-If a user writes an executable xref to a missing `.adoc` file or missing anchor, `pnpm run check` must fail.
+If a user writes an executable xref to a missing `.adoc` file, or to a heading the other book does not have, `pnpm run check` must fail (see <<reference-binding>>).
 
 == Initializer Behavior
 
@@ -439,9 +439,20 @@ For each bound xref whose fragment names no element in the book HTML, the runtim
 Fragments that already name an element are left as Asciidoctor wrote them.
 The HTML local resource check still runs afterwards and fails on any link that neither side resolved.
 
-Xrefs whose target names another document are not bound here; the HTML local resource check judges them.
+An xref whose target names another book is bound the same way in that book.
+The fragment after `#` is the address, so a book refers to a heading of another book by that heading's title, exactly as inside one book.
+`asciidoc-abundant-tree` deliberately does not open the other document, but the runtime parses every book of the workspace, so it holds each book's projection.
+It therefore parses all books before it binds or rewrites anything.
 
-`asciidoc-abundant-tree` 0.2.6 has three gaps in collecting and binding xrefs, each reported in its issue ledger.
+Which book an xref names follows from its target.
+Attribute references in the target, such as `{upper-book}`, are expanded with Asciidoctor's own attribute substitution on the book's converted document, the same expansion Asciidoctor applied when it wrote the link.
+A path ending in `.adoc` is resolved against the book's directory, because the HTML output keeps the layout of `books/`; it names a workspace book when it is that book's `book.adoc`.
+The fragment is then bound in that book's label space.
+An unbound fragment fails with `XREF_UNRESOLVED` and an ambiguous one with `XREF_AMBIGUOUS`, naming the target book besides the source file and line.
+A bound fragment that names no element in the target book's HTML is rewritten to the bound heading's HTML ID, as inside one book.
+A path to a book that does not exist is left to the HTML local resource check, which reports `HTML_RESOURCE_MISSING`; so is an xref to a whole book, which has no fragment to bind.
+
+`asciidoc-abundant-tree` 0.2.6 has four gaps in collecting and binding xrefs.
 Until each is fixed there, the runtime handles it as follows:
 
 Targets with spaces (its issue 018)::
@@ -459,6 +470,12 @@ Targets written with `#` (its issue 021)::
   `xref:#id[]` and `<<#id>>` name `id` in the same document, but the parser binds the whole `#id` and finds nothing.
   When a selector starting with `#` is left unbound, the runtime looks the rest up in the projection's `labelCatalog`: one owner binds it, several make it ambiguous.
   Remove that lookup once the parser binds these selectors itself.
+
+Attribute references in targets::
+  The parser keeps `{upper-book}` unexpanded in the target of `xref:{upper-book}#上册核心模型[]`, and its official `href` becomes `#{upper-book}#上册核心模型`; Asciidoctor links it to `../05-upper-volume/book.html#上册核心模型`.
+  Such an xref would bind to nothing and could not be recognized as naming another book.
+  The runtime expands a target that contains `{` with Asciidoctor's attribute substitution on the book's converted document before it classifies and binds it, inside one book as well as across books.
+  Remove that expansion once the parser expands attribute references in targets.
 
 === Cheap Performance Rules
 
@@ -490,7 +507,8 @@ The test suite covers:
 * Runtime build outputs and copied assets.
 * Removal of each official sample book followed by catalog entry removal.
 * Failure on a user-authored real cross-book xref to a missing book.
-* Failure on a cross-book xref to a missing anchor, and a passing check for cross-book xrefs to IDs declared as `[#id]`, `[#id.role, ...]`, `[.role#id]`, `[[id]]`, `[id=id]`, or generated from a title.
+* A passing check for cross-book xrefs to a heading's title, including a title with punctuation, and to IDs declared as `[#id]`, `[#id.role, ...]`, `[.role#id]`, `[[id]]`, `[id=id]`, or generated from a title, with each HTML link reaching the heading in the other book.
+* Failure naming the source file and line and the target book for a cross-book xref to a heading the other book does not have, and for one to a title two of its headings share.
 * A passing check for xrefs to a title containing punctuation, to the title of a heading that declares an ID, and to that ID, with each HTML link pointing at the bound heading and showing its title.
 * Failure naming the file and line for an xref that binds to no heading, and naming every candidate for an xref to a title that two headings share.
 * Failure, naming the book, when a book includes a file outside the default `documentRoot`; a passing build once the workspace declares the project root as `documentRoot`, with reader source paths relative to it.
@@ -611,8 +629,8 @@ The design is satisfied when these statements are true:
 * The generated workspace checks with `pnpm run check`.
 * `initSoloWorkspace` creates a workspace whose only book is sample book 07 shelved as `01-structured-writing-conventions`, and that workspace passes `pnpm run check`.
 * Deleting any one official sample book and removing its catalog entries leaves `pnpm run check` passing.
-* A user-authored executable xref to a missing book or missing anchor fails the check.
-* An executable xref to an ID declared in any AsciiDoc form, or generated from a title, passes the check.
+* A user-authored executable xref to a missing book, or to a heading that book does not have, fails the check.
+* An executable cross-book xref to a heading's title as written, or to an ID declared in any AsciiDoc form, passes the check and its HTML link reaches that heading.
 * An xref to a heading's title as written passes the check and its HTML link reaches that heading; an xref that binds to no heading, or to a title several headings share, fails it.
 * A book that includes a file outside `documentRoot` fails the check; declaring a larger `documentRoot` in `adoc-books.config.mjs` makes it pass, with reader source paths relative to that root.
 * An include resolver declared in `adoc-books.config.mjs` resolves its directives for both the HTML and the reader data.

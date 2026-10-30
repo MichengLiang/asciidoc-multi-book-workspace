@@ -214,14 +214,17 @@ test("default workspace template satisfies the official sample contract", async 
     if (bookId === "04-reference-manual") {
       assert.match(allSource, /\[cols=.*options="header"\]/);
       assert.match(allSource, /^[^:\n]+::\s+/m);
-      assert.match(allSource, /xref \+ : \+ \.\.\/other-book\/book\.adoc#stable-anchor\[目标章节\]/);
+      assert.match(allSource, /xref \+ : \+ \.\.\/other-book\/book\.adoc#目标章节\[\]/);
       assert.doesNotMatch(allSource, /xref:\.\.\/0[0-9]-[^/\]]+\/book\.adoc/);
     }
-    if (bookId === "05-upper-volume") assert.match(allSource, /^\[#upper-core-model\]$/m);
+    if (bookId === "05-upper-volume") {
+      assert.match(allSource, /^== 上册核心模型$/m);
+      assert.doesNotMatch(allSource, /\[#upper-core-model\]/);
+    }
     if (bookId === "06-lower-volume") {
       assert.match(bookSource, /^:upper-book:\s+\.\.\/05-upper-volume\/book\.adoc$/m);
-      assert.match(allSource, /xref \+ : \+ \{upper-book\}#upper-core-model\[上册核心模型\]/);
-      assert.doesNotMatch(allSource, /xref:\{upper-book\}#upper-core-model\[/);
+      assert.match(allSource, /xref \+ : \+ \{upper-book\}#上册核心模型\[\]/);
+      assert.doesNotMatch(allSource, /xref:\{upper-book\}#/);
     }
     if (bookId === "07-structured-writing-conventions") {
       assert.doesNotMatch(

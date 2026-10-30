@@ -8,13 +8,13 @@
 xref:#decision-table[结构选择表]
 ----
 
-跨书引用写向 AsciiDoc 源文件：
+跨书引用写向 AsciiDoc 源文件，`#` 后面写目标书里那一节的标题：
 
 [source,asciidoc]
 ----
-xref + : + ../other-book/book.adoc#stable-anchor[目标章节]
+xref + : + ../other-book/book.adoc#目标章节[]
 ----
 
 上面的写法用分段文本展示，避免默认样本之间形成真实链接依赖。实际写作时去掉空格和加号，写成一个完整的 cross reference 宏。
 
-被跨书引用的位置应写显式 anchor。显式 anchor 是维护者可以稳定依赖的目标。
+被跨书引用的标题不需要另写 anchor：标题就是地址，跨书与书内一样。目标标题改了名，`pnpm run check` 会指出每一处没有跟上的引用。

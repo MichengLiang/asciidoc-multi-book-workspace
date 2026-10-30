@@ -583,21 +583,84 @@ test("runtime check accepts cross-book xrefs to IDs declared in any AsciiDoc for
   await checkWorkspace(target);
 });
 
-test("runtime check fails for a cross-book xref to a missing anchor", async (t) => {
+test("runtime check fails, naming the target book, for a cross-book xref to a heading that book does not have", async (t) => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-missing-cross-book-anchor-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
-  const sourceChapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
-  await writeFile(
-    sourceChapterPath,
-    `${await readFile(sourceChapterPath, "utf8")}\n\nSee xref:../02-multipart-monograph/book.adoc#no-such-anchor[missing].\n`,
-    "utf8"
-  );
+  const relativeChapter = "books/01-starter-book/chapters/02-main-flow.adoc";
+  const sourceChapterPath = path.join(target, relativeChapter);
+  const source = `${await readFile(sourceChapterPath, "utf8")}\n\nSee xref:../02-multipart-monograph/book.adoc#no-such-anchor[missing].\n`;
+  await writeFile(sourceChapterPath, source, "utf8");
+  const line = source.split("\n").indexOf("See xref:../02-multipart-monograph/book.adoc#no-such-anchor[missing].") + 1;
 
   const reported = t.mock.method(console, "error", () => {});
-  await assert.rejects(() => checkWorkspace(target), /HTML local resource check failed/);
+  await assert.rejects(() => checkWorkspace(target), /reference binding check failed with 1 issue\(s\)/);
   assert.deepEqual(
     reported.mock.calls.map((call) => call.arguments[0]),
-    ["HTML_ANCHOR_MISSING: books/01-starter-book/book.html -> ../02-multipart-monograph/book.html#no-such-anchor"]
+    [`XREF_UNRESOLVED: ${relativeChapter}:${line} xref:../02-multipart-monograph/book.adoc#no-such-anchor[missing] -> 02-multipart-monograph`]
+  );
+});
+
+test("runtime binds cross-book xrefs to titles in the other book and points HTML links at them", async () => {
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-cross-book-titles-${randomUUID()}`);
+  await initWorkspace({ targetDir: target });
+  const targetChapterPath = path.join(target, "books", "02-multipart-monograph", "parts", "01-domain", "02-boundary.adoc");
+  await writeFile(targetChapterPath, `${await readFile(targetChapterPath, "utf8")}
+
+=== 名称、角色与关系
+
+Text.
+`, "utf8");
+  const sourceChapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  await writeFile(sourceChapterPath, `${await readFile(sourceChapterPath, "utf8")}
+
+:monograph: ../02-multipart-monograph/book.adoc
+
+属性写法：xref:{monograph}#名称、角色与关系[]。
+
+路径写法：xref:../02-multipart-monograph/book.adoc#名称、角色与关系[按路径]。
+`, "utf8");
+
+  await checkWorkspace(target);
+
+  const html = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
+  assert.match(html, /<a href="\.\.\/02-multipart-monograph\/book\.html#名称角色与关系">名称、角色与关系<\/a>/);
+  assert.match(html, /<a href="\.\.\/02-multipart-monograph\/book\.html#名称角色与关系">按路径<\/a>/);
+  assert.doesNotMatch(html, /book\.html#名称、角色与关系/);
+});
+
+test("runtime check fails, naming the target book and its candidates, for a cross-book xref to a title two of its headings share", async (t) => {
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-cross-book-ambiguous-${randomUUID()}`);
+  await initWorkspace({ targetDir: target });
+  const relativeTarget = "books/02-multipart-monograph/parts/01-domain/02-boundary.adoc";
+  const targetChapterPath = path.join(target, relativeTarget);
+  const targetSource = `${await readFile(targetChapterPath, "utf8")}
+
+=== 同名
+
+Text.
+
+=== 同名
+
+Text.
+`;
+  await writeFile(targetChapterPath, targetSource, "utf8");
+  const targetLines = targetSource.split("\n");
+  const first = targetLines.indexOf("=== 同名") + 1;
+  const second = targetLines.indexOf("=== 同名", first) + 1;
+  const relativeSource = "books/01-starter-book/chapters/02-main-flow.adoc";
+  const sourceChapterPath = path.join(target, relativeSource);
+  const source = `${await readFile(sourceChapterPath, "utf8")}
+
+见 xref:../02-multipart-monograph/book.adoc#同名[]。
+`;
+  await writeFile(sourceChapterPath, source, "utf8");
+  const line = source.split("\n").indexOf("见 xref:../02-multipart-monograph/book.adoc#同名[]。") + 1;
+
+  const reported = t.mock.method(console, "error", () => {});
+  await assert.rejects(() => checkWorkspace(target), /reference binding check failed with 1 issue\(s\)/);
+  assert.deepEqual(
+    reported.mock.calls.map((call) => call.arguments[0]),
+    [`XREF_AMBIGUOUS: ${relativeSource}:${line} xref:../02-multipart-monograph/book.adoc#同名[] -> 02-multipart-monograph: 同名 (${relativeTarget}:${first}), 同名 (${relativeTarget}:${second})`]
   );
 });
 

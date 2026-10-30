@@ -17,6 +17,7 @@ const AAT_NAMESPACE = "https://micheng.dev/ns/asciidoc-abundant-tree#";
 const DOCUMENT_TARGET_PATTERN = /\.adoc(?:#|$)/;
 const PASSTHROUGH_MACRO_PATTERN = /pass:[a-z,]*\[/g;
 const HTML_FRAGMENT_LINK_PATTERN = /<a href="#([^"]*)"([^>]*)>([\s\S]*?)<\/a>/g;
+const HTML_DOCUMENT_LINK_PATTERN = /<a href="([^"#]+\.html)#([^"]*)"([^>]*)>([\s\S]*?)<\/a>/g;
 const HOME_MARKER = "data-multi-book-home";
 const CONTROLS_MARKER = "data-multi-book-controls";
 const FETCH_DIAGRAMS_ENV = "ADOC_BOOKS_FETCH_DIAGRAMS";
@@ -123,10 +124,31 @@ interface BoundHeading {
   title: string;
 }
 
+interface LocatedHeading extends BoundHeading {
+  relativePath: string;
+  line: number;
+}
+
+interface PendingCrossBookXref {
+  // xref 在源文件里的位置与原文，报错时用。
+  where: string;
+  // 展开属性以后的目标：<路径>#<片段>。
+  target: string;
+}
+
 interface ReferenceBinding {
   // 键是 Asciidoctor 写进 href 的片段（原文与 HTML 转义后的两种写法都登记）。
   headingsByFragment: Map<string, BoundHeading>;
+  // 指向别的文档的 xref：等所有书都解析完，再到目标书的 label space 里绑定。
+  crossBook: PendingCrossBookXref[];
+  // 本书的 label space 里，一个选择器名下的标题；别的书的跨书 xref 拿它来绑定。
+  owners(selector: string): LocatedHeading[];
   issues: Issue[];
+}
+
+interface CrossBookLink {
+  href: string;
+  title: string;
 }
 
 interface AbundantSection {
@@ -467,13 +489,14 @@ function convertFile(
   outputFile: string,
   baseDir: string,
   attributes = {}
-): void {
+): any {
   const loggerManager = asciidoctor.LoggerManager;
   const defaultLogger = loggerManager.getLogger();
   const memoryLogger = asciidoctor.MemoryLogger.create();
   loggerManager.setLogger(memoryLogger);
+  let document: any;
   try {
-    asciidoctor.convertFile(input, {
+    document = asciidoctor.convertFile(input, {
       safe: "unsafe",
       base_dir: baseDir,
       to_file: outputFile,
@@ -489,8 +512,10 @@ function convertFile(
   if (messages.length > 0) {
     throw new Error(`AsciiDoc strict check failed for ${input}\n${messages.map(formatAsciidoctorMessage).join("\n")}`);
   }
+  return document;
 }
 
+// 交回每本书转换后的 Asciidoctor 文档：书内与跨书 xref 的目标要用它展开属性引用（bindReferences）。
 async function buildHtml(
   rootDir: string,
   books: BookEntry[],
@@ -498,7 +523,7 @@ async function buildHtml(
   extensionRegistry: any,
   useKroki: boolean,
   fetchDiagrams: boolean
-): Promise<void> {
+): Promise<Map<string, any>> {
   await mkdir(path.join(rootDir, "build", "html"), { recursive: true });
   convertFile(
     asciidoctor,
@@ -509,12 +534,14 @@ async function buildHtml(
   );
 
   await pruneStaleBookHtmlDirs(rootDir, books);
+  const documents = new Map<string, any>();
   for (const book of books) {
     await mkdir(book.htmlOutputDir, { recursive: true });
-    convertFile(asciidoctor, extensionRegistry, book.input, path.join(book.htmlOutputDir, "book.html"), book.bookDir, {
+    documents.set(book.bookId, convertFile(asciidoctor, extensionRegistry, book.input, path.join(book.htmlOutputDir, "book.html"), book.bookDir, {
       ...(useKroki && fetchDiagrams ? { "kroki-fetch-diagram": "", "kroki-http-method": "post" } : {})
-    });
+    }));
   }
+  return documents;
 }
 
 async function copyAssets(rootDir: string, books: BookEntry[]): Promise<void> {
@@ -640,7 +667,11 @@ function sourceBundleFromDocument(document: Record<string, unknown>): string {
 
 // 解析失败就让构建失败，不退回只有封面的阅读页：退回时 include 越过 documentRoot 只剩一条 warning，
 // 构建照常成功，没有人发现阅读页坏了（DESIGN.adoc 的 Workspace Contract Checks）。
-async function buildReaderBookData(config: RuntimeConfig, book: BookEntry): Promise<ReaderBookData> {
+async function buildReaderBookData(
+  config: RuntimeConfig,
+  book: BookEntry,
+  expandAttributes: (text: string) => string
+): Promise<ReaderBookData> {
   let parsed: AbundantDocument;
   let document: Record<string, unknown>;
   try {
@@ -727,13 +758,17 @@ async function buildReaderBookData(config: RuntimeConfig, book: BookEntry): Prom
   return {
     pageMap,
     sourceBundle: sourceBundleFromDocument(document),
-    references: bindReferences(config, parsed)
+    references: bindReferences(config, parsed, expandAttributes)
   };
 }
 
 // 书内 xref 指向谁，以 aat 的绑定为准（DESIGN.adoc 的 Reference Binding）：标题原文、手写 ID、生成的 ID 都在它的
 // label space 里，重名给出候选而不替人挑。这里只读投影里每条 xref 边的结果，不自己匹配选择器。
-function bindReferences(config: RuntimeConfig, document: AbundantDocument): ReferenceBinding {
+function bindReferences(
+  config: RuntimeConfig,
+  document: AbundantDocument,
+  expandAttributes: (text: string) => string
+): ReferenceBinding {
   const projection = rdf12(document, { documentRoot: config.documentRoot });
   const graph = projection.graph;
   const values = (subject: { termType: "iri"; value: string }, name: string): string[] => {
@@ -744,13 +779,15 @@ function bindReferences(config: RuntimeConfig, document: AbundantDocument): Refe
     .filter((entry) => entry.kind === "section")
     .map((entry) => [entry.iri.value, entry]));
   const sourceLines = new Map((document.sourceFiles ?? []).map((file) => [file.relativePath, file.raw.split(/\r?\n/)]));
-  const located = (iris: string[]): string => iris
-    .map((iri) => headings.get(iri))
-    .filter((entry) => entry !== undefined)
-    .map((entry) => ({ title: entry.node.title ?? "", relativePath: entry.relativePath ?? "", line: entry.sourceStartLine ?? entry.startLine }))
-    .sort((left, right) => left.relativePath.localeCompare(right.relativePath) || left.line - right.line)
-    .map((entry) => `${entry.title} (${entry.relativePath}:${entry.line})`)
-    .join(", ");
+  const located = (iris: string[]): LocatedHeading[] => iris.flatMap((iri) => {
+    const entry = headings.get(iri);
+    const id = entry?.node.ids?.[0];
+    if (entry === undefined || id === undefined) return [];
+    return [{ id, title: entry.node.title ?? id, relativePath: entry.relativePath ?? "", line: entry.sourceStartLine ?? entry.startLine }];
+  });
+  const owners = (selector: string): LocatedHeading[] => {
+    return located(projection.labelCatalog.owners(selector).map((owner) => owner.value));
+  };
 
   const edges = graph.match({ predicate: { termType: "iri", value: `${AAT_NAMESPACE}targetSelector` } }).map((triple) => ({
     iri: triple.subject,
@@ -761,44 +798,112 @@ function bindReferences(config: RuntimeConfig, document: AbundantDocument): Refe
   })).sort((left, right) => left.relativePath.localeCompare(right.relativePath) || left.line - right.line || left.column - right.column);
 
   const headingsByFragment = new Map<string, BoundHeading>();
+  const crossBook: PendingCrossBookXref[] = [];
   const issues: Issue[] = [];
   for (const edge of edges) {
-    // 指向别的文档的 xref 由 HTML 本地资源检查判断（DESIGN.adoc 的 Reference Binding）。
-    if (DOCUMENT_TARGET_PATTERN.test(edge.selector)) continue;
     // aat 0.2.6 的扫描器把 pass:[…] 里透传的文字也当作 xref 收下，Asciidoctor 并不为它生成链接；
     // 这些是书在展示写法，不是引用。aat 不再收它们以后（aat 的 issue 020），这一条可以去掉。
     if (insidePassthroughMacro(sourceLines.get(edge.relativePath)?.[edge.line - 1] ?? "", edge.column)) continue;
 
-    let fragment = edge.selector;
-    let targets = values(edge.iri, "targetHeading");
-    let candidates = values(edge.iri, "candidateHeading");
-    // xref:#id[] 与 <<#id>> 在 Asciidoctor 里指本文档的 id，aat 0.2.6 却拿带 # 的整串去绑定、落空；
-    // 去掉 # 以后仍在 aat 的 label space 里认。aat 自己认这种写法以后（aat 的 issue 021），这一段可以去掉。
-    if (targets.length === 0 && candidates.length === 0 && fragment.startsWith("#")) {
-      fragment = fragment.slice(1);
-      const owners = projection.labelCatalog.owners(fragment).map((owner) => owner.value);
-      if (owners.length === 1) targets = owners;
-      else candidates = owners;
-    }
-
     const where = `${edge.relativePath}:${edge.line} ${values(edge.iri, "raw")[0] ?? edge.selector}`;
-    if (targets.length === 1) {
-      const entry = headings.get(targets[0]);
-      const id = entry?.node.ids?.[0];
-      if (entry !== undefined && id !== undefined) {
-        const heading = { id, title: entry.node.title ?? id };
-        headingsByFragment.set(fragment, heading);
-        headingsByFragment.set(escapeHtmlAttribute(fragment), heading);
-      }
+    // aat 0.2.6 不展开目标里的属性引用：xref:{upper-book}#x[] 的选择器还是 {upper-book}#x。展开用这本书转换后的
+    // Asciidoctor 文档，规则是 Asciidoctor 自己的（未定义的属性原样留下）。aat 自己展开以后，这一步可以去掉。
+    const selector = edge.selector.includes("{") ? expandAttributes(edge.selector) : edge.selector;
+    if (DOCUMENT_TARGET_PATTERN.test(selector)) {
+      crossBook.push({ where, target: selector });
       continue;
     }
-    if (candidates.length > 1) {
-      issues.push(issue("XREF_AMBIGUOUS", `${where} -> ${located(candidates)}`));
+
+    let fragment = selector;
+    // 展开过的选择器，aat 绑定的是展开之前的那一串，所以在它的 label space 里重新认。
+    let found = selector !== edge.selector
+      ? owners(fragment)
+      : located([...values(edge.iri, "targetHeading"), ...values(edge.iri, "candidateHeading")]);
+    // xref:#id[] 与 <<#id>> 在 Asciidoctor 里指本文档的 id，aat 0.2.6 却拿带 # 的整串去绑定、落空；
+    // 去掉 # 以后仍在 aat 的 label space 里认。aat 自己认这种写法以后（aat 的 issue 021），这一段可以去掉。
+    if (found.length === 0 && fragment.startsWith("#")) {
+      fragment = fragment.slice(1);
+      found = owners(fragment);
+    }
+
+    if (found.length === 1) {
+      const heading = { id: found[0].id, title: found[0].title };
+      headingsByFragment.set(fragment, heading);
+      headingsByFragment.set(escapeHtmlAttribute(fragment), heading);
+      continue;
+    }
+    if (found.length > 1) {
+      issues.push(issue("XREF_AMBIGUOUS", `${where} -> ${describeCandidates(found)}`));
       continue;
     }
     issues.push(issue("XREF_UNRESOLVED", where));
   }
-  return { headingsByFragment, issues };
+  return { headingsByFragment, crossBook, owners, issues };
+}
+
+function describeCandidates(headings: LocatedHeading[]): string {
+  return [...headings]
+    .sort((left, right) => left.relativePath.localeCompare(right.relativePath) || left.line - right.line)
+    .map((heading) => `${heading.title} (${heading.relativePath}:${heading.line})`)
+    .join(", ");
+}
+
+// 跨书 xref 同样以 aat 的绑定为准，只是 label space 在目标书里（DESIGN.adoc 的 Reference Binding）。aat 不打开别的
+// 文档，工作区解析了每一本书，所以在这里绑定。路径按书目录解析：Asciidoctor 把它照写进 HTML，而 HTML 的输出目录
+// 与 books/ 下的书目录一一对应。指向的不是工作区里的书、或只指向整本书（没有片段）的，留给 HTML 本地资源检查。
+async function bindCrossBookReferences(
+  book: BookEntry,
+  references: ReferenceBinding,
+  bindingsByInput: Map<string, { book: BookEntry; references: ReferenceBinding }>,
+  anchorCache: Map<string, Set<string>>
+): Promise<{ linksByHref: Map<string, CrossBookLink>; issues: Issue[] }> {
+  const linksByHref = new Map<string, CrossBookLink>();
+  const issues: Issue[] = [];
+  for (const xref of references.crossBook) {
+    const hashAt = xref.target.indexOf("#");
+    if (hashAt < 0) continue;
+    const documentPath = xref.target.slice(0, hashAt);
+    const fragment = xref.target.slice(hashAt + 1);
+    const target = bindingsByInput.get(path.resolve(book.bookDir, documentPath));
+    if (fragment === "" || target === undefined) continue;
+
+    const found = target.references.owners(fragment);
+    if (found.length === 0) {
+      issues.push(issue("XREF_UNRESOLVED", `${xref.where} -> ${target.book.bookId}`));
+      continue;
+    }
+    if (found.length > 1) {
+      issues.push(issue("XREF_AMBIGUOUS", `${xref.where} -> ${target.book.bookId}: ${describeCandidates(found)}`));
+      continue;
+    }
+
+    const heading = found[0];
+    // 指向本书自己的 book.adoc：Asciidoctor 把它当书内引用，写成 #片段。
+    if (target.book.bookId === book.bookId) {
+      references.headingsByFragment.set(fragment, heading);
+      references.headingsByFragment.set(escapeHtmlAttribute(fragment), heading);
+      continue;
+    }
+    const anchors = await anchorsForHtmlFile(path.join(target.book.htmlOutputDir, "book.html"), anchorCache);
+    if (anchors.has(fragment)) continue;
+    const htmlPath = documentPath.replace(/\.adoc$/, ".html");
+    const link = { href: `${htmlPath}#${heading.id}`, title: heading.title };
+    linksByHref.set(`${htmlPath}#${fragment}`, link);
+    linksByHref.set(escapeHtmlAttribute(`${htmlPath}#${fragment}`), link);
+  }
+  return { linksByHref, issues };
+}
+
+// 绑定上、而目标书的 HTML 里没有这个片段的跨书链接，改成指向绑定的标题。Asciidoctor 对没写显示文字的跨书 xref
+// 显示文档路径；改写时换成标题。
+function rewriteCrossBookXrefs(html: string, linksByHref: Map<string, CrossBookLink>): string {
+  if (linksByHref.size === 0) return html;
+  return html.replace(HTML_DOCUMENT_LINK_PATTERN, (whole: string, htmlPath: string, fragment: string, rest: string, text: string) => {
+    const link = linksByHref.get(`${htmlPath}#${fragment}`) ?? linksByHref.get(`${htmlPath}#${decodeUrlFragment(fragment)}`);
+    if (link === undefined) return whole;
+    const shown = text === htmlPath ? escapeHtmlAttribute(link.title) : text;
+    return `<a href="${escapeHtmlAttribute(link.href)}"${rest}>${shown}</a>`;
+  });
 }
 
 function insidePassthroughMacro(line: string, column: number): boolean {
@@ -1349,18 +1454,31 @@ ${readerStyles()}
   return `${html.slice(0, insertAt)}${withReaderScript}${html.slice(insertAt)}`;
 }
 
-async function addHomeLinks(rootDir: string, books: BookEntry[], config: RuntimeConfig): Promise<Issue[]> {
+async function addHomeLinks(rootDir: string, books: BookEntry[], config: RuntimeConfig, documents: Map<string, any>): Promise<Issue[]> {
   const catalog = path.join(rootDir, "build", "html", "catalog.html");
+  // 跨书 xref 在目标书的 label space 里绑定，所以先把每一本书都解析完。
+  const readerData = new Map<string, ReaderBookData>();
+  for (const book of books) {
+    // Asciidoctor.js 的 JS 接口没有包出 sub_attributes；$sub_attributes 是 Asciidoctor 自己的属性替换（Substitutors）。
+    const document = documents.get(book.bookId);
+    readerData.set(book.bookId, await buildReaderBookData(config, book, (text) => document.$sub_attributes(text)));
+  }
+  const bindingsByInput = new Map(books.map((book) => [book.input, { book, references: readerData.get(book.bookId)!.references }]));
+  const anchorCache = new Map<string, Set<string>>();
   const issues: Issue[] = [];
   for (const book of books) {
     const htmlFile = path.join(book.htmlOutputDir, "book.html");
     const href = path.relative(path.dirname(htmlFile), catalog);
-    const readerData = await buildReaderBookData(config, book);
-    issues.push(...readerData.references.issues);
-    const html = rewriteBoundXrefs(await readFile(htmlFile, "utf8"), readerData.references.headingsByFragment);
+    const data = readerData.get(book.bookId)!;
+    const crossBook = await bindCrossBookReferences(book, data.references, bindingsByInput, anchorCache);
+    issues.push(...data.references.issues, ...crossBook.issues);
+    const html = rewriteCrossBookXrefs(
+      rewriteBoundXrefs(await readFile(htmlFile, "utf8"), data.references.headingsByFragment),
+      crossBook.linksByHref
+    );
     await writeFile(
       htmlFile,
-      addBookControlsToBookHtml(html, href, config.homeLink, readerData.sourceBundle, readerData.pageMap, book.bookId),
+      addBookControlsToBookHtml(html, href, config.homeLink, data.sourceBundle, data.pageMap, book.bookId),
       "utf8"
     );
   }
@@ -1395,8 +1513,8 @@ function issue(code: string, detail: string): Issue {
   return { code, detail };
 }
 
-// xref 不在这里查：书内的引用以 aat 的绑定为准（bindReferences），跨书链接与其余锚点由 missingLocalResources
-// 在生成的 HTML 上核对（DESIGN.adoc 的 Workspace Contract Checks 与 Reference Binding）。
+// xref 不在这里查：书内与跨书的引用以 aat 的绑定为准（bindReferences、bindCrossBookReferences），不存在的书与其余
+// 锚点由 missingLocalResources 在生成的 HTML 上核对（DESIGN.adoc 的 Workspace Contract Checks 与 Reference Binding）。
 async function workspaceContractIssues(rootDir: string, books: BookEntry[]): Promise<Issue[]> {
   const issues: Issue[] = [];
   const catalogSource = await readIfExists(path.join(rootDir, "catalog.adoc"));
@@ -1507,9 +1625,9 @@ export async function buildWorkspace(rootDir = process.cwd()): Promise<void> {
   const fetchDiagrams = shouldFetchDiagrams();
   const asciidoctor = createAsciidoctor(useKroki);
 
-  await buildHtml(rootDir, books, asciidoctor, includeResolverRegistry(asciidoctor, config), useKroki, fetchDiagrams);
+  const documents = await buildHtml(rootDir, books, asciidoctor, includeResolverRegistry(asciidoctor, config), useKroki, fetchDiagrams);
   await copyAssets(rootDir, books);
-  const referenceIssues = await addHomeLinks(rootDir, books, config);
+  const referenceIssues = await addHomeLinks(rootDir, books, config, documents);
   await writeRootIndex(rootDir, config.rootIndex);
   await assertNoIssues("reference binding check", referenceIssues);
   await assertNoIssues("HTML local resource check", await missingLocalResources(rootDir));

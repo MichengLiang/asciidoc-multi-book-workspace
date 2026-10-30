@@ -5,7 +5,7 @@
 [source,asciidoc]
 ----
 :upper-book: ../05-upper-volume/book.adoc
-xref + : + {upper-book}#upper-core-model[上册核心模型]
+xref + : + {upper-book}#上册核心模型[]
 ----
 
-实际写作时去掉 `xref` 后面的空格和加号，写成一个完整的 cross reference 宏。
+`#` 后面写上册里那一章的标题。实际写作时去掉 `xref` 后面的空格和加号，写成一个完整的 cross reference 宏。
