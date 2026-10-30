@@ -88,7 +88,7 @@ const requiredPatterns = new Map([
       "custom ID 只在一节需要被单独引用、又与别的标题同名时出现",
       "源文件编排号",
       "source-order notation",
-      "Part 目录和 Chapter 文件统一使用三位数 `0X0` 格式进行编排",
+      "Part 目录和 Chapter 文件统一使用三位定宽的编排号，默认步长为 10",
       "末尾追加",
       "中间插入",
       "标题保存当前规范名称，引用用标题找到它；同名而需要单独引用时，才用 custom ID",
