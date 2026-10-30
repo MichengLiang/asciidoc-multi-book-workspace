@@ -558,6 +558,11 @@ The sample contract applies only to `templates/default-workspace/books`.
 It verifies that the official samples remain present and retain their assigned teaching roles.
 It does not apply to generated user workspaces.
 
+A sample's teaching role lives in the markup it shows and in the headings under which it shows it: an attrlist form, a convention declaration, a section style, the chapter that teaches custom IDs.
+The contract pins those and does not pin sentences.
+A pinned sentence holds the prose as it once was, a misleading sentence included, and turns every rewrite of the prose into a failing test.
+Whether the prose leads a reader to write the right source is judged by reading it, which a string match cannot do.
+
 == Package Boundary
 
 The npm package `files` field limits the published package to:
