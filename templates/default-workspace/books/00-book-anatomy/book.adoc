@@ -7,6 +7,7 @@ v0.1, 2026-05
 :sectnums:
 :icons: font
 :experimental:
+:appendix-caption: 附录
 :idprefix:
 :idseparator: -
 
@@ -41,7 +42,7 @@ include::parts/02-body-structure/01-body-map.adoc[]
 include::parts/02-body-structure/02-inline-structure.adoc[]
 
 [appendix]
-include::backmatter/appendix-a.adoc[]
+include::backmatter/appendix-structure-reference.adoc[]
 
 [glossary]
 include::backmatter/glossary.adoc[]

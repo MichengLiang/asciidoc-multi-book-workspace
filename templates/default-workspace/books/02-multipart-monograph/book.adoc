@@ -7,6 +7,7 @@ v0.1, 2026-05
 :sectnums:
 :icons: font
 :experimental:
+:appendix-caption: 附录
 :idprefix:
 :idseparator: -
 
@@ -31,7 +32,7 @@ include::parts/02-specification/01-book-contract.adoc[]
 include::parts/02-specification/02-verification.adoc[]
 
 [appendix]
-include::backmatter/appendix-a.adoc[]
+include::backmatter/appendix-part-reference.adoc[]
 
 [bibliography]
 include::backmatter/bibliography.adoc[]

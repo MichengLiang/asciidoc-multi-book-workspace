@@ -7,6 +7,7 @@ v0.1, 2026-05
 :sectnums:
 :icons: font
 :experimental:
+:appendix-caption: 附录
 :idprefix:
 :idseparator: -
 
@@ -20,7 +21,7 @@ include::chapters/01-opening.adoc[]
 include::chapters/02-main-flow.adoc[]
 
 [appendix]
-include::backmatter/appendix-a.adoc[]
+include::backmatter/appendix-minimal-files.adoc[]
 
 [bibliography]
 include::backmatter/bibliography.adoc[]
