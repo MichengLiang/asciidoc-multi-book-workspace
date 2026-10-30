@@ -60,6 +60,8 @@ asciidoc-abundant-tree 把这份源文本投影成 RDF。下面摘出与这些�
 
 每个标题的原文记在 `aat:headline`，role 记在 `aat:role`，上下级记成 `aat:containsDirectly`。普通 xref 投影为 `aat:references`；写了 `rel` 的 xref 投影为以谓词命名的边，这里是 `rel:depends-on`。每条 xref 另有一个节点，记下源文本里写的目标 `aat:targetSelector` 和它找到的标题 `aat:targetHeading`：引用写的是标题原文，找到的就是那个标题。
 
+写书的人不必自己跑投影。工作区的构建核对引用、查询工具按 role 列出标题，读的都是这张图；源文本怎么写，决定了它们能从书里读出什么。
+
 `rel` 用哪些谓词，由书自己定。菜谱要说一道菜由另一道菜改良而来，就在自己的关系谓词声明里加上这个谓词，再在 xref 里用它：
 
 [source,asciidoc]

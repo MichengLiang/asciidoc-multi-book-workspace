@@ -92,7 +92,7 @@ const requiredPatterns = new Map([
       "== 标题的 role",
       "= 名称、role 与关系",
       "== 关系谓词",
-      "== 附加字段",
+      "== 字段",
       "= 字段与约定",
       "== 声明本书的约定",
       "include::parts/030-fields-and-conventions/030-declaring-conventions.adoc[]",
@@ -122,7 +122,7 @@ const requiredPatterns = new Map([
       "=== 提到另一节",
       "=== 写字段",
       "=== 改约定",
-      "=== 给源文件编号",
+      "=== 给源文件取编排号",
       "=== 原样展示写法",
       "= 参考文献"
     ]

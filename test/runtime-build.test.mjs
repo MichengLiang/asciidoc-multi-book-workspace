@@ -21,7 +21,7 @@ const structuredWritingPageSequence = [
   ["chapter", "标题的-role", "标题的 role"],
   ["chapter", "关系谓词", "关系谓词"],
   ["part", "part-字段与约定", "字段与约定"],
-  ["chapter", "附加字段", "附加字段"],
+  ["chapter", "字段", "字段"],
   ["chapter", "声明本书的约定", "声明本书的约定"],
   ["part", "part-书的文字", "书的文字"],
   ["chapter", "一本书对谁说话", "一本书对谁说话"],
