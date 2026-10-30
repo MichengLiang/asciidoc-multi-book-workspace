@@ -49,16 +49,14 @@ include::parts/020-names-roles-and-relations/020-heading-roles.adoc[]
 
 include::parts/020-names-roles-and-relations/030-relation-predicate.adoc[]
 
-= 字段与术语
+= 字段与约定
 
 [partintro]
-include::parts/030-fields-and-terminology/_partintro.adoc[]
+include::parts/030-fields-and-conventions/_partintro.adoc[]
 
-include::parts/030-fields-and-terminology/010-surface-fields.adoc[]
+include::parts/030-fields-and-conventions/010-surface-fields.adoc[]
 
-include::parts/030-fields-and-terminology/020-consistent-terms.adoc[]
-
-include::parts/030-fields-and-terminology/030-declaring-conventions.adoc[]
+include::parts/030-fields-and-conventions/030-declaring-conventions.adoc[]
 
 = 书的文字
 

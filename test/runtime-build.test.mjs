@@ -20,9 +20,8 @@ const structuredWritingPageSequence = [
   ["chapter", "名称与地址", "名称与地址"],
   ["chapter", "标题的-role", "标题的 role"],
   ["chapter", "关系谓词", "关系谓词"],
-  ["part", "part-字段与术语", "字段与术语"],
+  ["part", "part-字段与约定", "字段与约定"],
   ["chapter", "附加字段", "附加字段"],
-  ["chapter", "统一用词", "统一用词"],
   ["chapter", "声明本书的约定", "声明本书的约定"],
   ["part", "part-书的文字", "书的文字"],
   ["chapter", "一本书对谁说话", "一本书对谁说话"],
@@ -210,7 +209,7 @@ test("runtime build creates HTML, assets, home links, source bundles, and root i
   );
   assert.match(structuredWriting, /<h1 id="从源文档看结构" class="sect0">Part I: 从源文档看结构<\/h1>/);
   assert.match(structuredWriting, /<h1 id="名称role-与关系" class="sect0">Part II: 名称、role 与关系<\/h1>/);
-  assert.match(structuredWriting, /<h1 id="字段与术语" class="sect0">Part III: 字段与术语<\/h1>/);
+  assert.match(structuredWriting, /<h1 id="字段与约定" class="sect0">Part III: 字段与约定<\/h1>/);
   assert.match(structuredWriting, /<a href="#从源文档看结构">Part I: 从源文档看结构<\/a>/);
 
   const pageMapMatch = structuredWriting.match(/<script type="application\/json" id="multi-book-page-map">([\s\S]*?)<\/script>/);
@@ -261,7 +260,7 @@ test("runtime reader UI supports desktop and mobile paged reading behavior", asy
     const desktop = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     await desktop.goto(bookUrl);
     await assertVisibleText(desktop, "#content", "源文本与投影");
-    await assertVisibleText(desktop, "#content", "术语的定义集中维护在书后的术语表中");
+    await assertVisibleText(desktop, "#content", "中西文混排照规范");
     const continuousContentBox = await desktop.locator("#content").boundingBox();
     const continuousFirstBlockBox = await desktop.locator("#content > :visible").first().boundingBox();
     assert.notEqual(continuousContentBox, null);
@@ -306,7 +305,7 @@ test("runtime reader UI supports desktop and mobile paged reading behavior", asy
 
     await desktop.getByRole("button", { name: "连续" }).click();
     await assertVisibleText(desktop, "#content", "源文本与投影");
-    await assertVisibleText(desktop, "#content", "术语的定义集中维护在书后的术语表中");
+    await assertVisibleText(desktop, "#content", "中西文混排照规范");
     assert.equal(await desktop.locator("[data-multi-book-page-nav]").evaluate((node) => node.hidden), true);
     assert.equal(
       await desktop.locator("#toc > :not([data-multi-book-controls]):not([data-multi-book-page-nav])").evaluateAll((nodes) => {

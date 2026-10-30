@@ -131,7 +131,7 @@ The source titles remain semantic:
 ----
 = 从源文档看结构
 = 名称、role 与关系
-= 字段与术语
+= 字段与约定
 = 书的文字
 ----
 
@@ -141,7 +141,7 @@ The generated HTML shows:
 ----
 Part I: 从源文档看结构
 Part II: 名称、role 与关系
-Part III: 字段与术语
+Part III: 字段与约定
 Part IV: 书的文字
 ----
 
