@@ -218,7 +218,7 @@ The default workspace contains these sample books:
   An independent lower volume that demonstrates cross-volume writing conventions by literal example.
 
 `07-structured-writing-conventions`::
-  A structured writing conventions specimen covering headings as addresses, custom IDs for headings that share a title, role tokens, xrefs, rel predicates, and named attributes as source surfaces.
+  A structured writing conventions specimen: a heading's title is its address, with a custom ID only for a heading that must be referred to on its own and shares its title; roles on headings, relation predicates on xrefs, fields, and convention declarations kept in a 凡例; and a part of touchstones for the judgments of writing a book. Every example comes from one home cookbook.
 
 === Sample Independence
 
