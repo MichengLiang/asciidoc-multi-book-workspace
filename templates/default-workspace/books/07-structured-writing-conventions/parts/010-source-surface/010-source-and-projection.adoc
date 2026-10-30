@@ -1,91 +1,93 @@
 == 源文本与投影
 
-本章用一段示例展示结构化书写约定。Turtle 片段列出关键投影事实；完整投影还会保留 raw、路径、行号和边证据。
-本章节的演示展示文字如何形成清晰的查询与导航结构。
+同一份源文件，读者读到的是一本书，工具读到的是一张图：标题是图上的节点，role 是节点上的值，xref 是节点之间的边。
+
+下面是一本家常菜谱的源文本：
 
 [source,asciidoc]
 ----
-= 结构化写作样例
+= 家常菜谱
 
-[.concept]
-== 常规标题
+[.technique]
+== 炒糖色
 
-常规标题提供可引用的阅读单位。
+冰糖下锅，小火炒到枣红色。
 
-[.example]
-=== 基本语法
+[.dish]
+== 红烧肉
 
-基本语法是常规标题下的直接子标题。
+红烧肉的红亮靠糖色，先学会 xref:炒糖色[rel=depends-on]。
 
-[.rule]
-== 引用规则
+=== 火候
 
-引用规则参见 xref:常规标题[]。
-引用规则依赖 xref:常规标题[常规标题, rel=depends-on, weight=strong]。
+大火烧开，转小火炖一小时。
+
+[.dish]
+== 红烧排骨
+
+做法同 xref:红烧肉[]，排骨焯水的时间短一些。
 ----
 
-源文档把 `常规标题` 写成可引用的阅读单位，在其下写出 `基本语法` 子标题，把 `引用规则` 写成规则说明，并在正文里写出参见和依赖两种引用。
+作者用 `[.technique]` 和 `[.dish]` 说明《炒糖色》是一种技法、《红烧肉》《红烧排骨》是菜；《火候》用 `===` 写在红烧肉下面，是它的下级标题。红烧肉要先会炒糖色，作者写 `pass:[xref:炒糖色[rel=depends-on]]`，用 `rel` 说出这层关系；红烧排骨只是请读者参看红烧肉，写普通的 `pass:[xref:红烧肉[]]`。两处引用都没有写显示文本，链接上显示的就是目标标题。
 
-Turtle 示例中的 `<urn:aat:doc:...#heading-*>` 和 `<urn:aat:doc:...#xref-edge-*>` 表示投影生成的文档节点 IRI。本例没有写 custom ID：`aat:headline` 是标题原文，引用写的就是它；`aat:generatedAddressLabel` 是 Asciidoctor 从标题生成的 ID（这份样例没有设 `:idprefix:`，所以带前缀 `_`），投影也把它记下来，但它随标题和位置变，引用不写它。`pass:[xref:常规标题[]]` 的 `aat:targetSelector` 是 `常规标题`，按标题原文绑定到 `aat:targetHeading`。
+asciidoc-abundant-tree 把这份源文本投影成 RDF。下面摘出与这些写法对应的几行，`<…>` 是投影给每个标题和每条引用起的节点名：
 
 [source,turtle]
 ----
-<urn:aat:doc:...#heading-l3-o0> a aat:Heading ;
-  aat:headline "常规标题" ;
-  aat:generatedAddressLabel "_常规标题" ;
-  aat:role "concept" ;
-  aat:containsDirectly <urn:aat:doc:...#heading-l8-o0> .
+<…#heading-l3-o0> a aat:Heading ;
+  aat:headline "炒糖色" ;
+  aat:role "technique" .
 
-<urn:aat:doc:...#heading-l8-o0> a aat:Heading ;
-  aat:headline "基本语法" ;
-  aat:generatedAddressLabel "_基本语法" ;
-  aat:role "example" .
+<…#heading-l8-o0> a aat:Heading ;
+  aat:headline "红烧肉" ;
+  aat:role "dish" ;
+  aat:containsDirectly <…#heading-l13-o0> ;
+  rel:depends-on <…#heading-l3-o0> .
 
-<urn:aat:doc:...#heading-l13-o0> a aat:Heading ;
-  aat:headline "引用规则" ;
-  aat:generatedAddressLabel "_引用规则" ;
-  aat:role "rule" ;
-  aat:references <urn:aat:doc:...#heading-l3-o0> ;
-  rel:depends-on <urn:aat:doc:...#heading-l3-o0> .
+<…#heading-l13-o0> a aat:Heading ;
+  aat:headline "火候" .
 
-<urn:aat:doc:...#xref-edge-l17-c8-o0> a aat:XrefEdge ;
-  aat:targetSelector "常规标题" ;
-  aat:targetHeading <urn:aat:doc:...#heading-l3-o0> ;
-  aat:rel "depends-on" ;
-  aat:weight "strong" .
+<…#heading-l17-o0> a aat:Heading ;
+  aat:headline "红烧排骨" ;
+  aat:role "dish" ;
+  aat:references <…#heading-l8-o0> .
+
+<…#xref-edge-l11-c15-o0> a aat:XrefEdge ;
+  aat:targetSelector "炒糖色" ;
+  aat:targetHeading <…#heading-l3-o0> ;
+  aat:rel "depends-on" .
 ----
 
-源文档中的 [.concept]#常规标题# 是被引用的阅读单位，`基本语法` 是它的下级标题， [.rule]#引用规则# 说明引用写法。投影读取同一份源文档，为标题生成 IRI，并在标题节点上保留 `aat:headline`、`aat:generatedAddressLabel` 和 `aat:role`；标题层级投影为 `aat:containsDirectly`，xref 投影为 `aat:references` 和 `rel:depends-on`，每条 xref 边记下它写的 `aat:targetSelector` 与绑定到的 `aat:targetHeading`。
+每个标题的原文记在 `aat:headline`，role 记在 `aat:role`，上下级记成 `aat:containsDirectly`。普通 xref 投影为 `aat:references`；写了 `rel` 的 xref 投影为以谓词命名的边，这里是 `rel:depends-on`。每条 xref 另有一个节点，记下源文本里写的目标 `aat:targetSelector` 和它找到的标题 `aat:targetHeading`：引用写的是标题原文，找到的就是那个标题。
+
+`rel` 用哪些谓词，由书自己定。菜谱要说一道菜由另一道菜改良而来，就在自己的关系谓词声明里加上这个谓词，再在 xref 里用它：
 
 [source,asciidoc]
 ----
-[.concept]
-== 林黛玉
-
-林黛玉是……她与 xref:贾宝玉[rel=love] 有木石前盟。
-
 [.convention, declares=relations]
-== 本书的关系谓词
+== 本菜谱的关系谓词
 
-love:: 起点人物爱慕终点人物。
+depends-on:: 做这道菜要先会目标技法。
+adapted-from:: 这道菜由目标菜改良而来。
+
+[.dish]
+== 冰糖红烧肉
+
+由 xref:红烧肉[rel=adapted-from] 改良：糖色全用冰糖，收汁更亮。
 ----
 
-此处的 `pass:[xref:贾宝玉]` 直接使用标题文本作为寻址地址，
-因为“贾宝玉”在当前书稿中作为唯一标题名称使用。
-交叉引用宏语法是 `pass:[xref:目标标题[可选显示文本]]`，所以这里省略了显示文本，渲染引擎默认会展示标题文字。
+`rel` 里写的每个谓词，都要先写进书的关系谓词声明，写法见 xref:声明本书的约定[]。
 
-`love` 是这本书自己的关系谓词，写在它的约定声明里：`rel` 用到的每个谓词都要在本书的关系谓词词表里（见 xref:声明本书的约定[]）。
-
-'''
-
-再来看看这样的场景： 标题是编号型标识符，且被交叉引用
-
-例如： `REQ-2024-0088`、`TC-AUTH-032`、`ADR-2024-015`，他们的标题本身就是编号，是人为设计的全局唯一标识符， 需要尊重他的原来的结构与语义。
+有的标题本身就是一个编号，编号由发布它的机构分配，全国唯一。这样的标题照原样写，引用也直接写编号：
 
 [source,asciidoc]
 ----
-[.requirement, category=性能]
-== REQ-2024-0088
-----
+== GB 2760—2014
 
-`REQ-2024-0088` 是本书采用的编号名称。编号制度负责分配和唯一性，引用直接使用该编号：`pass:[xref:REQ-2024-0088[REQ-2024-0088, rel=constrains]]`
+食品安全国家标准《食品添加剂使用标准》。
+
+[.technique]
+== 炒糖色
+
+不自己炒、改用现成的焦糖色时，用量见 xref:GB 2760—2014[]。
+----
