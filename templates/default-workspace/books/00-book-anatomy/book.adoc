@@ -5,6 +5,8 @@ v0.1, 2026-05
 :toc: left
 :toclevels: 3
 :sectnums:
+:partnums:
+:part-signifier: Part
 :icons: font
 :experimental:
 :appendix-caption: 附录
@@ -25,14 +27,14 @@ include::frontmatter/preface.adoc[]
 [acknowledgments]
 include::frontmatter/acknowledgments.adoc[]
 
-= 第一部：前置结构
+= 前置结构
 
 [partintro]
 include::parts/01-front-structure/_partintro.adoc[]
 
 include::parts/01-front-structure/01-frontmatter-map.adoc[]
 
-= 第二部：正文结构
+= 正文结构
 
 [partintro]
 include::parts/02-body-structure/_partintro.adoc[]

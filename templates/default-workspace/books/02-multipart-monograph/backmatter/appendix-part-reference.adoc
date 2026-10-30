@@ -1,5 +1,5 @@
 = part 速查
 
-* `= 第一部`：同一本 book 内部的 part。
+* `= 问题世界`：同一本 book 内部的 part。标题只写语义名；`Part I`、`Part II` 这样的序号由书头的 `:partnums:` 生成，不写进标题。
 * `[partintro]`：part 开头的说明块。
 * `== 章标题`：part 下的 chapter。

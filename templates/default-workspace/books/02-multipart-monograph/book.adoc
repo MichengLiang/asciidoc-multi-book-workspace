@@ -5,6 +5,8 @@ v0.1, 2026-05
 :toc: left
 :toclevels: 3
 :sectnums:
+:partnums:
+:part-signifier: Part
 :icons: font
 :experimental:
 :appendix-caption: 附录
@@ -13,7 +15,7 @@ v0.1, 2026-05
 
 include::../../shared/attributes.adoc[]
 
-= 第一部：问题世界
+= 问题世界
 
 [partintro]
 include::parts/01-domain/_partintro.adoc[]
@@ -22,7 +24,7 @@ include::parts/01-domain/01-problem-world.adoc[]
 
 include::parts/01-domain/02-boundary.adoc[]
 
-= 第二部：书籍规约
+= 书籍规约
 
 [partintro]
 include::parts/02-specification/_partintro.adoc[]
