@@ -18,20 +18,20 @@ include::../../shared/attributes.adoc[]
 = 问题世界
 
 [partintro]
-include::parts/01-domain/_partintro.adoc[]
+include::parts/010-domain/_partintro.adoc[]
 
-include::parts/01-domain/01-problem-world.adoc[]
+include::parts/010-domain/010-problem-world.adoc[]
 
-include::parts/01-domain/02-boundary.adoc[]
+include::parts/010-domain/020-boundary.adoc[]
 
 = 书籍规约
 
 [partintro]
-include::parts/02-specification/_partintro.adoc[]
+include::parts/020-specification/_partintro.adoc[]
 
-include::parts/02-specification/01-book-contract.adoc[]
+include::parts/020-specification/010-book-contract.adoc[]
 
-include::parts/02-specification/02-verification.adoc[]
+include::parts/020-specification/020-verification.adoc[]
 
 [appendix]
 include::backmatter/appendix-part-reference.adoc[]

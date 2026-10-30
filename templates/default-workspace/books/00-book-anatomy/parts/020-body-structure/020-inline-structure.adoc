@@ -28,4 +28,4 @@
 |引用共享属性，减少多处重复文本。
 |===
 
-语义 inline role 提供结构身份；具体视觉效果取决于输出样式。本书使用 [.term]#inline role# 标记术语片段，使用 [.path]`parts/02-body-structure/` 标记路径片段。
+语义 inline role 提供结构身份；具体视觉效果取决于输出样式。本书使用 [.term]#inline role# 标记术语片段，使用 [.path]`parts/020-body-structure/` 标记路径片段。

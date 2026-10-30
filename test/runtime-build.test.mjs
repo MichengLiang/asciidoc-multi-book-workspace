@@ -111,7 +111,7 @@ async function initShelfInsideProject(name) {
   await initWorkspace({ targetDir: shelf });
   await mkdir(path.join(project, "examples"), { recursive: true });
   await writeFile(path.join(project, "examples", "hello.ts"), "export const hello = \"project code\";\n", "utf8");
-  const chapterPath = path.join(shelf, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  const chapterPath = path.join(shelf, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
   const chapter = await readFile(chapterPath, "utf8");
   await writeFile(
     chapterPath,
@@ -149,7 +149,7 @@ async function initWorkspaceWithInclude(name, files, directive) {
     await mkdir(path.dirname(path.join(target, relativePath)), { recursive: true });
     await writeFile(path.join(target, relativePath), text, "utf8");
   }
-  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
   const before = `${await readFile(chapterPath, "utf8")}\n\n`;
   await writeFile(chapterPath, `${before}${directive}\n`, "utf8");
   return { target, chapterPath, directiveLine: before.split("\n").length };
@@ -185,9 +185,9 @@ test("runtime build creates HTML, assets, home links, source bundles, and root i
   assert.notEqual(starterSourceMatch, null);
   const starterEmbeddedSource = JSON.parse(starterSourceMatch[1]);
   assert.match(starterEmbeddedSource, /\/\/ file: books\/01-starter-book\/book\.adoc/);
-  assert.match(starterEmbeddedSource, /include::chapters\/01-opening\.adoc\[\]/);
+  assert.match(starterEmbeddedSource, /include::chapters\/010-opening\.adoc\[\]/);
   assert.match(starterEmbeddedSource, /\/\/ file: shared\/attributes\.adoc/);
-  assert.match(starterEmbeddedSource, /\/\/ file: books\/01-starter-book\/chapters\/02-main-flow\.adoc/);
+  assert.match(starterEmbeddedSource, /\/\/ file: books\/01-starter-book\/chapters\/020-main-flow\.adoc/);
 
   const technicalDir = path.join(target, "build", "html", "books", "03-technical-book-workflow");
   const technical = await readFile(path.join(technicalDir, "book.html"), "utf8");
@@ -449,7 +449,7 @@ test("runtime build names the resolver and the directive when a resolver result 
 
     await assert.rejects(
       () => buildWorkspace(target),
-      new RegExp(`include resolver 'x:' ${phrase} include::x:anything\\[\\] in \\S*02-main-flow\\.adoc: line ${directiveLine}${tail}`),
+      new RegExp(`include resolver 'x:' ${phrase} include::x:anything\\[\\] in \\S*020-main-flow\\.adoc: line ${directiveLine}${tail}`),
       resolve
     );
   }
@@ -503,7 +503,7 @@ test("runtime check passes after deleting any one sample and removing its catalo
 test("runtime check still fails for a user-authored real cross-book xref to a missing book", async () => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-real-missing-xref-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
-  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
   const chapter = await readFile(chapterPath, "utf8");
   await writeFile(
     chapterPath,
@@ -520,7 +520,7 @@ test("runtime check still fails for a user-authored real cross-book xref to a mi
 test("runtime check fails for missing include targets reported by Asciidoctor", async () => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-missing-include-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
-  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
   const chapter = await readFile(chapterPath, "utf8");
   await writeFile(
     chapterPath,
@@ -537,7 +537,7 @@ test("runtime check fails for missing include targets reported by Asciidoctor", 
 test("runtime check fails for same-page links to missing anchors in generated HTML", async () => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-missing-same-page-anchor-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
-  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
   const chapter = await readFile(chapterPath, "utf8");
   await writeFile(
     chapterPath,
@@ -562,13 +562,13 @@ test("runtime check accepts cross-book xrefs to IDs declared in any AsciiDoc for
     ["[id=id-attribute]", "id-attribute"],
     ["", "generated-heading"]
   ];
-  const chapterPath = path.join(target, "books", "02-multipart-monograph", "parts", "01-domain", "02-boundary.adoc");
+  const chapterPath = path.join(target, "books", "02-multipart-monograph", "parts", "010-domain", "020-boundary.adoc");
   const sections = headings.map(([declaration, id]) => {
     const title = id === "generated-heading" ? "Generated Heading" : `Heading ${id}`;
     return `${declaration ? `${declaration}\n` : ""}=== ${title}\n\nText.\n`;
   });
   await writeFile(chapterPath, `${await readFile(chapterPath, "utf8")}\n\n${sections.join("\n")}`, "utf8");
-  const sourceChapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  const sourceChapterPath = path.join(target, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
   const xrefs = headings.map(([, id]) => `See xref:../02-multipart-monograph/book.adoc#${id}[${id}].`);
   await writeFile(sourceChapterPath, `${await readFile(sourceChapterPath, "utf8")}\n\n${xrefs.join("\n\n")}\n`, "utf8");
 
@@ -578,7 +578,7 @@ test("runtime check accepts cross-book xrefs to IDs declared in any AsciiDoc for
 test("runtime check fails, naming the target book, for a cross-book xref to a heading that book does not have", async (t) => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-missing-cross-book-anchor-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
-  const relativeChapter = "books/01-starter-book/chapters/02-main-flow.adoc";
+  const relativeChapter = "books/01-starter-book/chapters/020-main-flow.adoc";
   const sourceChapterPath = path.join(target, relativeChapter);
   const source = `${await readFile(sourceChapterPath, "utf8")}\n\nSee xref:../02-multipart-monograph/book.adoc#no-such-anchor[missing].\n`;
   await writeFile(sourceChapterPath, source, "utf8");
@@ -595,14 +595,14 @@ test("runtime check fails, naming the target book, for a cross-book xref to a he
 test("runtime binds cross-book xrefs to titles in the other book and points HTML links at them", async () => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-cross-book-titles-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
-  const targetChapterPath = path.join(target, "books", "02-multipart-monograph", "parts", "01-domain", "02-boundary.adoc");
+  const targetChapterPath = path.join(target, "books", "02-multipart-monograph", "parts", "010-domain", "020-boundary.adoc");
   await writeFile(targetChapterPath, `${await readFile(targetChapterPath, "utf8")}
 
 === 名称、角色与关系
 
 Text.
 `, "utf8");
-  const sourceChapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  const sourceChapterPath = path.join(target, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
   await writeFile(sourceChapterPath, `${await readFile(sourceChapterPath, "utf8")}
 
 :monograph: ../02-multipart-monograph/book.adoc
@@ -623,7 +623,7 @@ Text.
 test("runtime check fails, naming the target book and its candidates, for a cross-book xref to a title two of its headings share", async (t) => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-cross-book-ambiguous-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
-  const relativeTarget = "books/02-multipart-monograph/parts/01-domain/02-boundary.adoc";
+  const relativeTarget = "books/02-multipart-monograph/parts/010-domain/020-boundary.adoc";
   const targetChapterPath = path.join(target, relativeTarget);
   const targetSource = `${await readFile(targetChapterPath, "utf8")}
 
@@ -639,7 +639,7 @@ Text.
   const targetLines = targetSource.split("\n");
   const first = targetLines.indexOf("=== 同名") + 1;
   const second = targetLines.indexOf("=== 同名", first) + 1;
-  const relativeSource = "books/01-starter-book/chapters/02-main-flow.adoc";
+  const relativeSource = "books/01-starter-book/chapters/020-main-flow.adoc";
   const sourceChapterPath = path.join(target, relativeSource);
   const source = `${await readFile(sourceChapterPath, "utf8")}
 
@@ -659,7 +659,7 @@ Text.
 test("runtime binds xrefs to headings through asciidoc-abundant-tree and points HTML links at them", async () => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-reference-binding-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
-  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "02-main-flow.adoc");
+  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
   await writeFile(chapterPath, `${await readFile(chapterPath, "utf8")}
 
 === 名称、角色与关系
@@ -693,7 +693,7 @@ Text.
 test("runtime check fails, naming file, line and candidates, for xrefs that bind to no heading or to a shared title", async (t) => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-reference-unbound-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
-  const relativeChapter = "books/01-starter-book/chapters/02-main-flow.adoc";
+  const relativeChapter = "books/01-starter-book/chapters/020-main-flow.adoc";
   const chapterPath = path.join(target, relativeChapter);
   const source = `${await readFile(chapterPath, "utf8")}
 

@@ -15,13 +15,13 @@ include::../../shared/attributes.adoc[]
 [preface]
 include::frontmatter/preface.adoc[]
 
-include::chapters/01-decision-table.adoc[]
+include::chapters/010-decision-table.adoc[]
 
-include::chapters/02-path-rules.adoc[]
+include::chapters/020-path-rules.adoc[]
 
-include::chapters/03-xref-patterns.adoc[]
+include::chapters/030-xref-patterns.adoc[]
 
-include::chapters/04-growth-paths.adoc[]
+include::chapters/040-growth-paths.adoc[]
 
 [glossary]
 include::backmatter/glossary.adoc[]

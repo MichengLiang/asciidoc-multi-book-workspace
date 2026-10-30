@@ -16,9 +16,9 @@ include::../../shared/attributes.adoc[]
 [preface]
 include::frontmatter/preface.adoc[]
 
-include::chapters/01-lower-opening.adoc[]
+include::chapters/010-lower-opening.adoc[]
 
-include::chapters/02-cross-volume-practice.adoc[]
+include::chapters/020-cross-volume-practice.adoc[]
 
 [bibliography]
 include::backmatter/bibliography.adoc[]

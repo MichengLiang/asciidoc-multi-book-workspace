@@ -30,18 +30,18 @@ include::frontmatter/acknowledgments.adoc[]
 = 前置结构
 
 [partintro]
-include::parts/01-front-structure/_partintro.adoc[]
+include::parts/010-front-structure/_partintro.adoc[]
 
-include::parts/01-front-structure/01-frontmatter-map.adoc[]
+include::parts/010-front-structure/010-frontmatter-map.adoc[]
 
 = 正文结构
 
 [partintro]
-include::parts/02-body-structure/_partintro.adoc[]
+include::parts/020-body-structure/_partintro.adoc[]
 
-include::parts/02-body-structure/01-body-map.adoc[]
+include::parts/020-body-structure/010-body-map.adoc[]
 
-include::parts/02-body-structure/02-inline-structure.adoc[]
+include::parts/020-body-structure/020-inline-structure.adoc[]
 
 [appendix]
 include::backmatter/appendix-structure-reference.adoc[]

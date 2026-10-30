@@ -15,11 +15,11 @@ include::../../shared/attributes.adoc[]
 [preface]
 include::frontmatter/preface.adoc[]
 
-include::chapters/01-build-flow.adoc[]
+include::chapters/010-build-flow.adoc[]
 
-include::chapters/02-diagrams.adoc[]
+include::chapters/020-diagrams.adoc[]
 
-include::chapters/03-code-includes.adoc[]
+include::chapters/030-code-includes.adoc[]
 
 [bibliography]
 include::backmatter/bibliography.adoc[]

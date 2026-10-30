@@ -15,9 +15,9 @@ include::../../shared/attributes.adoc[]
 [preface]
 include::frontmatter/preface.adoc[]
 
-include::chapters/01-upper-opening.adoc[]
+include::chapters/010-upper-opening.adoc[]
 
-include::chapters/02-upper-core-model.adoc[]
+include::chapters/020-upper-core-model.adoc[]
 
 [bibliography]
 include::backmatter/bibliography.adoc[]
