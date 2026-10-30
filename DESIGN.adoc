@@ -278,7 +278,7 @@ An ordinal written into the title doubles the caption Asciidoctor adds and goes 
 
 People and language models read the samples and write their own books after them, so the prose of a sample teaches as much as its markup.
 The writers who copy them already write fluent sentences.
-What they miss are judgments that belong to writing a book: whom a page speaks to, whether a sentence describes or prescribes, what a book leaves unsaid, one name for one thing, examples drawn from outside the subject being taught, and the conventions of print.
+What they miss are judgments that belong to writing a book: whom a book speaks to, whether a sentence describes or prescribes, what a book leaves unsaid, one name for one thing, examples drawn from outside the subject being taught, and the codified norms of written Chinese — the modal verbs that set how strongly a rule binds (GB/T 1.1—2020, Annex C), what a colon and a semicolon may join (GB/T 15834—2011), and how Chinese and Latin text are set together.
 
 `07-structured-writing-conventions` gathers these judgments in its part 《书的文字》, and the samples are written to it.
 Each judgment is a touchstone: a heading that says in plain words what it measures, the work it comes from, and the question an author asks at the moment of writing.
