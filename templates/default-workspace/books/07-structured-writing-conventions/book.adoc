@@ -7,6 +7,7 @@ v0.1, 2026-05
 :sectnums:
 :partnums:
 :part-signifier: Part
+:appendix-caption: 附录
 :icons: font
 :experimental:
 :idprefix:

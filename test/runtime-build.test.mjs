@@ -24,16 +24,8 @@ const structuredWritingPageSequence = [
   ["chapter", "surface-fields", "附加字段"],
   ["chapter", "glossary-conventions", "术语表"],
   ["chapter", "declaring-conventions", "声明本书的约定"],
-  ["appendix", "structured-writing-quick-reference", "附录 A：结构化写法速查"],
-  ["appendix", "structured-writing-decision-trees", "附录 B：结构化写法决策树"],
-  ["chapter", "标题生成与层级拓扑控制", "标题生成与层级拓扑控制"],
-  ["chapter", "名称变化与寻址标签", "名称变化与寻址标签"],
-  ["chapter", "role-的作用域与语境管理", "role 的作用域与语境管理"],
-  ["chapter", "xref-与-rel-关系谓词建立", "xref 与 rel 关系谓词建立"],
-  ["chapter", "surface-field-落位策略", "surface field 落位策略"],
-  ["chapter", "约定的声明与维护", "约定的声明与维护"],
-  ["chapter", "源文件物理编排与编号运算", "源文件物理编排与编号运算"],
-  ["chapter", "语法透传与-callouts", "语法透传与 callouts"],
+  ["appendix", "structured-writing-quick-reference", "结构化写法速查"],
+  ["appendix", "structured-writing-decision-trees", "结构化写法决策树"],
   ["glossary", "术语表", "术语表"],
   ["bibliography", "参考坐标", "参考坐标"]
 ];
@@ -239,7 +231,7 @@ test("runtime build creates HTML, assets, home links, source bundles, and root i
   );
   assert.deepEqual(
     pageMap.pages.filter((page) => page.kind === "appendix").map((page) => page.title),
-    ["附录 A：结构化写法速查", "附录 B：结构化写法决策树"]
+    ["结构化写法速查", "结构化写法决策树"]
   );
   assert.deepEqual(
     pageMap.pages.slice(-2).map((page) => page.kind),

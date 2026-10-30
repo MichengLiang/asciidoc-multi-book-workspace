@@ -1,5 +1,5 @@
 [#structured-writing-quick-reference]
-= 附录 A：结构化写法速查
+= 结构化写法速查
 
 [cols="1,2", options="header"]
 |===
@@ -67,7 +67,7 @@ role 描述标题在书中的作用。rel 描述 xref 边上的关系谓词。�
 
 标题改名时，更新引用；旧称有保留价值时写入别名。概念被拆分或废止时，保留历史标题并写明后续使用的标题。
 
-`[appendix]`、`[glossary]` 和 `[bibliography]` 是 section style。它们改变紧随其后 section 的语义；标题层级仍由 `=` 数量决定。
+`[appendix]`、`[glossary]` 和 `[bibliography]` 是 section style。它们改变紧随其后 section 的语义；标题层级仍由 `=` 数量决定。书没有分部时，它们标在 `==` 标题上，与各章并列；书有分部时，标在 `=` 标题上，与各部并列，写成 `==` 会成为前一部的子节。附录的第一层小节写 `===`。附录标题不写序号，字母由 Asciidoctor 生成，前面的词由书头的 `:appendix-caption:` 决定。
 
 对于跨文件的交叉引用，为了避免重复编写相对路径，你可以在文档的头部（Header）定义一个文档属性（Document Attribute）来存储这个基础路径。
 

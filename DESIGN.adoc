@@ -256,6 +256,19 @@ An abstract is a concise overview of an article, and the front matter of a book 
 Asciidoctor agrees: the `abstract` section style belongs to the article doctype, and in a book it converts an `[abstract]` section into a numbered chapter, which pushes the number of every chapter after it.
 `00-book-anatomy` states this where it maps the front matter sections, at the point where an author chooses among them.
 
+=== Sample Back Matter
+
+The level of a back matter section depends on whether the book has parts.
+In a book without parts, appendix, glossary, bibliography, and index sections are level 1 sections (`==`) beside the chapters.
+In a multi-part book, a special section written at level 1 after a part becomes a child of that part; to make it a sibling of the parts it is written at level 0 (`=`), and the parser adjusts it to level 1 in the model while keeping it beside the parts.
+Either way the section style goes on the line above, and the first subsection of an appendix is a level 2 section (`===`).
+Subsections written with `==` under a level 0 appendix are not adjusted with it: they leave the appendix and become numbered chapters after it.
+`07-structured-writing-conventions` has parts, so its appendices, glossary, and bibliography are written with `=` and the decision tree's subsections with `===`.
+
+Appendix letters come from Asciidoctor.
+A sample sets `:appendix-caption:` to the caption word of its language and writes the appendix title without an ordinal, so `07-structured-writing-conventions` renders `附录 A: 结构化写法速查` and numbers the decision tree's subsections `B.1`, `B.2`, and so on.
+An ordinal written into the title doubles the caption Asciidoctor adds and goes stale when appendices are reordered, the same reason part titles carry no `Part I` (see `docs/guides/part-numbering.adoc`).
+
 === Cross-Book Xref Teaching
 
 Cross-book xref syntax is taught as literal source text.
