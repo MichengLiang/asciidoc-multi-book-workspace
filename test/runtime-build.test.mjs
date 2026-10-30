@@ -27,7 +27,7 @@ const structuredWritingPageSequence = [
   ["chapter", "一本书对谁说话", "一本书对谁说话"],
   ["chapter", "一句话做什么事", "一句话做什么事"],
   ["chapter", "名与例", "名与例"],
-  ["chapter", "书面的规矩", "书面的规矩"],
+  ["chapter", "书面语的规范", "书面语的规范"],
   ["appendix", "结构化写法速查", "结构化写法速查"],
   ["appendix", "结构化写法决策树", "结构化写法决策树"],
   ["glossary", "术语表", "术语表"],
