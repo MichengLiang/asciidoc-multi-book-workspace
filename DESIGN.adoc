@@ -441,8 +441,24 @@ The HTML local resource check still runs afterwards and fails on any link that n
 
 Xrefs whose target names another document are not bound here; the HTML local resource check judges them.
 
-`asciidoc-abundant-tree` 0.2.6 does not collect `xref:` macros whose target contains a space (its issue 018).
-Asciidoctor resolves those by title on its own, so they pass the HTML check, but they carry no binding until the parser collects them.
+`asciidoc-abundant-tree` 0.2.6 has three gaps in collecting and binding xrefs, each reported in its issue ledger.
+Until each is fixed there, the runtime handles it as follows:
+
+Targets with spaces (its issue 018)::
+  `xref:` macros whose target contains a space, such as `xref:role 的作用域[]`, are not collected.
+  The runtime has no workaround: these xrefs carry no binding and are not checked here.
+  Asciidoctor resolves them by title on its own, so the HTML local resource check still judges their links.
+
+Xrefs inside passthroughs (its issue 020)::
+  Text inside `pass:[…]` is output as written and Asciidoctor makes no link of it, but the parser collects xrefs there and binds them.
+  A book that shows xref syntax in a passthrough would get a false reference, or an unresolved one.
+  The runtime skips an xref whose source position falls inside a `pass:[…]` macro on its source line (`insidePassthroughMacro`).
+  Remove that skip once the parser stops collecting them.
+
+Targets written with `#` (its issue 021)::
+  `xref:#id[]` and `<<#id>>` name `id` in the same document, but the parser binds the whole `#id` and finds nothing.
+  When a selector starting with `#` is left unbound, the runtime looks the rest up in the projection's `labelCatalog`: one owner binds it, several make it ambiguous.
+  Remove that lookup once the parser binds these selectors itself.
 
 === Cheap Performance Rules
 

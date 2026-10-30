@@ -766,14 +766,14 @@ function bindReferences(config: RuntimeConfig, document: AbundantDocument): Refe
     // 指向别的文档的 xref 由 HTML 本地资源检查判断（DESIGN.adoc 的 Reference Binding）。
     if (DOCUMENT_TARGET_PATTERN.test(edge.selector)) continue;
     // aat 0.2.6 的扫描器把 pass:[…] 里透传的文字也当作 xref 收下，Asciidoctor 并不为它生成链接；
-    // 这些是书在展示写法，不是引用。aat 不再收它们以后，这一条可以去掉。
+    // 这些是书在展示写法，不是引用。aat 不再收它们以后（aat 的 issue 020），这一条可以去掉。
     if (insidePassthroughMacro(sourceLines.get(edge.relativePath)?.[edge.line - 1] ?? "", edge.column)) continue;
 
     let fragment = edge.selector;
     let targets = values(edge.iri, "targetHeading");
     let candidates = values(edge.iri, "candidateHeading");
     // xref:#id[] 与 <<#id>> 在 Asciidoctor 里指本文档的 id，aat 0.2.6 却拿带 # 的整串去绑定、落空；
-    // 去掉 # 以后仍在 aat 的 label space 里认。aat 自己认这种写法以后，这一段可以去掉。
+    // 去掉 # 以后仍在 aat 的 label space 里认。aat 自己认这种写法以后（aat 的 issue 021），这一段可以去掉。
     if (targets.length === 0 && candidates.length === 0 && fragment.startsWith("#")) {
       fragment = fragment.slice(1);
       const owners = projection.labelCatalog.owners(fragment).map((owner) => owner.value);
