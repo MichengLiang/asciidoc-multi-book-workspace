@@ -269,6 +269,39 @@ Appendix letters come from Asciidoctor.
 A sample sets `:appendix-caption:` to the caption word of its language and writes the appendix title without an ordinal, so `07-structured-writing-conventions` renders `附录 A: 结构化写法速查` and numbers the decision tree's subsections `B.1`, `B.2`, and so on.
 An ordinal written into the title doubles the caption Asciidoctor adds and goes stale when appendices are reordered, the same reason part titles carry no `Part I` (see `docs/guides/part-numbering.adoc`).
 
+=== Sample Prose
+
+People and language models read the samples and write their own books after them, so the prose of a sample teaches as much as its markup.
+The writers who copy them already write fluent sentences.
+What they miss are judgments that belong to writing a book: whom a page speaks to, whether a sentence describes or prescribes, what a book leaves unsaid, one name for one thing, examples drawn from outside the subject being taught, and the conventions of print.
+
+`07-structured-writing-conventions` gathers these judgments in its part 《书的文字》, and the samples are written to it.
+Each judgment is a touchstone: a heading that says in plain words what it measures, the work it comes from, and the question an author asks at the moment of writing.
+A reader who knows the work recalls its measure from its name; the part names it and asks, and does not retell it.
+It does not teach grammar: a fluent writer does not need it, and once sentences are taught the part has no place to stop.
+It cites published works under their original titles only, because the sample is copied into workspaces where nothing else from this repository exists.
+
+No other document restates these judgments; a sample's prose is checked against that part.
+
+=== Structured Writing Sample Domain
+
+`07-structured-writing-conventions` teaches headings, references, roles, and fields.
+If its examples were headings named after that subject, such as a heading titled 常规标题, an example sentence and a sentence of the rules would read alike, and the reader could not tell the language being described from the language describing it.
+So every example in the book comes from one domain outside that subject, a home cookbook, and one domain throughout spares the reader a new context at every section.
+
+The cookbook carries every case the book teaches:
+
+* roles: a dish (`dish`), a technique (`technique`), a concept (`concept`);
+* references with `rel`: a dish that `depends-on` a technique, such as 红烧肉 on 炒糖色, and a predicate the example cookbook declares for itself, `adapted-from`, for a dish adapted from another;
+* fields: 主料 and 用时 under a dish, a value list for 难度 (易, 中, 难), and 出处 with a passage of 《随园食单》 attached by `+`;
+* an alias: 番茄炒蛋, also called 西红柿炒鸡蛋;
+* a rename whose boundary changes: 凉拌与腌制 becoming 凉拌菜;
+* titles shared by several headings: the 火候 subsection under each of three dishes;
+* a title that is itself an identifier: GB 2760—2014.
+
+The example cookbook lives in listings.
+The book's own headings are its chapters and its touchstones; it declares the roles it uses on them, `convention` and `touchstone`, and no heading of the book poses as a cookbook entry.
+
 === Cross-Book Xref Teaching
 
 Cross-book xref syntax is taught as literal source text.

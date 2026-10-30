@@ -1,9 +1,18 @@
 = 参考坐标
 
-以下资料提供 AsciiDoc 标题、交叉引用、元素属性和描述列表的参考坐标。
-
 [bibliography]
 * [[[asciidoctor-xref]]] Asciidoctor Docs, Cross References, https://docs.asciidoctor.org/asciidoc/latest/macros/xref/
 * [[[asciidoctor-attributes]]] Asciidoctor Docs, Element Attributes, https://docs.asciidoctor.org/asciidoc/latest/attributes/element-attributes/
 * [[[asciidoctor-description-lists]]] Asciidoctor Docs, Description Lists, https://docs.asciidoctor.org/asciidoc/latest/lists/description/
 * [[[asciidoctor-sections]]] Asciidoctor Docs, Sections, https://docs.asciidoctor.org/asciidoc/latest/sections/
+* [[[adler-how-to-read]]] Mortimer J. Adler, Charles Van Doren. _How to Read a Book_. Revised edition. New York: Simon & Schuster, 1972.
+* [[[minto-pyramid]]] Barbara Minto. _The Pyramid Principle: Logic in Writing and Thinking_.
+* [[[cmos]]] _The Chicago Manual of Style_. Chicago: University of Chicago Press.
+* [[[austin-how-to-do]]] J. L. Austin. _How to Do Things with Words_. Oxford: Clarendon Press, 1962.
+* [[[grice-logic]]] H. P. Grice. "Logic and Conversation." In Peter Cole, Jerry L. Morgan (eds.), _Syntax and Semantics 3: Speech Acts_. New York: Academic Press, 1975.
+* [[[trubetzkoy-grundzuege]]] N. S. Trubetzkoy. _Grundzüge der Phonologie_. Travaux du Cercle Linguistique de Prague 7, 1939.
+* [[[jakobson-verbum]]] Roman Jakobson. "Zur Struktur des russischen Verbums." In _Charisteria Guilelmo Mathesio quinquagenario_. Prague, 1932.
+* [[[tarski-wahrheitsbegriff]]] Alfred Tarski. "Der Wahrheitsbegriff in den formalisierten Sprachen." _Studia Philosophica_ 1, 1935.
+* [[[lunyu]]] 《论语·子路》。
+* [[[gb-t-15834]]] GB/T 15834—2011《标点符号用法》。
+* [[[w3c-clreq]]] W3C. _Requirements for Chinese Text Layout_（中文排版需求）. https://www.w3.org/TR/clreq/

@@ -60,6 +60,19 @@ include::parts/030-fields-and-terminology/020-consistent-terms.adoc[]
 
 include::parts/030-fields-and-terminology/030-declaring-conventions.adoc[]
 
+= 书的文字
+
+[partintro]
+include::parts/040-book-prose/_partintro.adoc[]
+
+include::parts/040-book-prose/010-whom-a-book-speaks-to.adoc[]
+
+include::parts/040-book-prose/020-what-a-sentence-does.adoc[]
+
+include::parts/040-book-prose/030-names-and-examples.adoc[]
+
+include::parts/040-book-prose/040-print-conventions.adoc[]
+
 [appendix]
 include::backmatter/appendix-quick-reference.adoc[]
 

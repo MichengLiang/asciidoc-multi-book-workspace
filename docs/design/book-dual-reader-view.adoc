@@ -103,7 +103,7 @@ Child level-1 sections under a part become `chapter` pages.
 Backmatter styles `appendix`, `glossary`, `bibliography`, and `index` become independent pages.
 
 The `07-structured-writing-conventions` sample is the strict page-map specimen.
-It must produce 18 pages in this order:
+It must produce 23 pages in this order:
 
 [source,text]
 ----
@@ -121,6 +121,11 @@ part: 字段与术语
 chapter: 附加字段
 chapter: 统一用词
 chapter: 声明本书的约定
+part: 书的文字
+chapter: 一本书对谁说话
+chapter: 一句话做什么事
+chapter: 名与例
+chapter: 书面的规矩
 appendix: 结构化写法速查
 appendix: 结构化写法决策树
 glossary: 术语表
@@ -235,5 +240,5 @@ The tests must prove:
 * default builds do not write `build/adoc/catalog.adoc`,
 * each sample book still emits `build/html/books/<book-id>/book.html`,
 * copy-source data includes `// file:` markers and source content,
-* `07-structured-writing-conventions` emits the 18-page map,
+* `07-structured-writing-conventions` emits the 23-page map,
 * desktop and mobile Playwright checks cover view switching, page navigation, current-page TOC, cross-page anchor behavior, non-overlapping right TOC layout, hidden paged-view footer, and responsive layout.
