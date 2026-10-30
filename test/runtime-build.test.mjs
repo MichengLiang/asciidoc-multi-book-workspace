@@ -227,7 +227,7 @@ test("runtime build creates HTML, assets, home links, source bundles, and root i
   );
   assert.deepEqual(
     pageMap.pages[1].toc.map((entry) => entry.title),
-    ["版本说明", "献辞", "前言", "致谢"]
+    ["版本说明", "献辞", "前言", "凡例", "致谢"]
   );
   assert.equal(
     pageMap.pages.find((page) => page.title === "源文本与投影")?.source?.relativePath,

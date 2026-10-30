@@ -24,6 +24,9 @@ include::frontmatter/dedication.adoc[]
 [preface]
 include::frontmatter/preface.adoc[]
 
+[preface]
+include::frontmatter/conventions.adoc[]
+
 [acknowledgments]
 include::frontmatter/acknowledgments.adoc[]
 

@@ -82,6 +82,8 @@ const requiredPatterns = new Map([
       ":partnums:",
       ":part-signifier: Part",
       ":appendix-caption: 附录",
+      "== 凡例",
+      "include::frontmatter/conventions.adoc[]",
       "= 从源文档看结构",
       "== 标题、寻址与引用",
       "== 源文件编排号",
@@ -234,7 +236,7 @@ test("default workspace template satisfies the official sample contract", async 
         allSource.match(/^\[#[^\]]*\]$/gm),
         ["[#红烧肉的火候]"]
       );
-      // 书教约定声明，自己也声明：前言里「本书的书写约定」写出它标题上真正用到的 role。示例代码块里的声明不算，
+      // 书教约定声明，自己也声明：《凡例》写出它标题上真正用到的 role。示例代码块里的声明不算，
       // 所以先去掉 ---- 定界的块再找。
       const outsideListings = allSource.replace(/^(-{4,})$[\s\S]*?^\1$/gm, "");
       assert.match(outsideListings, /^\[\.convention, declares=roles\]$/m);

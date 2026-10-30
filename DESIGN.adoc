@@ -256,6 +256,11 @@ An abstract is a concise overview of an article, and the front matter of a book 
 Asciidoctor agrees: the `abstract` section style belongs to the article doctype, and in a book it converts an `[abstract]` section into a numbered chapter, which pushes the number of every chapter after it.
 `00-book-anatomy` states this where it maps the front matter sections, at the point where an author chooses among them.
 
+A book's preface says why the book was written.
+The conventions a book is written to, with its convention declarations, go in a separate front matter section titled 凡例, written as a second `[preface]` section after the preface.
+Chinese books have long put their 体例 in a 凡例 ahead of the text; a reader who meets the conventions before the first chapter finds them where they are needed, and the preface keeps to its own job.
+`07-structured-writing-conventions` writes its own 凡例 this way and places the declarations of its example cookbook in that cookbook's 凡例.
+
 === Sample Back Matter
 
 The level of a back matter section depends on whether the book has parts.
@@ -291,7 +296,7 @@ So every example in the book comes from one domain outside that subject, a home 
 
 The cookbook carries every case the book teaches:
 
-* roles: a dish (`dish`), a technique (`technique`), a concept (`concept`);
+* roles: a dish (`dish`), a technique (`technique`), a concept (`concept`), such as the flavour profile 鱼香;
 * references with `rel`: a dish that `depends-on` a technique, such as 红烧肉 on 炒糖色, and a predicate the example cookbook declares for itself, `adapted-from`, for a dish adapted from another;
 * fields: 主料 and 用时 under a dish, a value list for 难度 (易, 中, 难), and 出处 with a passage of 《随园食单》 attached by `+`;
 * an alias: 番茄炒蛋, also called 西红柿炒鸡蛋;
@@ -299,7 +304,9 @@ The cookbook carries every case the book teaches:
 * titles shared by several headings: the 火候 subsection under each of three dishes;
 * a title that is itself an identifier: GB 2760—2014.
 
-The example cookbook lives in listings.
+The 火候 subsections are the shared titles, so no other example heading is titled 火候; a concept titled 火候 would make the concept and the subsections one more set of shared titles.
+
+The example cookbook lives in listings, and its declarations sit in its 凡例.
 The book's own headings are its chapters and its touchstones; it declares the roles it uses on them, `convention` and `touchstone`, and no heading of the book poses as a cookbook entry.
 
 === Cross-Book Xref Teaching
