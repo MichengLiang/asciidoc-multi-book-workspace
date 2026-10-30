@@ -38,7 +38,7 @@ include::parts/010-source-surface/020-heading-address-and-xref.adoc[]
 
 include::parts/010-source-surface/030-source-order-notation.adoc[]
 
-= 名称、角色与关系
+= 名称、role 与关系
 
 [partintro]
 include::parts/020-names-roles-and-relations/_partintro.adoc[]

@@ -113,10 +113,10 @@ part: 从源文档看结构
 chapter: 源文本与投影
 chapter: 标题、寻址与引用
 chapter: 源文件编排号
-part: 名称、角色与关系
+part: 名称、role 与关系
 chapter: 名称与地址
 chapter: 标题的 role
-chapter: rel 关系谓词
+chapter: 关系谓词
 part: 字段与术语
 chapter: 附加字段
 chapter: 统一用词

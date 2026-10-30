@@ -13,7 +13,6 @@
 [.convention, declares=roles]
 ==== 本书的 role
 
-concept:: 概念：本书使用的一个词及其含义。
 convention:: 约定：声明本书的 role、rel、字段取值或字段。
 touchstone:: 试金石：一条写书的判断，给出它出自的作品和下笔时要问的问题。
 

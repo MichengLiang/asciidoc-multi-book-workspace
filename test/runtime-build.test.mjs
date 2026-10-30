@@ -16,10 +16,10 @@ const structuredWritingPageSequence = [
   ["chapter", "源文本与投影", "源文本与投影"],
   ["chapter", "标题寻址与引用", "标题、寻址与引用"],
   ["chapter", "源文件编排号", "源文件编排号"],
-  ["part", "part-名称角色与关系", "名称、角色与关系"],
+  ["part", "part-名称role-与关系", "名称、role 与关系"],
   ["chapter", "名称与地址", "名称与地址"],
   ["chapter", "标题的-role", "标题的 role"],
-  ["chapter", "rel-关系谓词", "rel 关系谓词"],
+  ["chapter", "关系谓词", "关系谓词"],
   ["part", "part-字段与术语", "字段与术语"],
   ["chapter", "附加字段", "附加字段"],
   ["chapter", "统一用词", "统一用词"],
@@ -209,7 +209,7 @@ test("runtime build creates HTML, assets, home links, source bundles, and root i
     "utf8"
   );
   assert.match(structuredWriting, /<h1 id="从源文档看结构" class="sect0">Part I: 从源文档看结构<\/h1>/);
-  assert.match(structuredWriting, /<h1 id="名称角色与关系" class="sect0">Part II: 名称、角色与关系<\/h1>/);
+  assert.match(structuredWriting, /<h1 id="名称role-与关系" class="sect0">Part II: 名称、role 与关系<\/h1>/);
   assert.match(structuredWriting, /<h1 id="字段与术语" class="sect0">Part III: 字段与术语<\/h1>/);
   assert.match(structuredWriting, /<a href="#从源文档看结构">Part I: 从源文档看结构<\/a>/);
 
