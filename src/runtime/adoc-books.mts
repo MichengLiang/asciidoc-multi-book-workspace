@@ -807,7 +807,7 @@ function bindReferences(
 
     const where = `${edge.relativePath}:${edge.line} ${values(edge.iri, "raw")[0] ?? edge.selector}`;
     // aat 0.2.6 不展开目标里的属性引用：xref:{upper-book}#x[] 的选择器还是 {upper-book}#x。展开用这本书转换后的
-    // Asciidoctor 文档，规则是 Asciidoctor 自己的（未定义的属性原样留下）。aat 自己展开以后，这一步可以去掉。
+    // Asciidoctor 文档，规则是 Asciidoctor 自己的（未定义的属性原样留下）。aat 自己展开以后（aat 的 issue 022），这一步可以去掉。
     const selector = edge.selector.includes("{") ? expandAttributes(edge.selector) : edge.selector;
     if (DOCUMENT_TARGET_PATTERN.test(selector)) {
       crossBook.push({ where, target: selector });
@@ -1459,9 +1459,9 @@ async function addHomeLinks(rootDir: string, books: BookEntry[], config: Runtime
   // 跨书 xref 在目标书的 label space 里绑定，所以先把每一本书都解析完。
   const readerData = new Map<string, ReaderBookData>();
   for (const book of books) {
-    // Asciidoctor.js 的 JS 接口没有包出 sub_attributes；$sub_attributes 是 Asciidoctor 自己的属性替换（Substitutors）。
+    // applySubstitutions(text, ['attributes']) 是 Asciidoctor.js 公开的属性替换，与它转换时展开 xref 目标用的是同一套规则。
     const document = documents.get(book.bookId);
-    readerData.set(book.bookId, await buildReaderBookData(config, book, (text) => document.$sub_attributes(text)));
+    readerData.set(book.bookId, await buildReaderBookData(config, book, (text) => document.applySubstitutions(text, ["attributes"])));
   }
   const bindingsByInput = new Map(books.map((book) => [book.input, { book, references: readerData.get(book.bookId)!.references }]));
   const anchorCache = new Map<string, Set<string>>();

@@ -452,7 +452,7 @@ An unbound fragment fails with `XREF_UNRESOLVED` and an ambiguous one with `XREF
 A bound fragment that names no element in the target book's HTML is rewritten to the bound heading's HTML ID, as inside one book.
 A path to a book that does not exist is left to the HTML local resource check, which reports `HTML_RESOURCE_MISSING`; so is an xref to a whole book, which has no fragment to bind.
 
-`asciidoc-abundant-tree` 0.2.6 has four gaps in collecting and binding xrefs.
+`asciidoc-abundant-tree` 0.2.6 has four gaps in collecting and binding xrefs, each reported in its issue ledger.
 Until each is fixed there, the runtime handles it as follows:
 
 Targets with spaces (its issue 018)::
@@ -471,7 +471,7 @@ Targets written with `#` (its issue 021)::
   When a selector starting with `#` is left unbound, the runtime looks the rest up in the projection's `labelCatalog`: one owner binds it, several make it ambiguous.
   Remove that lookup once the parser binds these selectors itself.
 
-Attribute references in targets::
+Attribute references in targets (its issue 022)::
   The parser keeps `{upper-book}` unexpanded in the target of `xref:{upper-book}#上册核心模型[]`, and its official `href` becomes `#{upper-book}#上册核心模型`; Asciidoctor links it to `../05-upper-volume/book.html#上册核心模型`.
   Such an xref would bind to nothing and could not be recognized as naming another book.
   The runtime expands a target that contains `{` with Asciidoctor's attribute substitution on the book's converted document before it classifies and binds it, inside one book as well as across books.
