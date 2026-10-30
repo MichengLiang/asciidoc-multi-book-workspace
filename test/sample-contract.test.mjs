@@ -208,6 +208,9 @@ test("default workspace template satisfies the official sample contract", async 
     if (bookId !== "07-structured-writing-conventions") {
       assert.doesNotMatch(allSource, /^\[#[^\]]*\]$/m, `${bookId} declares a heading ID`);
     }
+    // 书没有摘要：[abstract] 是 article 的样式，book 里会被编成一章（DESIGN.adoc 的 Sample Front Matter）。
+    // 00 号书在前置内容地图里讲这件事，所以只禁止独占一行、真正作用在 section 上的写法。
+    assert.doesNotMatch(allSource, /^\[abstract\]$/m, `${bookId} writes an [abstract] section`);
     if (bookId === "02-multipart-monograph") {
       assert.equal(partCount(bookSource) >= 2, true);
       assert.equal((allSource.match(/\[partintro\]/g) ?? []).length >= 2, true);

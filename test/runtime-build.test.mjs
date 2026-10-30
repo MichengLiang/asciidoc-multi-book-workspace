@@ -231,7 +231,7 @@ test("runtime build creates HTML, assets, home links, source bundles, and root i
   );
   assert.deepEqual(
     pageMap.pages[1].toc.map((entry) => entry.title),
-    ["摘要", "版本说明", "献辞", "前言", "致谢"]
+    ["版本说明", "献辞", "前言", "致谢"]
   );
   assert.equal(
     pageMap.pages.find((page) => page.title === "源文本与投影")?.source?.relativePath,
@@ -282,7 +282,7 @@ test("runtime reader UI supports desktop and mobile paged reading behavior", asy
     assert.equal(await desktop.locator("[data-multi-book-page-nav] a").count(), structuredWritingPageSequence.length);
 
     await desktop.getByRole("link", { name: /下一页\s+前置/ }).click();
-    await assertVisibleText(desktop, "#content", "摘要");
+    await assertVisibleText(desktop, "#content", "版本说明");
     await desktop.getByRole("link", { name: /下一页\s+从源文档看结构/ }).click();
     await assertVisibleText(desktop, "#content", "从源文档看结构");
     assert.equal(await desktop.locator("[data-multi-book-page-nav] [aria-current='page']").textContent(), "从源文档看结构");

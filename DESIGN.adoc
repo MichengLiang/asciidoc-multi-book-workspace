@@ -249,6 +249,13 @@ Asciidoctor calls this a custom ID; the samples use that name and do not describ
 Bibliography entries keep their `[[[id]]]` anchors.
 An entry is not a heading, and the anchor is how AsciiDoc cites it.
 
+=== Sample Front Matter
+
+The samples do not write an `[abstract]` section.
+An abstract is a concise overview of an article, and the front matter of a book has none.
+Asciidoctor agrees: the `abstract` section style belongs to the article doctype, and in a book it converts an `[abstract]` section into a numbered chapter, which pushes the number of every chapter after it.
+`00-book-anatomy` states this where it maps the front matter sections, at the point where an author chooses among them.
+
 === Cross-Book Xref Teaching
 
 Cross-book xref syntax is taught as literal source text.

@@ -701,7 +701,9 @@ async function buildReaderBookData(
   const sections = (Array.isArray(document.children) ? document.children : []).filter((child): child is AbundantSection => {
     return typeof child === "object" && child !== null && (child as AbundantSection).kind === "section";
   });
-  const frontmatterStyles = new Set(["abstract", "colophon", "dedication", "preface", "acknowledgments"]);
+  // abstract 不在其中：它是 article 的样式，book 里的 [abstract] 被 Asciidoctor 当作编号的一章，阅读器照它渲染的样子
+  // 当章节显示（docs/design/book-dual-reader-view.adoc 的 Page Map）。
+  const frontmatterStyles = new Set(["colophon", "dedication", "preface", "acknowledgments"]);
   const backmatterStyles = new Set<ReaderPageKind>(["appendix", "glossary", "bibliography", "index"]);
   const frontmatter = sections.filter((section) => section.level === 1 && frontmatterStyles.has(sectionStyle(section) ?? ""));
 

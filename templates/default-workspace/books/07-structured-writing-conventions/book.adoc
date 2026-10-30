@@ -14,9 +14,6 @@ v0.1, 2026-05
 
 include::../../shared/attributes.adoc[]
 
-[abstract]
-include::frontmatter/abstract.adoc[]
-
 [colophon]
 include::frontmatter/colophon.adoc[]
 

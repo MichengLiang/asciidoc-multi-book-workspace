@@ -96,7 +96,8 @@ Each page has:
 * `childPageIds`: optional child chapter page ids for part pages.
 
 The cover page is always first.
-Frontmatter sections with AsciiDoc styles `abstract`, `colophon`, `dedication`, `preface`, and `acknowledgments` are grouped into one `frontmatter` page.
+Frontmatter sections with AsciiDoc styles `colophon`, `dedication`, `preface`, and `acknowledgments` are grouped into one `frontmatter` page.
+`abstract` is not among them: it is a section style of the article doctype, and in a book Asciidoctor converts an `[abstract]` section into a numbered chapter, so the reader shows it as the chapter it is rendered as.
 Level-0 book sections become `part` pages.
 Child level-1 sections under a part become `chapter` pages.
 Backmatter styles `appendix`, `glossary`, `bibliography`, and `index` become independent pages.
