@@ -15,4 +15,5 @@
 * [[[tarski-wahrheitsbegriff]]] Alfred Tarski. "Der Wahrheitsbegriff in den formalisierten Sprachen." _Studia Philosophica_ 1, 1935.
 * [[[lunyu]]] 《论语·子路》。
 * [[[gb-t-15834]]] GB/T 15834—2011《标点符号用法》。
+* [[[gb-t-1-1]]] GB/T 1.1—2020《标准化工作导则 第1部分：标准化文件的结构和起草规则》。
 * [[[w3c-clreq]]] W3C. _Requirements for Chinese Text Layout_（中文排版需求）. https://www.w3.org/TR/clreq/

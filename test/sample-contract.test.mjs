@@ -105,6 +105,8 @@ const requiredPatterns = new Map([
       "== 一句话做什么事",
       "== 名与例",
       "== 书面的规矩",
+      "=== 规定的强弱用能愿动词",
+      "=== 冒号只提起下文或总结上文",
       "[.touchstone]",
       "[.convention, declares=fields, for=touchstone]",
       "[.concept]",
