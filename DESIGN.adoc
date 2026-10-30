@@ -506,6 +506,7 @@ Attribute references in targets (its issue 022)::
   The parser keeps `{upper-book}` unexpanded in the target of `xref:{upper-book}#上册核心模型[]`, and its official `href` becomes `#{upper-book}#上册核心模型`; Asciidoctor links it to `../05-upper-volume/book.html#上册核心模型`.
   Such an xref would bind to nothing and could not be recognized as naming another book.
   The runtime expands a target that contains `{` with Asciidoctor's attribute substitution on the book's converted document before it classifies and binds it, inside one book as well as across books.
+  The expansion uses the attribute values the book holds after conversion, so an attribute redefined in the body after the xref is expanded with its final value rather than the value at the xref's position.
   Remove that expansion once the parser expands attribute references in targets.
 
 === Cheap Performance Rules

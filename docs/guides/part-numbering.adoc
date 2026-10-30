@@ -130,8 +130,8 @@ The source titles remain semantic:
 [source,asciidoc]
 ----
 = 从源文档看结构
-= 给标题和引用加意图
-= 字段、索引与术语
+= 名称、角色与关系
+= 字段与术语
 ----
 
 The generated HTML shows:
@@ -139,8 +139,8 @@ The generated HTML shows:
 [source,text]
 ----
 Part I: 从源文档看结构
-Part II: 给标题和引用加意图
-Part III: 字段、索引与术语
+Part II: 名称、角色与关系
+Part III: 字段与术语
 ----
 
 The table of contents receives the same generated part labels because both the body headings and the TOC are produced by Asciidoctor from the same document model.
