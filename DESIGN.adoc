@@ -306,6 +306,7 @@ The cookbook carries every case the book teaches:
 * an alias: 番茄炒蛋, also called 西红柿炒鸡蛋;
 * a rename whose boundary changes: 凉拌与腌制 becoming 凉拌菜;
 * titles shared by several headings: the 火候 subsection under each of three dishes, one of them referred to as `红烧肉::火候`;
+* titles shared under one parent: two subsections titled 炸 under 糖醋排骨, which is fried twice, renamed 初炸 and 复炸 because the title had not said what each one is;
 * a title that is itself an identifier: GB 2760—2014.
 
 The 火候 subsections are the shared titles, so no other example heading is titled 火候; a concept titled 火候 would make the concept and the subsections one more set of shared titles.
