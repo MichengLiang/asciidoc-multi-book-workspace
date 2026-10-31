@@ -256,7 +256,8 @@ The sample books are copied into every generated workspace, and authors copy the
 They follow <<reference-binding>>: a heading is referred to by its title, and no heading declares an ID only so that it can be referred to.
 
 A heading that shares its title with others is referred to by its qualified address.
-`07-structured-writing-conventions` teaches it in its addressing chapter with the 火候 under three dishes, and has the link text name both titles with the interpunct GB/T 15834—2011 sets between a work and its section, as in `xref:红烧肉::火候[红烧肉·火候]`, because the link would otherwise show the last title alone.
+`07-structured-writing-conventions` teaches it in its addressing chapter with the 火候 under three dishes, written once as `xref:红烧肉::火候[]`; the HTML shows the address's name, 红烧肉·火候 (<<reference-binding>>).
+The samples write link text only where it says something other than that name.
 
 Where a sample teaches the `[#id]` syntax (`00-book-anatomy` in its inline structure table, `04-reference-manual` in its glossary, `07-structured-writing-conventions` in its addressing chapter), it teaches it as a second address for a heading whose title cannot serve: two headings under the same parent share it, or it contains `#` or `::`.
 Asciidoctor calls this a custom ID; the samples use that name and do not describe it as a stable target.
@@ -515,8 +516,14 @@ Judging references on that HTML would make authors bend titles to Asciidoctor's 
 
 The HTML therefore follows the projection.
 A link can lead to one place, so the runtime rewrites only an xref that reaches exactly one section.
-For such an xref whose fragment names no element in the book HTML, the runtime rewrites `href="#<selector>"` to that heading's HTML ID and replaces Asciidoctor's unresolved link text `[<selector>]` with the heading's title.
-For a qualified address that title is the last part alone, so a book that refers to one of several 火候 writes the link text it wants shown.
+For such an xref whose fragment names no element in the book HTML, the runtime rewrites `href="#<selector>"` to that heading's HTML ID and replaces Asciidoctor's unresolved link text `[<selector>]` with the name of the address.
+
+When an xref has no link text, the link shows the name of its address.
+A selector that is the heading's title or one of its qualified addresses (its `aat:headline` or an `aat:addressPath`) is shown as written, its titles joined with the interpunct GB/T 15834—2011 sets between a work and its section: `xref:红烧肉::火候[]` shows 红烧肉·火候, and `xref:家常菜::红烧肉::火候[]` all three titles.
+The author wrote those titles to name one heading among several sharing its title, and the reader needs them for the same reason; showing the last title alone made every such reference carry its address twice, once as the target and once as link text.
+A selector that is an ID shows the heading's title, as Asciidoctor shows a section it resolves by ID: an ID is a second address for references, not a name for the reader.
+Link text the author writes is shown instead, and is written only where it says something other than the address's name.
+
 Fragments that already name an element are left as Asciidoctor wrote them, and so is an xref that reaches no section or several: the runtime does not pick one, and it does not report them.
 A reader of the projection reports them, and fixing the book is what fixes the link.
 
@@ -528,7 +535,7 @@ It therefore parses all books before it rewrites anything.
 Which document an xref names is read by Asciidoctor: the projection records it as the xref's `aat:targetDocument`, with attribute references such as `{upper-book}` already expanded, and keeps only the fragment as its selector.
 The document path is resolved against the book's directory, because the HTML output keeps the layout of `books/`; it names a workspace book when it is that book's `book.adoc`.
 The fragment is then looked up in that book's label space, read from that book's graph.
-A fragment that reaches exactly one section of it and names no element in the target book's HTML is rewritten to that heading's HTML ID, as inside one book.
+A fragment that reaches exactly one section of it and names no element in the target book's HTML is rewritten to that heading's HTML ID, as inside one book, and with no link text it shows the name of its address by the same rule.
 Every other cross-book xref, including one to a book that does not exist and one to a whole book, is left as Asciidoctor wrote it.
 
 === Cheap Performance Rules

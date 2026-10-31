@@ -650,7 +650,11 @@ Text.
 
 书内：xref:清蒸鲈鱼::火候[鲈鱼的火候]。
 
+书内只写地址：xref:红烧肉::火候[]，三级 xref:章节顺序::红烧肉::火候[]，只写标题 xref:红烧肉[]。
+
 跨书：xref:../02-multipart-monograph/book.adoc#清蒸鲈鱼::火候[那本书里鲈鱼的火候]。
+
+跨书只写地址：xref:../02-multipart-monograph/book.adoc#清蒸鲈鱼::火候[]。
 `, "utf8");
 
   await buildWorkspace(target);
@@ -658,11 +662,16 @@ Text.
   const idsOf = (html) => [...html.matchAll(/<h4 id="([^"]+)">(?:[\d.]+ )?火候<\/h4>/g)].map((match) => match[1]);
   const sourceHtml = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
   const targetHtml = await readFile(path.join(target, "build", "html", "books", "02-multipart-monograph", "book.html"), "utf8");
-  const [, sourceFish] = idsOf(sourceHtml);
+  const [sourcePork, sourceFish] = idsOf(sourceHtml);
   const [, targetFish] = idsOf(targetHtml);
-  assert.ok(sourceFish && targetFish);
+  assert.ok(sourcePork && sourceFish && targetFish);
   assert.match(sourceHtml, new RegExp(`<a href="#${sourceFish}">鲈鱼的火候</a>`));
   assert.match(sourceHtml, new RegExp(`<a href="\\.\\./02-multipart-monograph/book\\.html#${targetFish}">那本书里鲈鱼的火候</a>`));
+  // 链接没有显示文字时显示地址的名字：作者写下的各级标题，用间隔号连起；只写标题的显示标题。
+  assert.match(sourceHtml, new RegExp(`<a href="#${sourcePork}">红烧肉·火候</a>`));
+  assert.match(sourceHtml, new RegExp(`<a href="#${sourcePork}">章节顺序·红烧肉·火候</a>`));
+  assert.match(sourceHtml, /">红烧肉<\/a>/);
+  assert.match(sourceHtml, new RegExp(`<a href="\\.\\./02-multipart-monograph/book\\.html#${targetFish}">清蒸鲈鱼·火候</a>`));
   assert.doesNotMatch(sourceHtml, /清蒸鲈鱼::火候"/);
 });
 

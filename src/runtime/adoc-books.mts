@@ -108,7 +108,8 @@ interface ReaderBookData {
 
 interface BoundHeading {
   id: string;
-  title: string;
+  // 链接没有显示文字时显示的名字：按到达这一节的选择器算（DESIGN.adoc 的 Reference Binding）。
+  shown: string;
 }
 
 interface PendingCrossBookXref {
@@ -128,7 +129,7 @@ interface ReferenceBinding {
 
 interface CrossBookLink {
   href: string;
-  title: string;
+  shown: string;
 }
 
 interface AbundantSection {
@@ -758,11 +759,15 @@ function bindReferences(
   const sections = new Map(projection.nodeIndex.entries()
     .filter((entry) => entry.kind === "section")
     .map((entry) => [entry.iri.value, entry]));
-  const located = (iris: Iterable<string>): BoundHeading[] => [...iris].flatMap((iri) => {
+  // 地址的名字：选择器是这一节的标题或某个限定地址时，照写下的样子显示，各级标题之间用间隔号；是 ID（作者声明的或生成的）
+  // 时显示标题——ID 是给引用用的第二个地址，不是给读者看的名字。按图上是哪个标签判，不按字符串里有没有 :: 猜。
+  const located = (iris: Iterable<string>, selector: string): BoundHeading[] => [...iris].flatMap((iri) => {
     const entry = sections.get(iri);
     const id = entry?.node.ids?.[0];
     if (entry === undefined || id === undefined) return [];
-    return [{ id, title: entry.node.title ?? id }];
+    const node = { termType: "iri" as const, value: iri };
+    const named = values(node, "headline").includes(selector) || values(node, "addressPath").includes(selector);
+    return [{ id, shown: named ? selector.split("::").join("·") : entry.node.title ?? id }];
   });
   // 别的书指过来的引用在这本书的 label space 里找：图上四个标签谓词的值，按整串相等找拥有者。
   const ownersByLabel = new Map<string, Set<string>>();
@@ -774,7 +779,7 @@ function bindReferences(
       ownersByLabel.set(triple.object.value, iris);
     }
   }
-  const owners = (selector: string): BoundHeading[] => located(ownersByLabel.get(selector) ?? []);
+  const owners = (selector: string): BoundHeading[] => located(ownersByLabel.get(selector) ?? [], selector);
 
   const headingsByFragment = new Map<string, BoundHeading>();
   const crossBook: PendingCrossBookXref[] = [];
@@ -787,7 +792,7 @@ function bindReferences(
       crossBook.push({ document, fragment });
       continue;
     }
-    const found = located(values(edge, "targetHeading"));
+    const found = located(values(edge, "targetHeading"), fragment);
     if (found.length !== 1) continue;
     headingsByFragment.set(fragment, found[0]);
     headingsByFragment.set(escapeHtmlAttribute(fragment), found[0]);
@@ -825,27 +830,27 @@ async function bindCrossBookReferences(
     const anchors = await anchorsForHtmlFile(path.join(target.book.htmlOutputDir, "book.html"), anchorCache);
     if (anchors.has(fragment)) continue;
     const htmlPath = `${documentName}.html`;
-    const link = { href: `${htmlPath}#${heading.id}`, title: heading.title };
+    const link = { href: `${htmlPath}#${heading.id}`, shown: heading.shown };
     linksByHref.set(`${htmlPath}#${fragment}`, link);
     linksByHref.set(escapeHtmlAttribute(`${htmlPath}#${fragment}`), link);
   }
   return linksByHref;
 }
 
-// 在目标书里恰好对上一节、而目标书的 HTML 里没有这个片段的跨书链接，改成指向那一节的标题。Asciidoctor 对没写显示文字的跨书 xref
-// 显示文档路径；改写时换成标题。
+// 在目标书里恰好对上一节、而目标书的 HTML 里没有这个片段的跨书链接，改成指向那一节的标题。Asciidoctor 对没有显示文字的跨书 xref
+// 显示文档路径；改写时换成地址的名字。
 function rewriteCrossBookXrefs(html: string, linksByHref: Map<string, CrossBookLink>): string {
   if (linksByHref.size === 0) return html;
   return html.replace(HTML_DOCUMENT_LINK_PATTERN, (whole: string, htmlPath: string, fragment: string, rest: string, text: string) => {
     const link = linksByHref.get(`${htmlPath}#${fragment}`) ?? linksByHref.get(`${htmlPath}#${decodeUrlFragment(fragment)}`);
     if (link === undefined) return whole;
-    const shown = text === htmlPath ? escapeHtmlAttribute(link.title) : text;
+    const shown = text === htmlPath ? escapeHtmlAttribute(link.shown) : text;
     return `<a href="${escapeHtmlAttribute(link.href)}"${rest}>${shown}</a>`;
   });
 }
 
 // Asciidoctor 把它解析不了的书内 xref 写成 <a href="#选择器">[选择器]</a>；aat 的投影里恰好对上一节的，改成指向那一节的标题，
-// 显示标题。片段已经是 HTML 里某个元素的 id 时，保持 Asciidoctor 写下的样子。
+// 显示地址的名字。片段已经是 HTML 里某个元素的 id 时，保持 Asciidoctor 写下的样子。
 function rewriteBoundXrefs(html: string, headingsByFragment: Map<string, BoundHeading>): string {
   if (headingsByFragment.size === 0) return html;
   const anchors = htmlAnchors(html);
@@ -854,7 +859,7 @@ function rewriteBoundXrefs(html: string, headingsByFragment: Map<string, BoundHe
     if (anchors.has(fragment) || anchors.has(decoded)) return whole;
     const heading = headingsByFragment.get(fragment) ?? headingsByFragment.get(decoded);
     if (heading === undefined) return whole;
-    const shown = text === `[${fragment}]` ? escapeHtmlAttribute(heading.title) : text;
+    const shown = text === `[${fragment}]` ? escapeHtmlAttribute(heading.shown) : text;
     return `<a href="#${escapeHtmlAttribute(heading.id)}"${rest}>${shown}</a>`;
   });
 }
