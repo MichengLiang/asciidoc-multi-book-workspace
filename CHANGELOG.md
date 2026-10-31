@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.0 - 2026-11-01
+
+### Changed
+
+- Generated workspaces require Node.js 22 or later (`engines.node` is `>=22`). `asciidoctor-kroki` 2, the release line for Asciidoctor.js 4, requires it.
+- The HTML is rendered by Asciidoctor.js 4 (`@asciidoctor/core` `^4.1.1`), the same Asciidoctor `asciidoc-abundant-tree` reads the books with, and diagrams by `asciidoctor-kroki` `^2.0.0`. The runtime rewrites links to the heading IDs the projection read, and the copied source bundle promises the lines the HTML shows; with the HTML rendered by Asciidoctor.js 3 neither was guaranteed, and the two versions already read some includes differently (`include::f[lines=1_0]` is line 1 in version 4, line 10 in version 3). Links, anchors, the page map, and the copied source bundle of the sample books are unchanged. Visible differences come from Asciidoctor.js 4 itself: the generator meta tag and its default stylesheet, the class names of the table of contents in books with front or back matter, table column widths written as `width` attributes, and role classes written once instead of twice.
+- An include resolver may return a Promise; the HTML side waits for it as the reader data side does. A positional attribute left empty between others (`[a,,b]`) is `null` on both sides and no longer shifts the ones after it, so it is no longer forbidden.
+
+### Upgrading an existing workspace
+
+Make sure Node.js 22 or later runs the build. Create a temporary workspace with `pnpm create asciidoc-multi-book-workspace@0.9.0 tmp-books` and copy its `tools/adoc-books.mjs` over yours. In your `package.json`, set `"engines": { "node": ">=22" }`, `"@asciidoctor/core": "^4.1.1"`, and `"asciidoctor-kroki": "^2.0.0"`, then run `pnpm install`. Books need no change, and include resolvers that return their result directly keep working.
+
 ## 0.8.0 - 2026-10-31
 
 ### Changed
