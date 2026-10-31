@@ -74,13 +74,13 @@ test("initWorkspace renders user package.json with visible AsciiDoc dependencies
     build: "node tools/adoc-books.mjs build",
     clean: "node tools/adoc-books.mjs clean"
   });
-  assert.deepEqual(packageJson.engines, { node: ">=20.19.0" });
+  assert.deepEqual(packageJson.engines, { node: ">=22" });
   assert.equal(packageJson.packageManager, "pnpm@10.33.0");
   assert.equal("@asciidoctor/reducer" in packageJson.devDependencies, false);
-  assert.equal(packageJson.devDependencies["@asciidoctor/core"], "^3.0.4");
+  assert.equal(packageJson.devDependencies["@asciidoctor/core"], "^4.1.1");
   assert.equal(packageJson.devDependencies["asciidoc-abundant-tree"], "^0.6.0");
   assert.equal("asciidoctor" in packageJson.devDependencies, false);
-  assert.equal(packageJson.devDependencies["asciidoctor-kroki"], "^0.18.1");
+  assert.equal(packageJson.devDependencies["asciidoctor-kroki"], "^2.0.0");
 });
 
 test("initWorkspace refuses a non-empty target unless force is enabled", async () => {

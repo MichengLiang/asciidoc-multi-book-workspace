@@ -50,7 +50,7 @@
   ],
   "packageManager": "pnpm@10.33.0",
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -62,10 +62,10 @@
     "clean": "rm -rf dist build"
   },
   "devDependencies": {
-    "@asciidoctor/core": "^3.0.4",
+    "@asciidoctor/core": "^4.1.1",
     "@types/node": "^24.10.1",
     "asciidoc-abundant-tree": "link:../asciidoc-abundant-tree",
-    "asciidoctor-kroki": "^0.18.1",
+    "asciidoctor-kroki": "^2.0.0",
     "playwright": "^1.59.1",
     "typescript": "^5.9.3"
   }

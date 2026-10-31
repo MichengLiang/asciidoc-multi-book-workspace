@@ -29,15 +29,15 @@ The generated workspace lists the AsciiDoc toolchain directly:
 ----
 {
   "devDependencies": {
-    "@asciidoctor/core": "^3.0.4",
+    "@asciidoctor/core": "^4.1.1",
     "asciidoc-abundant-tree": "^0.6.0",
-    "asciidoctor-kroki": "^0.18.1"
+    "asciidoctor-kroki": "^2.0.0"
   }
 }
 ----
 
 `asciidoc-abundant-tree` supplies source-aware document facts for page maps and source bundles.
-`@asciidoctor/core` renders the book HTML.
+`@asciidoctor/core` renders the book HTML, the same major version `asciidoc-abundant-tree` reads the books with.
 `asciidoctor-kroki` is loaded only when current sources contain supported diagram blocks.
 
 The default generated workspace does not depend on `@asciidoctor/reducer`.

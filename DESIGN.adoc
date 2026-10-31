@@ -189,20 +189,26 @@ The generated `package.json` directly lists the AsciiDoc toolchain:
 [source,json]
 ----
 {
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "build": "node tools/adoc-books.mjs build",
     "clean": "node tools/adoc-books.mjs clean"
   },
   "devDependencies": {
-    "@asciidoctor/core": "^3.0.4",
+    "@asciidoctor/core": "^4.1.1",
     "asciidoc-abundant-tree": "^0.6.0",
-    "asciidoctor-kroki": "^0.18.1"
+    "asciidoctor-kroki": "^2.0.0"
   }
 }
 ----
 
 The initializer package is not listed in the generated workspace.
 The user can inspect and manage the AsciiDoc dependencies directly.
+
+`@asciidoctor/core` is the same major version `asciidoc-abundant-tree` runs on, so the package manager installs one Asciidoctor for both (<<cheap-performance-rules>> says why they must agree).
+`asciidoctor-kroki` 2 is the release line for Asciidoctor.js 4 and requires Node.js 22, which sets the `engines` floor.
 
 === Official Sample Books
 
@@ -437,10 +443,8 @@ Prefixes are matched with `startsWith`, so a prefix ends with a separator such a
 
 `resolve` receives the target without the prefix, the directive's attributes, and the absolute path of the file that contains the directive.
 What the target means is the resolver's own decision; a resolver that wants Asciidoctor's rule, relative to the including file, resolves it against `path.dirname(sourcePath)`.
-The attributes have the shape Asciidoctor.js 4 gives include processors: positional attributes keyed by position (`"1"`, `"2"`, ...), named attributes by name, and `opts` expanded to `<name>-option`.
-The HTML build runs on Asciidoctor.js 3, which keeps positional attributes in a separate list; the runtime reshapes them so that one resolver serves both sides.
-Attribute values are strings; a positional attribute left empty at the start (`[,x]`) is `null` on both sides.
-Positional attributes must not be left empty between others (`[a,,b]`): Asciidoctor.js 3 drops the gap and numbers the rest differently from version 4, and the runtime cannot restore it.
+The attributes are what Asciidoctor.js 4 gives include processors, on both sides: positional attributes keyed by position (`"1"`, `"2"`, ...), named attributes by name, and `opts` expanded to `<name>-option`.
+Attribute values are strings; a positional attribute left empty (`[,x]`, `[a,,b]`) is `null`.
 
 `resolve` returns `{ text, origin: { path, startLine } }`: contiguous whole lines of one file, that file's path (absolute, or relative to `documentRoot`), and the 1-based line the text starts at.
 The file must lie within `documentRoot`, not be `documentRoot` itself, and must be the real source of the text: the runtime reads it and checks that `text`, without one final line break, equals its lines from `startLine` on, character for character, naming the first line that differs.
@@ -448,8 +452,8 @@ The check exists because the two sides use the result differently.
 The HTML shows only `text`, while `asciidoc-abundant-tree` records the origin file and puts the whole file into the copied source bundle; an origin that is not the text's source would make the two sides disagree while the build still succeeds.
 Asciidoctor messages and reader source spans point at the real lines of that file.
 
-Asciidoctor.js 3 runs include processors synchronously, so `resolve` must return its result directly.
-A resolver that returns a Promise, throws, returns another shape, returns lines that are not the origin's lines, or points outside `documentRoot` fails the build with the resolver's prefix and the directive's location.
+`resolve` may return its result or a Promise of it; both sides wait for it.
+A resolver that throws or rejects, returns another shape, returns lines that are not the origin's lines, or points outside `documentRoot` fails the build with the resolver's prefix and the directive's location.
 
 === Build Outputs
 
@@ -541,11 +545,15 @@ Every other cross-book xref, including one to a book that does not exist and one
 === Cheap Performance Rules
 
 The user runtime uses one Node process for the full build.
-It renders HTML with Asciidoctor.js 3 in process through the `@asciidoctor/core` factory.
+It renders HTML with Asciidoctor.js 4 in process through the `@asciidoctor/core` exports.
 It does not depend on a global `asciidoctor` executable.
 
 The runtime uses `asciidoc-abundant-tree` in process to derive reader page maps and source bundles.
-`asciidoc-abundant-tree` brings its own Asciidoctor.js 4 and parses asynchronously; the two Asciidoctor versions live side by side without sharing a runtime, because version 4 is plain JavaScript rather than an Opal build.
+`asciidoc-abundant-tree` reads the books with Asciidoctor.js 4 as well, and the HTML must be rendered by the same version.
+The two sides meet in two places.
+The runtime rewrites a link to the heading ID `asciidoc-abundant-tree` read, on HTML whose heading IDs the renderer generated; and the copied source bundle promises the lines the HTML shows.
+Nothing guarantees that two major versions generate the same IDs or read includes alike, and they already differ (Asciidoctor.js 4 reads `include::f[lines=1_0]` as line 1, version 3 as line 10), so a renderer one major version apart can break both promises without a message.
+Include processors and the Kroki extension are registered on one extension registry created for each build, so nothing a build registers stays in the process.
 It loads `asciidoctor-kroki` only when current `.adoc` sources contain supported diagram blocks.
 It looks for those blocks in `catalog.adoc` and in the files under `books/`; a diagram block that reaches a book only through an include from elsewhere (shared files, project code, include resolvers) does not trigger loading.
 If diagram blocks exist and `asciidoctor-kroki` cannot be loaded, the runtime reports that the workspace contains diagram blocks and needs the Kroki dependency or needs those blocks removed.

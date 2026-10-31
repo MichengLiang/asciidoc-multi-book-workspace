@@ -427,18 +427,39 @@ export default { includeResolvers: [{ prefix: "rec:", resolve(request) {
   globalThis.emptyPositionalRequests.push(request.attributes);
   return { text: "", origin: { path: "catalog.adoc", startLine: 1 } };
 } }] };\n`
-  }, "include::rec:anything[,beta]");
+  }, "include::rec:anything[,beta]\n\ninclude::rec:anything[alpha,,gamma]");
 
   await buildWorkspace(target);
 
-  assert.deepEqual(globalThis.emptyPositionalRequests, [{ 1: null, 2: "beta" }, { 1: null, 2: "beta" }]);
+  // 网页一侧先渲染，阅读数据一侧后解析；中间留空的位置也保留为 null，编号不移位。
+  const first = { 1: null, 2: "beta" };
+  const gap = { 1: "alpha", 2: null, 3: "gamma" };
+  assert.deepEqual(globalThis.emptyPositionalRequests, [first, gap, first, gap]);
+});
+
+test("runtime build waits for an include resolver that returns a Promise, on both sides", async () => {
+  const { target } = await initWorkspaceWithInclude("runtime-resolver-async", {
+    "notes/later.txt": "异步交来的一行\n",
+    "adoc-books.config.mjs": `globalThis.asyncResolverCalls = 0;
+export default { includeResolvers: [{ prefix: "later:", async resolve() {
+  globalThis.asyncResolverCalls += 1;
+  await new Promise((done) => setTimeout(done, 5));
+  return { text: "异步交来的一行\\n", origin: { path: "notes/later.txt", startLine: 1 } };
+} }] };\n`
+  }, "[source,text]\n----\ninclude::later:anything[]\n----");
+
+  await buildWorkspace(target);
+
+  assert.equal(globalThis.asyncResolverCalls, 2, "Asciidoctor renders the HTML and aat derives the reader data");
+  const starter = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
+  assert.match(starter, /<code[^>]*>异步交来的一行<\/code>/);
+  assert.match(embeddedJson(starter, "multi-book-source-data"), /^\/\/ file: notes\/later\.txt$/m);
 });
 
 test("runtime build names the resolver and the directive when a resolver result cannot be used", async () => {
   const cases = [
-    ["returned a Promise for", "async () => ({ text: \"x\", origin: { path: \"catalog.adoc\", startLine: 1 } })"],
-    ["returned a Promise for", "async () => { throw new Error(\"async boom\"); }"],
     ["failed for", "() => { throw new Error(\"boom\"); }", ": boom$"],
+    ["failed for", "async () => { throw new Error(\"async boom\"); }", ": async boom$"],
     ["returned an invalid result for", "() => ({ text: 42 })"],
     ["returned text that is not lines 2-2 of \\S*two\\.txt for", "() => ({ text: \"L2\", origin: { path: \"notes/two.txt\", startLine: 2 } })", ": line 2 is \"l2\", the resolver returned \"L2\"$"],
     // 来源末尾的换行之后没有第 3 行。
