@@ -34,35 +34,36 @@ asciidoc-abundant-tree 把这份源文本投影成 RDF。下面摘出与这些�
 
 [source,turtle]
 ----
-<#炒糖色> a aat:Heading ;
+:heading-2 a aat:Heading ;
   aat:headline "炒糖色" ;
   aat:role "technique" .
 
-<#红烧肉> a aat:Heading ;
+:heading-3 a aat:Heading ;
   aat:headline "红烧肉" ;
   aat:role "dish" ;
-  aat:containsDirectly <#火候> ;
-  rel:depends-on <#炒糖色> .
+  aat:containsDirectly :heading-4 ;
+  rel:depends-on :heading-2 .
 
-<#火候> a aat:Heading ;
-  aat:headline "火候" .
+:heading-4 a aat:Heading ;
+  aat:headline "火候" ;
+  aat:addressPath "红烧肉::火候" , "家常菜谱::红烧肉::火候" .
 
-<#红烧排骨> a aat:Heading ;
+:heading-5 a aat:Heading ;
   aat:headline "红烧排骨" ;
   aat:role "dish" ;
-  aat:references <#红烧肉> .
+  aat:references :heading-3 .
 
-<…/projection#xref-edge-l11-c15-o0> a aat:XrefEdge ;
+:xref-edge-l11-c15-o0 a aat:XrefEdge ;
   aat:targetSelector "炒糖色" ;
-  aat:targetHeading <#炒糖色> ;
+  aat:targetHeading :heading-2 ;
   aat:rel "depends-on" .
 ----
 
-标题节点以它的地址命名：`<#炒糖色>` 是这份源文件里地址为“炒糖色”的那一节。几个标题同名时，节点名用限定地址，例如三道菜都有《火候》时，红烧肉下的那一节是 `<#红烧肉::火候>`（见《xref:标题、寻址与引用[]》）。
+`:` 代表这份源文件。标题节点的名字由投影器按标题在书里的先后起：书名是 `:heading-1`，《炒糖色》是第二个标题，所以是 `:heading-2`。前面添一个标题，后面每个节点的名字都变，因此节点名只在这一次投影里指称那一节。标题原文和地址作为值记在节点上：标题原文记在 `aat:headline`，补上上级标题的限定地址记在 `aat:addressPath`，例如《火候》的 `红烧肉::火候`，作者写的 custom ID 记在 `aat:addressLabel`。工具认一节，按这些值去找，不读节点名（见《xref:标题、寻址与引用[]》）。
 
-每个标题的原文记在 `aat:headline`，role 记在 `aat:role`，上下级记成 `aat:containsDirectly`。普通 xref 投影为 `aat:references`；写了 `rel` 的 xref 投影为以谓词命名的边，这里是 `rel:depends-on`。每条 xref 另有一个节点（`<…>` 处省去了它名字前面的文件部分），记下源文本里写的目标 `aat:targetSelector` 和它找到的标题 `aat:targetHeading`。引用写的是标题原文，所以找到的就是那个标题。
+role 记在 `aat:role`，上下级记成 `aat:containsDirectly`。普通 xref 投影为 `aat:references`；写了 `rel` 的 xref 投影为以谓词命名的边，这里是 `rel:depends-on`。每条 xref 另有一个节点，记下源文本里写的目标 `aat:targetSelector` 和它找到的标题 `aat:targetHeading`。引用写的是标题原文，所以找到的就是那个标题。一处引用的目标有几节拥有，就记几条 `aat:targetHeading`，投影不替作者挑。
 
-写书的人不必自己运行投影。工作区的构建核对引用时读的是这张图，查询工具按 role 列出标题时读的也是这张图。源文本怎样写，决定了它们能从书里读出什么。
+写书的人不必自己运行投影。工作区的构建把网页上的链接接到哪一节，读的是这张图；读投影的工具检查引用、按 role 列出标题，读的也是这张图。源文本怎样写，决定了它们能从书里读出什么。
 
 `rel` 用哪些谓词，由书自己定。如果菜谱要表明一道菜由另一道菜改良而来，就先在自己的关系谓词声明里加上这个谓词，再在 xref 里使用它：
 

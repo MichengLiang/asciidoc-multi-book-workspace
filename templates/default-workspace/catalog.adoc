@@ -30,7 +30,7 @@ v0.1, 2026-05
 
 |写带代码、图表、共享资源的技术书
 |xref:books/03-technical-book-workflow/book.adoc[03 技术书工作流]
-|它展示资源边界、图表和构建检查。
+|它展示资源边界与图表。
 
 |查结构选择、术语和写法模式
 |xref:books/04-reference-manual/book.adoc[04 参考手册]
