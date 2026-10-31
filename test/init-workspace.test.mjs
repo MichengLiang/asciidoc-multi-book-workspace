@@ -72,14 +72,13 @@ test("initWorkspace renders user package.json with visible AsciiDoc dependencies
   assert.equal(packageJson.private, true);
   assert.deepEqual(packageJson.scripts, {
     build: "node tools/adoc-books.mjs build",
-    check: "node tools/adoc-books.mjs check",
     clean: "node tools/adoc-books.mjs clean"
   });
   assert.deepEqual(packageJson.engines, { node: ">=20.19.0" });
   assert.equal(packageJson.packageManager, "pnpm@10.33.0");
   assert.equal("@asciidoctor/reducer" in packageJson.devDependencies, false);
   assert.equal(packageJson.devDependencies["@asciidoctor/core"], "^3.0.4");
-  assert.equal(packageJson.devDependencies["asciidoc-abundant-tree"], "^0.3.0");
+  assert.equal(packageJson.devDependencies["asciidoc-abundant-tree"], "^0.6.0");
   assert.equal("asciidoctor" in packageJson.devDependencies, false);
   assert.equal(packageJson.devDependencies["asciidoctor-kroki"], "^0.18.1");
 });

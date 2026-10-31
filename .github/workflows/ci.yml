@@ -10,8 +10,19 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PLAYWRIGHT_BROWSER_CHANNEL: chrome
+    defaults:
+      run:
+        working-directory: asciidoc-multi-book-workspace
     steps:
       - uses: actions/checkout@v6
+        with:
+          path: asciidoc-multi-book-workspace
+      # 本仓库以 link:../asciidoc-abundant-tree 依赖旁边的 aat 仓库（DESIGN.adoc 的 Maintainer Repository），总跑在正在写的
+      # 投影上：检出到兄弟目录，构建它的 dist（dist 不进 git）。
+      - uses: actions/checkout@v6
+        with:
+          repository: MichengLiang/asciidoc-abundant-tree
+          path: asciidoc-abundant-tree
       - uses: pnpm/action-setup@v6
         with:
           version: 10.33.0
@@ -20,5 +31,10 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
+          cache-dependency-path: |
+            asciidoc-multi-book-workspace/pnpm-lock.yaml
+            asciidoc-abundant-tree/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile && pnpm run build
+        working-directory: asciidoc-abundant-tree
       - run: pnpm install --frozen-lockfile
       - run: pnpm run check

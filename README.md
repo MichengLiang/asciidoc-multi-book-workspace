@@ -97,7 +97,6 @@ The generated scripts are:
 
 ```bash
 pnpm run build
-pnpm run check
 pnpm run clean
 ```
 

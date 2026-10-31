@@ -29,13 +29,11 @@ To fetch diagram images into the local HTML output, run:
 ADOC_BOOKS_FETCH_DIAGRAMS=1 pnpm run build
 ```
 
-## Check
+## When The Build Fails
 
-```bash
-pnpm run check
-```
+The build fails only when it cannot produce the pages: Asciidoctor reports a message while rendering, a book's includes leave `documentRoot` (see Configure), or an include resolver returns something the build cannot use.
 
-This checks the current catalog, existing books, book doctypes, cross-book xrefs, anchors, and local HTML resources, and that every book's includes stay within `documentRoot` (see Configure).
+It does not judge your books. Whether an xref reaches the heading you meant, whether a local link resolves, and whether `catalog.adoc` lists every book are left to tools that read the RDF projection `asciidoc-abundant-tree` makes of each book. An xref whose address one heading owns links to that heading; one that no heading owns, or several do, keeps the link Asciidoctor wrote, and the build still succeeds.
 
 ## Configure
 
@@ -52,7 +50,7 @@ export default {
 };
 ```
 
-`documentRoot` matters when this workspace lives inside a project repository. Set it to the project root (`".."` when the workspace is a direct subdirectory) and books can include the project's own code instead of a copy of it. Source paths in the reader and the `// file:` markers of copied source then start at that root. It must contain this workspace. An include that leaves `documentRoot` fails `pnpm run check` and names the book.
+`documentRoot` matters when this workspace lives inside a project repository. Set it to the project root (`".."` when the workspace is a direct subdirectory) and books can include the project's own code instead of a copy of it. Source paths in the reader and the `// file:` markers of copied source then start at that root. It must contain this workspace. An include that leaves `documentRoot` fails the build and names the book.
 
 `includeResolvers` lets books include lines chosen by your own code, for example one function out of a source file:
 
@@ -95,7 +93,7 @@ Delete `books/<book-id>/`, then remove the matching `xref:books/<book-id>/book.a
 Run:
 
 ```bash
-pnpm run check
+pnpm run build
 ```
 
 ## Add A Book

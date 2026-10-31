@@ -5,7 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { initSoloWorkspace } from "../dist/init-workspace.js";
-import { checkWorkspace } from "../dist/runtime/adoc-books.mjs";
+import { buildWorkspace } from "../dist/runtime/adoc-books.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
 const sampleBookDir = path.join(repoRoot, "templates", "default-workspace", "books", "07-structured-writing-conventions");
@@ -57,11 +57,11 @@ test("solo workspace book is a byte-for-byte copy of sample book 07", async () =
   }
 });
 
-test("solo workspace passes the runtime check with its own catalog", async () => {
+test("solo workspace builds with its own catalog", async () => {
   const target = fixtureDir("init-solo-check");
   await initSoloWorkspace({ targetDir: target });
 
-  await checkWorkspace(target);
+  await buildWorkspace(target);
 
   const catalogHtml = await readFile(path.join(target, "build", "html", "catalog.html"), "utf8");
   assert.match(catalogHtml, /01 结构化书写约定标本/);

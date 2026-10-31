@@ -8,12 +8,11 @@
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "build": "node tools/adoc-books.mjs build",
-    "check": "node tools/adoc-books.mjs check",
     "clean": "node tools/adoc-books.mjs clean"
   },
   "devDependencies": {
     "@asciidoctor/core": "^3.0.4",
-    "asciidoc-abundant-tree": "^0.3.0",
+    "asciidoc-abundant-tree": "^0.6.0",
     "asciidoctor-kroki": "^0.18.1"
   }
 }

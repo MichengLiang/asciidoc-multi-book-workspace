@@ -16,6 +16,18 @@ The initializer creates a user-owned workspace with official sample books, a cat
 This repository is the maintainer source for that initializer.
 It contains TypeScript initializer source, user runtime source, the default workspace template, maintainer tests, the sample contract, and release-boundary checks.
 
+=== Division of Labour
+
+A book passes through three layers between being written and being read.
+`asciidoc-abundant-tree` projects what was written into an RDF 1.2 graph and judges nothing: an xref whose address several headings own gets an edge to each of them.
+A reader of that graph interprets it under the book's conventions: which references bind to no heading or to several, which concepts nobody refers to, what a heading is called.
+In the workbench this reader is `bookgraph`, which reports every such problem; a problem it reports is one the HTML shows.
+This workspace initializes a shelf and renders it to HTML, and judges nothing either.
+
+So the runtime reports only failures of rendering itself, where it cannot produce the pages (see <<rendering-failures>>), and it follows the projection where it writes links (see <<reference-binding>>).
+It does not decide whether a reference holds, whether a local resource exists, or whether the catalog lists every book.
+A second judge in the runtime would be a second implementation of the same rules, and two implementations come to disagree.
+
 == Object Boundary
 
 === Published Object
@@ -119,8 +131,6 @@ The book's content does not reference its own book ID, so the copy needs no edit
 `shared/images/` is not copied because only the default sample catalog uses it.
 The other sample books remain in `templates/default-workspace/books/` and are generated only by the default workspace.
 
-The runtime contract check keeps the hand-written catalog honest: if the catalog and `books/` disagree, `pnpm run check` fails.
-
 === Maintainer Repository
 
 The maintainer repository contains:
@@ -150,6 +160,9 @@ The repository root does not contain a second sample source under `books/`, `cat
 `src/runtime/adoc-books.mts` is the source for the user runtime script.
 The TypeScript build emits `dist/runtime/adoc-books.mjs`, and the initializer copies that file into generated workspaces as `tools/adoc-books.mjs`.
 
+The maintainer repository depends on `asciidoc-abundant-tree` through `link:../asciidoc-abundant-tree`, the repository beside it in the same workspace, so its runtime and tests always run on the projection being written there, without waiting for a release.
+Generated workspaces cannot reach that repository and list an npm range instead (see <<user-package-json>>).
+
 == Template Workspace Contract
 
 === Template Source
@@ -178,12 +191,11 @@ The generated `package.json` directly lists the AsciiDoc toolchain:
 {
   "scripts": {
     "build": "node tools/adoc-books.mjs build",
-    "check": "node tools/adoc-books.mjs check",
     "clean": "node tools/adoc-books.mjs clean"
   },
   "devDependencies": {
     "@asciidoctor/core": "^3.0.4",
-    "asciidoc-abundant-tree": "^0.3.0",
+    "asciidoc-abundant-tree": "^0.6.0",
     "asciidoctor-kroki": "^0.18.1"
   }
 }
@@ -227,10 +239,10 @@ A user can delete any one `books/<book-id>/` directory, remove the matching entr
 
 [source,console]
 ----
-pnpm run check
+pnpm run build
 ----
 
-The check must pass after that operation.
+The build must succeed after that operation.
 
 Default sample books must not create real incoming cross-book dependencies on each other.
 Book-to-book teaching material uses book IDs, paths, prose, or literal examples instead of executable cross-book xref macros.
@@ -333,9 +345,6 @@ xref + : + ../other-book/book.adoc#目标章节[]
 
 This preserves the teaching surface without creating a real dependency between default samples.
 
-The user runtime still validates real cross-book xrefs.
-If a user writes an executable xref to a missing `.adoc` file, or to a heading the other book does not have, `pnpm run check` must fail (see <<reference-binding>>).
-
 == Initializer Behavior
 
 The initializer accepts one target path.
@@ -378,7 +387,6 @@ The generated package name is derived from the target directory basename and nor
 [source,console]
 ----
 node tools/adoc-books.mjs build
-node tools/adoc-books.mjs check
 node tools/adoc-books.mjs clean
 ----
 
@@ -387,9 +395,11 @@ The generated `package.json` exposes these commands as:
 [source,console]
 ----
 pnpm run build
-pnpm run check
 pnpm run clean
 ----
+
+There is no `check` command.
+It ran the same path as `build` so that the checks the runtime used to make could be run on their own; with those checks gone it would be `build` under a second name.
 
 === Workspace Configuration
 
@@ -453,37 +463,29 @@ build/html/shared/images/
 build/html/books/<book-id>/assets/
 ----
 
-The build renders catalog HTML, renders each book HTML, copies shared images, copies book-local assets, injects a catalog home link and dual reader UI into book HTML, writes the root HTML index, checks local HTML resources, and checks the workspace contract.
+The build renders catalog HTML, renders each book HTML, copies shared images, copies book-local assets, injects a catalog home link and dual reader UI into book HTML, and writes the root HTML index.
 The copy-source control embeds an abundant-tree source bundle for the current book. The bundle preserves each participating source file, whole, with its path relative to `documentRoot` instead of pretending to be a single reduced AsciiDoc file.
 Default build and check commands do not write expanded ADOC outputs under `build/adoc/`.
 Diagram blocks render as Kroki image URLs by default, so ordinary builds do not depend on the Kroki service at build time.
 When `ADOC_BOOKS_FETCH_DIAGRAMS=1` is set, the runtime asks Kroki to fetch diagram images into the local HTML output.
 
-`check` runs the same complete validation path as `build`.
-It is allowed to rebuild generated outputs.
-
 `clean` deletes `build/` and no source files.
 
-=== Workspace Contract Checks
+=== Rendering Failures
 
-The runtime checks the current workspace, not the official sample set.
-It validates:
+The build fails where the runtime cannot produce the pages, and passes on what Asciidoctor or `asciidoc-abundant-tree` reported:
 
-* `catalog.adoc` exists.
-* Each `books/*/book.adoc` entry has `:doctype: book`.
-* Catalog book links point to existing current books.
-* Existing current books are listed in the catalog.
-* Generated HTML local `href` and `src` resources exist, including the HTML that executable xrefs to other books render to.
-* Fragments of local links in generated HTML name IDs that exist in the target HTML.
-* Every xref inside a book binds to exactly one heading of that book, as `asciidoc-abundant-tree` binds it (see <<reference-binding>>).
-* Each book's include graph parses within `documentRoot`, and the parse reports no error-level diagnostic.
+* `catalog.adoc` is missing, or `books/` holds no `book.adoc`.
+* Asciidoctor reports any message while rendering the catalog or a book.
+* A book's include graph cannot be parsed within `documentRoot`, or the parse reports an error-level diagnostic.
+* `adoc-books.config.mjs` declares a `documentRoot` or an include resolver the runtime cannot use (see <<workspace-configuration>>).
 
 A book whose include graph cannot be parsed fails the build.
 The runtime does not fall back to a cover-only reader page.
 A silently degraded reader hides the cause, typically an include that leaves `documentRoot`; the error names it, and the fix is to declare the larger root in `adoc-books.config.mjs`.
 
-The runtime does not require all official sample books to remain present.
-The official sample-book set requirement belongs to maintainer tests only.
+Whether a reference binds, whether a local resource or fragment exists, and whether the catalog and `books/` agree are judgments of the projection's reader, not failures of rendering (see <<division-of-labour>>).
+The runtime does not require all official sample books to remain present; the official sample-book set requirement belongs to maintainer tests only.
 
 === Reference Binding
 
@@ -496,13 +498,14 @@ A qualified address adds parents only until it names one heading, and may go up 
 
 An ID declared on a heading is a second address for the same heading.
 An author declares one only where the title cannot serve: two headings under the same parent share a title, or the title itself contains `#` or `::`.
-No heading declares an ID so that a reference keeps working after the title changes; the check reporting the old title is how the author finds every reference that must be reconsidered.
+No heading declares an ID so that a reference keeps working after the title changes; a reader of the projection reporting the old title as unbound is how the author finds every reference that must be reconsidered.
 
-Whether a reference holds is decided by `asciidoc-abundant-tree`, the projection the reader data and the graph tools read.
-Its label space for a book holds every heading's title as written, every `::`-joined suffix of its title path, its declared IDs, and its generated ID.
-A selector binds to the one heading that owns it, has candidates when several headings own it, and is unresolved when none does.
+Which headings a reference reaches is decided by `asciidoc-abundant-tree`, the projection the reader data and the graph tools read.
+Its label space for a book is four predicates on the heading nodes of the graph: `aat:headline` (the title as written), `aat:addressPath` (every `::`-joined suffix of its title path), `aat:addressLabel` (its declared IDs), and `aat:generatedAddressLabel` (its generated ID).
+A selector reaches every heading that owns it as a whole string; the projection draws an edge to each and judges nothing.
 What an xref is, and what its target says, is also read by Asciidoctor inside `asciidoc-abundant-tree`: an xref in a passthrough or escaped with `\` is not one, `xref:#id[]` names `id`, and attribute references in the target are expanded with their value at the xref's position.
 The runtime takes these results from the RDF 1.2 projection (`rdf12`) of the document it already parses for the reader data; it does not find xrefs, expand targets, or match selectors itself, so each rule lives in one place.
+The document title is a heading node of the graph and owns labels too, but it is not a section of the book and has no place in the HTML, so the runtime counts only sections.
 
 Asciidoctor resolves the same xrefs by different rules.
 A target with no space and no uppercase letter is taken as an ID, and generated IDs drop punctuation, so `xref:名称、角色与关系[]` links to `#名称、角色与关系` and `xref:红烧肉::火候[]` to `#红烧肉::火候`, which no element carries.
@@ -510,31 +513,23 @@ A declared ID replaces the generated one, so the title of a heading that declare
 Two headings with the same title resolve to the first one, without a message.
 Judging references on that HTML would make authors bend titles to Asciidoctor's ID rules.
 
-The check therefore fails:
-
-* with `XREF_UNRESOLVED` for an xref whose selector binds to no heading, naming the source file and line;
-* with `XREF_AMBIGUOUS` for an xref whose selector names several headings, naming the source file and line and each candidate's title and source location.
-
-Headings that share a title are not an error by themselves; the ambiguity matters only when an xref names that title.
-Binding issues are reported before the HTML local resource check.
-
-The HTML follows the binding.
-For each bound xref whose fragment names no element in the book HTML, the runtime rewrites `href="#<selector>"` to the bound heading's HTML ID and replaces Asciidoctor's unresolved link text `[<selector>]` with the heading's title.
+The HTML therefore follows the projection.
+A link can lead to one place, so the runtime rewrites only an xref that reaches exactly one section.
+For such an xref whose fragment names no element in the book HTML, the runtime rewrites `href="#<selector>"` to that heading's HTML ID and replaces Asciidoctor's unresolved link text `[<selector>]` with the heading's title.
 For a qualified address that title is the last part alone, so a book that refers to one of several 火候 writes the link text it wants shown.
-Fragments that already name an element are left as Asciidoctor wrote them.
-The HTML local resource check still runs afterwards and fails on any link that neither side resolved.
+Fragments that already name an element are left as Asciidoctor wrote them, and so is an xref that reaches no section or several: the runtime does not pick one, and it does not report them.
+A reader of the projection reports them, and fixing the book is what fixes the link.
 
-An xref whose target names another book is bound the same way in that book.
+An xref whose target names another book is followed the same way in that book.
 The fragment after `#` is the address, so a book refers to a heading of another book by that heading's title, exactly as inside one book.
 `asciidoc-abundant-tree` deliberately does not open the other document, but the runtime parses every book of the workspace, so it holds each book's projection.
-It therefore parses all books before it binds or rewrites anything.
+It therefore parses all books before it rewrites anything.
 
 Which document an xref names is read by Asciidoctor: the projection records it as the xref's `aat:targetDocument`, with attribute references such as `{upper-book}` already expanded, and keeps only the fragment as its selector.
 The document path is resolved against the book's directory, because the HTML output keeps the layout of `books/`; it names a workspace book when it is that book's `book.adoc`.
-The fragment is then bound in that book's label space.
-An unbound fragment fails with `XREF_UNRESOLVED` and an ambiguous one with `XREF_AMBIGUOUS`, naming the target book besides the source file and line.
-A bound fragment that names no element in the target book's HTML is rewritten to the bound heading's HTML ID, as inside one book.
-A path to a book that does not exist is left to the HTML local resource check, which reports `HTML_RESOURCE_MISSING`; so is an xref to a whole book, which has no fragment to bind.
+The fragment is then looked up in that book's label space, read from that book's graph.
+A fragment that reaches exactly one section of it and names no element in the target book's HTML is rewritten to that heading's HTML ID, as inside one book.
+Every other cross-book xref, including one to a book that does not exist and one to a whole book, is left as Asciidoctor wrote it.
 
 === Cheap Performance Rules
 
@@ -565,13 +560,11 @@ The test suite covers:
 * Non-empty target rejection and safe `--force` behavior.
 * Runtime build outputs and copied assets.
 * Removal of each official sample book followed by catalog entry removal.
-* Failure on a user-authored real cross-book xref to a missing book.
-* A passing check for cross-book xrefs to a heading's title, including a title with punctuation, and to IDs declared as `[#id]`, `[#id.role, ...]`, `[.role#id]`, `[[id]]`, `[id=id]`, or generated from a title, with each HTML link reaching the heading in the other book.
-* Failure naming the source file and line and the target book for a cross-book xref to a heading the other book does not have, and for one to a title two of its headings share.
-* A passing check for xrefs to a title containing punctuation, to the title of a heading that declares an ID, and to that ID, with each HTML link pointing at the bound heading and showing its title.
-* A passing check for a qualified address (`xref:红烧肉::火候[]`) to one of several headings that share a title, inside a book and across books, with each HTML link reaching that heading.
-* No binding issue for xref syntax shown in a passthrough or escaped with `\`, and a passing check for `xref:#id[]` and for a target written with an attribute reference, inside a book and across books.
-* Failure naming the file and line for an xref that binds to no heading, and naming every candidate for an xref to a title that two headings share.
+* Cross-book xrefs to a heading's title, including a title with punctuation, and to IDs declared as `[#id]`, `[#id.role, ...]`, `[.role#id]`, `[[id]]`, `[id=id]`, or generated from a title, with each HTML link reaching the heading in the other book.
+* Xrefs to a title containing punctuation, to the title of a heading that declares an ID, and to that ID, with each HTML link pointing at the heading and showing its title.
+* A qualified address (`xref:红烧肉::火候[]`) to one of several headings that share a title, inside a book and across books, with each HTML link reaching that heading.
+* No link rewritten for xref syntax shown in a passthrough or escaped with `\`, and links reaching the heading for `xref:#id[]` and for a target written with an attribute reference, inside a book and across books.
+* A successful build that leaves untouched an xref reaching no section, one reaching several, one to a title only the document title owns, and one to a book that does not exist.
 * Failure, naming the book, when a book includes a file outside the default `documentRoot`; a passing build once the workspace declares the project root as `documentRoot`, with reader source paths relative to it.
 * One include resolver receiving identical requests from the HTML build and from the reader data, with Asciidoctor.js 4 attribute shape, and the HTML listing holding exactly the lines it returned.
 * Failure, naming the prefix and the directive's exact line, when an include resolver returns a Promise (resolving or rejecting), throws, returns another shape, returns lines that are not its origin's lines, or points outside `documentRoot`.
@@ -672,6 +665,8 @@ Release notes are maintained in `CHANGELOG.md`.
 
 == GitHub Workflows
 
+Every workflow checks out this repository and `asciidoc-abundant-tree` side by side, then builds the latter's `dist` before installing this one, because the maintainer repository links it (see <<maintainer-repository>>) and its `dist` is not committed.
+
 CI runs the maintainer check command.
 
 The Release Please workflow opens release pull requests on `main` updates.
@@ -692,13 +687,11 @@ The design is satisfied when these statements are true:
 * The generated workspace does not contain maintainer assets.
 * The generated `package.json` directly lists `@asciidoctor/core`, `asciidoc-abundant-tree`, and `asciidoctor-kroki`.
 * The generated workspace builds with `pnpm install` followed by `pnpm run build`.
-* The generated workspace checks with `pnpm run check`.
-* `initSoloWorkspace` creates a workspace whose only book is sample book 07 shelved as `01-structured-writing-conventions`, and that workspace passes `pnpm run check`.
-* Deleting any one official sample book and removing its catalog entries leaves `pnpm run check` passing.
-* A user-authored executable xref to a missing book, or to a heading that book does not have, fails the check.
-* An executable cross-book xref to a heading's title as written, or to an ID declared in any AsciiDoc form, passes the check and its HTML link reaches that heading.
-* An xref to a heading's title as written passes the check and its HTML link reaches that heading; an xref that binds to no heading, or to a title several headings share, fails it.
-* A book that includes a file outside `documentRoot` fails the check; declaring a larger `documentRoot` in `adoc-books.config.mjs` makes it pass, with reader source paths relative to that root.
+* `initSoloWorkspace` creates a workspace whose only book is sample book 07 shelved as `01-structured-writing-conventions`, and that workspace builds with `pnpm run build`.
+* Deleting any one official sample book and removing its catalog entries leaves `pnpm run build` succeeding.
+* An executable cross-book xref to a heading's title as written, or to an ID declared in any AsciiDoc form, renders an HTML link that reaches that heading.
+* An xref to a heading's title as written renders an HTML link that reaches that heading; an xref that reaches no section or several is left as Asciidoctor wrote it, and the build does not fail on it.
+* A book that includes a file outside `documentRoot` fails the build; declaring a larger `documentRoot` in `adoc-books.config.mjs` makes it pass, with reader source paths relative to that root.
 * An include resolver declared in `adoc-books.config.mjs` resolves its directives for both the HTML and the reader data.
 * The user runtime does not use a global Asciidoctor CLI.
 * The user runtime does not shell through multiple package-manager subcommands.

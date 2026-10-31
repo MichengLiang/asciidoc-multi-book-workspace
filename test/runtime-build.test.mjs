@@ -6,7 +6,7 @@ import { pathToFileURL } from "node:url";
 import { test } from "node:test";
 
 import { initWorkspace } from "../dist/init-workspace.js";
-import { buildWorkspace, checkWorkspace, cleanWorkspace } from "../dist/runtime/adoc-books.mjs";
+import { buildWorkspace, cleanWorkspace } from "../dist/runtime/adoc-books.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
 const structuredWritingPageSequence = [
@@ -368,11 +368,11 @@ test("runtime build applies optional user workspace navigation config", async ()
   assert.match(starter, /自定义书架/);
 });
 
-test("runtime check fails when a book includes a file outside the default documentRoot", async () => {
+test("runtime build fails when a book includes a file outside the default documentRoot", async () => {
   const shelf = await initShelfInsideProject("runtime-outside-root");
 
   await assert.rejects(
-    () => checkWorkspace(shelf),
+    () => buildWorkspace(shelf),
     /^Error: 01-starter-book: [\s\S]*include\.outside-document-root/
   );
 });
@@ -381,7 +381,7 @@ test("runtime build reads a larger documentRoot from the workspace config", asyn
   const shelf = await initShelfInsideProject("runtime-project-root");
   await writeFile(path.join(shelf, "adoc-books.config.mjs"), `export default { documentRoot: ".." };\n`, "utf8");
 
-  await checkWorkspace(shelf);
+  await buildWorkspace(shelf);
 
   const starter = await readFile(path.join(shelf, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
   assert.match(starter, /project code/);
@@ -402,7 +402,7 @@ test("runtime build gives one include resolver the same request for HTML and rea
     "snippets/code.ts": `// header\nexport function alpha() {\n  return "alpha";\n}\n\nexport function beta() {\n  return "beta";\n}\n// trailer\n`
   }, "[source,ts]\n----\ninclude::symbol:snippets/code.ts[beta,opts=optional]\n----");
 
-  await checkWorkspace(target);
+  await buildWorkspace(target);
 
   const requests = globalThis.includeResolverRequests;
   assert.equal(requests.length, 2, "Asciidoctor renders the HTML and aat derives the reader data");
@@ -490,7 +490,7 @@ test("runtime reports Asciidoctor messages inside resolved text at the source fi
   );
 });
 
-test("runtime check passes after deleting any one sample and removing its catalog entries", async () => {
+test("runtime build passes after deleting any one sample and removing its catalog entries", async () => {
   for (const bookId of expectedBooks) {
     const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-delete-${bookId}-${randomUUID()}`);
     await initWorkspace({ targetDir: target });
@@ -499,30 +499,13 @@ test("runtime check passes after deleting any one sample and removing its catalo
     const catalog = await readFile(catalogPath, "utf8");
     await writeFile(catalogPath, removeSampleFromCatalog(catalog, bookId), "utf8");
 
-    await checkWorkspace(target);
+    await buildWorkspace(target);
 
     assert.equal(await existsFile(path.join(target, "build", "html", "books", bookId, "book.html")), false);
   }
 });
 
-test("runtime check still fails for a user-authored real cross-book xref to a missing book", async () => {
-  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-real-missing-xref-${randomUUID()}`);
-  await initWorkspace({ targetDir: target });
-  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
-  const chapter = await readFile(chapterPath, "utf8");
-  await writeFile(
-    chapterPath,
-    `${chapter}\n\nSee xref:../missing-book/book.adoc[missing book].\n`,
-    "utf8"
-  );
-
-  await assert.rejects(
-    () => checkWorkspace(target),
-    /HTML local resource check failed|workspace contract check failed/
-  );
-});
-
-test("runtime check fails for missing include targets reported by Asciidoctor", async () => {
+test("runtime build fails for missing include targets reported by Asciidoctor", async () => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-missing-include-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
   const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
@@ -534,29 +517,12 @@ test("runtime check fails for missing include targets reported by Asciidoctor", 
   );
 
   await assert.rejects(
-    () => checkWorkspace(target),
+    () => buildWorkspace(target),
     /AsciiDoc strict check failed[\s\S]*include file not found/
   );
 });
 
-test("runtime check fails for same-page links to missing anchors in generated HTML", async () => {
-  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-missing-same-page-anchor-${randomUUID()}`);
-  await initWorkspace({ targetDir: target });
-  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
-  const chapter = await readFile(chapterPath, "utf8");
-  await writeFile(
-    chapterPath,
-    `${chapter}\n\nSee link:#missing-anchor[missing anchor].\n`,
-    "utf8"
-  );
-
-  await assert.rejects(
-    () => checkWorkspace(target),
-    /HTML local resource check failed/
-  );
-});
-
-test("runtime check accepts cross-book xrefs to IDs declared in any AsciiDoc form", async () => {
+test("runtime build accepts cross-book xrefs to IDs declared in any AsciiDoc form", async () => {
   const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-id-forms-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
   const headings = [
@@ -577,24 +543,17 @@ test("runtime check accepts cross-book xrefs to IDs declared in any AsciiDoc for
   const xrefs = headings.map(([, id]) => `See xref:../02-multipart-monograph/book.adoc#${id}[${id}].`);
   await writeFile(sourceChapterPath, `${await readFile(sourceChapterPath, "utf8")}\n\n${xrefs.join("\n\n")}\n`, "utf8");
 
-  await checkWorkspace(target);
-});
+  await buildWorkspace(target);
 
-test("runtime check fails, naming the target book, for a cross-book xref to a heading that book does not have", async (t) => {
-  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-missing-cross-book-anchor-${randomUUID()}`);
-  await initWorkspace({ targetDir: target });
-  const relativeChapter = "books/01-starter-book/chapters/020-main-flow.adoc";
-  const sourceChapterPath = path.join(target, relativeChapter);
-  const source = `${await readFile(sourceChapterPath, "utf8")}\n\nSee xref:../02-multipart-monograph/book.adoc#no-such-anchor[missing].\n`;
-  await writeFile(sourceChapterPath, source, "utf8");
-  const line = source.split("\n").indexOf("See xref:../02-multipart-monograph/book.adoc#no-such-anchor[missing].") + 1;
-
-  const reported = t.mock.method(console, "error", () => {});
-  await assert.rejects(() => checkWorkspace(target), /reference binding check failed with 1 issue\(s\)/);
-  assert.deepEqual(
-    reported.mock.calls.map((call) => call.arguments[0]),
-    [`XREF_UNRESOLVED: ${relativeChapter}:${line} xref:../02-multipart-monograph/book.adoc#no-such-anchor[missing] -> 02-multipart-monograph`]
-  );
+  // 每条链接都落在那本书 HTML 里真有的元素上：片段本来就是 id 的照原样，生成 ID 的按标题改写到那一节。
+  const sourceHtml = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
+  const targetHtml = await readFile(path.join(target, "build", "html", "books", "02-multipart-monograph", "book.html"), "utf8");
+  const anchors = new Set([...targetHtml.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]));
+  for (const [, id] of headings) {
+    const link = sourceHtml.match(new RegExp(`<a href="\\.\\./02-multipart-monograph/book\\.html#([^"]+)">${id}</a>`));
+    assert.ok(link, `a link for ${id}`);
+    assert.ok(anchors.has(link[1]), `${id} reaches ${link[1]}, an element of the other book`);
+  }
 });
 
 test("runtime binds cross-book xrefs to titles in the other book and points HTML links at them", async () => {
@@ -617,48 +576,12 @@ Text.
 路径写法：xref:../02-multipart-monograph/book.adoc#名称、角色与关系[按路径]。
 `, "utf8");
 
-  await checkWorkspace(target);
+  await buildWorkspace(target);
 
   const html = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
   assert.match(html, /<a href="\.\.\/02-multipart-monograph\/book\.html#名称角色与关系">名称、角色与关系<\/a>/);
   assert.match(html, /<a href="\.\.\/02-multipart-monograph\/book\.html#名称角色与关系">按路径<\/a>/);
   assert.doesNotMatch(html, /book\.html#名称、角色与关系/);
-});
-
-test("runtime check fails, naming the target book and its candidates, for a cross-book xref to a title two of its headings share", async (t) => {
-  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-cross-book-ambiguous-${randomUUID()}`);
-  await initWorkspace({ targetDir: target });
-  const relativeTarget = "books/02-multipart-monograph/parts/010-domain/020-boundary.adoc";
-  const targetChapterPath = path.join(target, relativeTarget);
-  const targetSource = `${await readFile(targetChapterPath, "utf8")}
-
-=== 同名
-
-Text.
-
-=== 同名
-
-Text.
-`;
-  await writeFile(targetChapterPath, targetSource, "utf8");
-  const targetLines = targetSource.split("\n");
-  const first = targetLines.indexOf("=== 同名") + 1;
-  const second = targetLines.indexOf("=== 同名", first) + 1;
-  const relativeSource = "books/01-starter-book/chapters/020-main-flow.adoc";
-  const sourceChapterPath = path.join(target, relativeSource);
-  const source = `${await readFile(sourceChapterPath, "utf8")}
-
-见 xref:../02-multipart-monograph/book.adoc#同名[]。
-`;
-  await writeFile(sourceChapterPath, source, "utf8");
-  const line = source.split("\n").indexOf("见 xref:../02-multipart-monograph/book.adoc#同名[]。") + 1;
-
-  const reported = t.mock.method(console, "error", () => {});
-  await assert.rejects(() => checkWorkspace(target), /reference binding check failed with 1 issue\(s\)/);
-  assert.deepEqual(
-    reported.mock.calls.map((call) => call.arguments[0]),
-    [`XREF_AMBIGUOUS: ${relativeSource}:${line} xref:../02-multipart-monograph/book.adoc#同名[] -> 02-multipart-monograph: 同名 (${relativeTarget}:${first}), 同名 (${relativeTarget}:${second})`]
-  );
 });
 
 test("runtime binds xrefs to headings through asciidoc-abundant-tree and points HTML links at them", async () => {
@@ -691,7 +614,7 @@ Text.
 转义与透传：\\xref:不存在的标题[] 与 +++xref:不存在的标题[]+++ 与 $$xref:不存在的标题[]$$。
 `, "utf8");
 
-  await checkWorkspace(target);
+  await buildWorkspace(target);
 
   const html = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
   assert.match(html, /<a href="#名称角色与关系">名称、角色与关系<\/a>/);
@@ -730,7 +653,7 @@ Text.
 跨书：xref:../02-multipart-monograph/book.adoc#清蒸鲈鱼::火候[那本书里鲈鱼的火候]。
 `, "utf8");
 
-  await checkWorkspace(target);
+  await buildWorkspace(target);
 
   const idsOf = (html) => [...html.matchAll(/<h4 id="([^"]+)">(?:[\d.]+ )?火候<\/h4>/g)].map((match) => match[1]);
   const sourceHtml = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
@@ -743,12 +666,24 @@ Text.
   assert.doesNotMatch(sourceHtml, /清蒸鲈鱼::火候"/);
 });
 
-test("runtime check fails, naming file, line and candidates, for xrefs that bind to no heading or to a shared title", async (t) => {
-  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-reference-unbound-${randomUUID()}`);
+test("runtime build leaves xrefs that reach no section, several, or only the document title as Asciidoctor wrote them", async () => {
+  // 引用对不对是投影的读者（bookgraph）的解释，不是渲染的事（DESIGN.adoc 的 Division of Labour）：链接只能跳到一处，
+  // 恰好一节才改写，其余照 Asciidoctor 写下的样子留着，构建也不因它们失败。
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-reference-untouched-${randomUUID()}`);
   await initWorkspace({ targetDir: target });
-  const relativeChapter = "books/01-starter-book/chapters/020-main-flow.adoc";
-  const chapterPath = path.join(target, relativeChapter);
-  const source = `${await readFile(chapterPath, "utf8")}
+  const targetChapterPath = path.join(target, "books", "02-multipart-monograph", "parts", "010-domain", "020-boundary.adoc");
+  await writeFile(targetChapterPath, `${await readFile(targetChapterPath, "utf8")}
+
+=== 重名
+
+Text.
+
+=== 重名
+
+Text.
+`, "utf8");
+  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
+  await writeFile(chapterPath, `${await readFile(chapterPath, "utf8")}
 
 === 同名
 
@@ -763,22 +698,26 @@ Text.
 见 xref:同名[]。
 
 见 xref:不存在的标题[]。
-`;
-  await writeFile(chapterPath, source, "utf8");
-  const lines = source.split("\n");
-  const lineOf = (text, from = 0) => lines.indexOf(text, from) + 1;
-  const first = lineOf("=== 同名");
-  const second = lineOf("=== 同名", first);
 
-  const reported = t.mock.method(console, "error", () => {});
-  await assert.rejects(() => checkWorkspace(target), /reference binding check failed with 2 issue\(s\)/);
-  assert.deepEqual(
-    reported.mock.calls.map((call) => call.arguments[0]),
-    [
-      `XREF_AMBIGUOUS: ${relativeChapter}:${lineOf("见 xref:同名[]。")} xref:同名[] -> 同名 (${relativeChapter}:${first}), 同名 (${relativeChapter}:${second})`,
-      `XREF_UNRESOLVED: ${relativeChapter}:${lineOf("见 xref:不存在的标题[]。")} xref:不存在的标题[]`
-    ]
-  );
+见 xref:日常独立单书[]。
+
+见 xref:../02-multipart-monograph/book.adoc#重名[]。
+
+见 xref:../02-multipart-monograph/book.adoc#no-such-anchor[那本书里没有的]。
+
+见 xref:../missing-book/book.adoc[不存在的书]。
+`, "utf8");
+
+  await buildWorkspace(target);
+
+  const html = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
+  // 同名的几节，Asciidoctor 自己按标题落到第一个、显示标题（DESIGN.adoc 的 Reference Binding），runtime 不改它。
+  assert.match(html, /<a href="#同名">同名<\/a>/);
+  assert.match(html, /<a href="#不存在的标题">\[不存在的标题\]<\/a>/);
+  assert.match(html, /<a href="#日常独立单书">\[日常独立单书\]<\/a>/);
+  assert.match(html, /<a href="\.\.\/02-multipart-monograph\/book\.html#重名">/);
+  assert.match(html, /<a href="\.\.\/02-multipart-monograph\/book\.html#no-such-anchor">那本书里没有的<\/a>/);
+  assert.match(html, /<a href="\.\.\/missing-book\/book\.html">不存在的书<\/a>/);
 });
 
 test("runtime removes stale HTML only for books that no longer exist", async () => {
