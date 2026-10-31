@@ -112,7 +112,7 @@ const requiredPatterns = new Map([
       "[.concept]",
       "[.dish]",
       "[.technique]",
-      "xref:红烧肉::火候[红烧肉·火候]",
+      "xref:红烧肉::火候[]",
       "rel=depends-on",
       "aat:references",
       "rel:depends-on",
@@ -230,8 +230,9 @@ test("default workspace template satisfies the official sample contract", async 
         allSource,
         /\bstable ID\b|stable-id|稳定 ID|稳定地址|regular-heading|basic-syntax|xref-rule|寻址标签|id-prefix|aliases::/
       );
-      // 同名的「火候」用限定地址引用，显示文本用间隔号（DESIGN.adoc 的 Sample Addressing）。
-      assert.match(allSource, /《xref:红烧肉::火候\[红烧肉·火候\]》/);
+      // 同名的「火候」用限定地址引用，只写一遍地址：网页显示地址的名字（DESIGN.adoc 的 Sample Addressing）。
+      assert.match(allSource, /《xref:红烧肉::火候\[\]》/);
+      assert.doesNotMatch(allSource, /xref:[^\[\s]*::[^\[\s]*\[[^\]=,]*·/);
       // 书教约定声明，自己也声明：《凡例》写出它标题上真正用到的 role。示例代码块里的声明不算，
       // 所以先去掉 ---- 定界的块再找。
       const outsideListings = allSource.replace(/^(-{4,})$[\s\S]*?^\1$/gm, "");
