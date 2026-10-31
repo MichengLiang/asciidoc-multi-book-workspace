@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.0 - 2026-10-31
+
+### Changed
+
+- A link with no link text shows the name of its address. When the xref's address is the heading's title or one of its qualified addresses, the link shows it as written, its titles joined with an interpunct: `xref:红烧肉::火候[]` shows 红烧肉·火候 and `xref:家常菜::红烧肉::火候[]` shows all three titles, inside a book and across books. It used to show the last title alone (火候), so a book that referred to one of several 火候 wrote its address twice, once as the target and once as link text. An xref whose address is an ID still shows the heading's title, as Asciidoctor does for a section it resolves by ID. Link text the author writes is shown as written.
+- The structured writing conventions sample writes a qualified address once (《xref:红烧肉::火候[]》) and writes link text only where it says something other than the address's name. Its addressing chapter, print conventions, decision trees, and quick reference say so.
+
+### Upgrading an existing workspace
+
+Create a temporary workspace with `pnpm create asciidoc-multi-book-workspace@0.8.0 tmp-books` and copy its `tools/adoc-books.mjs` over yours. The `asciidoc-abundant-tree` range stays `^0.6.0`. Books need no change: link text written as the address's name, such as `xref:红烧肉::火候[红烧肉·火候]`, still shows the same, and can be removed.
+
 ## 0.7.0 - 2026-10-31
 
 ### Removed
