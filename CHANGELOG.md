@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.7.0 - 2026-10-31
+
+### Removed
+
+- The generated workspace has no `check` command. `pnpm run build` is the only way to render, and `check` ran the same path only so the runtime's checks could be run on their own.
+- The runtime no longer judges a workspace: `XREF_UNRESOLVED`, `XREF_AMBIGUOUS`, `HTML_RESOURCE_MISSING`, `HTML_ANCHOR_MISSING`, `CATALOG_TARGET_MISSING`, `BOOK_MISSING_FROM_CATALOG`, and `MISSING_DOCTYPE` are gone. Whether a reference reaches one heading is read from the `asciidoc-abundant-tree` projection by the tool that reads it; the build fails only where it cannot produce the pages: a missing `catalog.adoc` or book, any Asciidoctor message, an include graph that cannot be parsed within `documentRoot` or an error-level parse diagnostic, or a configuration or include resolver it cannot use.
+
+### Changed
+
+- Generated workspaces depend on `asciidoc-abundant-tree` `^0.6.0`. Its label space is four predicates on the heading nodes of the graph, and an xref whose address several headings own gets an edge to each of them. The runtime rewrites an HTML link only when its xref reaches exactly one section, inside a book and across books; any other xref is left as Asciidoctor wrote it. The document title owns labels but is not a section, so an xref to a title only the document title owns is left as written.
+- The samples no longer say a check reports broken references. After renaming a heading, an author searches the book for the old name, which finds every reference written by it (qualified addresses included), its link text, and the prose. The structured writing conventions sample states where an unbound or ambiguous link lands on the page (an unbound one is broken; one that several headings share lands on the first of them), shows the projection as `asciidoc-abundant-tree` 0.6 writes it (heading nodes named by the projector, addresses as `aat:headline` and `aat:addressPath` values), and lists a title that starts with inline markup among those a reference cannot name by their text.
+
+### Upgrading an existing workspace
+
+Create a temporary workspace with `pnpm create asciidoc-multi-book-workspace@0.7.0 tmp-books` and copy its `tools/adoc-books.mjs` over yours. In your `package.json`, remove the `check` script, set `"asciidoc-abundant-tree": "^0.6.0"`, and run `pnpm install`. Books need no change. To find references that reach no heading or several, read the projection: an xref edge (`aat:XrefEdge`) carries one `aat:targetHeading` for each heading its address reaches.
+
 ## 0.6.0 - 2026-10-31
 
 ### Added
