@@ -63,10 +63,10 @@
   },
   "devDependencies": {
     "@asciidoctor/core": "^4.1.1",
-    "@types/node": "^24.10.1",
+    "@types/node": "^22.20.5",
     "asciidoc-abundant-tree": "link:../asciidoc-abundant-tree",
     "asciidoctor-kroki": "^2.0.0",
-    "playwright": "^1.59.1",
-    "typescript": "^5.9.3"
+    "playwright": "^1.64.1",
+    "typescript": "^7.0.2"
   }
 }
