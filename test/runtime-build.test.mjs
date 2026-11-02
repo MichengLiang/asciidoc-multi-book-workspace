@@ -721,6 +721,44 @@ Text.
   assert.doesNotMatch(html, />std·vector</);
 });
 
+test("runtime points xref:# links at titles with a dot or a #, and shows the address's name", async () => {
+  // 标题带点号时，裸写的 xref 被 Asciidoctor 读成文件；地址前加 # 表明在本书里找（DESIGN.adoc 的 Reference Binding）。
+  // Asciidoctor 写下 href="#版本 v1.2" 与文字 [版本 v1.2]，runtime 把它改写到那一节、显示地址的名字。
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-hash-address-${randomUUID()}`);
+  await initWorkspace({ targetDir: target });
+  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
+  await writeFile(chapterPath, `${await readFile(chapterPath, "utf8")}
+
+=== 版本 v1.2
+
+Text.
+
+=== C# 入门
+
+Text.
+
+=== 上级
+
+==== 版本 v2.0
+
+Text.
+
+=== 引用处
+
+见 xref:#版本 v1.2[]、xref:#C# 入门[] 与 xref:#上级::版本 v2.0[]。
+`, "utf8");
+
+  await buildWorkspace(target);
+
+  const html = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
+  const idOf = (level, title) => html.match(new RegExp(`<h${level} id="([^"]+)">(?:[\\d.]+ )?${title}</h${level}>`))?.[1];
+  const [version, csharp, nested] = [idOf(3, "版本 v1\\.2"), idOf(3, "C# 入门"), idOf(4, "版本 v2\\.0")];
+  assert.ok(version && csharp && nested);
+  assert.match(html, new RegExp(`<a href="#${version}">版本 v1\\.2</a>`));
+  assert.match(html, new RegExp(`<a href="#${csharp}">C# 入门</a>`));
+  assert.match(html, new RegExp(`<a href="#${nested}">上级·版本 v2\\.0</a>`));
+});
+
 test("shared attributes reach every sample book's header, and a book's own entry after the include overrides them", async () => {
   // create-asciidoc-multi-book-workspace#003：只在文档头生效的属性（toc-title）写进 shared/attributes.adoc，每本样书都要用上；
   // 书在 include 之后写的同名属性盖过书架的（DESIGN.adoc 的 Shared Attributes）。

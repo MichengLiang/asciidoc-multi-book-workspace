@@ -281,7 +281,8 @@ A heading that shares its title with others is referred to by its qualified addr
 `07-structured-writing-conventions` teaches it in its addressing chapter with the 火候 under three dishes, written once as `xref:红烧肉::火候[]`; the HTML shows the address's name, 红烧肉·火候 (<<reference-binding>>).
 The samples write link text only where it says something other than that name.
 
-Where a sample teaches the `[#id]` syntax (`00-book-anatomy` in its inline structure table, `04-reference-manual` in its glossary, `07-structured-writing-conventions` in its addressing chapter), it teaches it as a second address for a heading whose title cannot serve: two headings under the same parent share it, or it contains `#` or `::`.
+Where a sample teaches the `[#id]` syntax (`00-book-anatomy` in its inline structure table, `04-reference-manual` in its glossary, `07-structured-writing-conventions` in its addressing chapter), it teaches it as a second address for a heading whose title cannot serve: two headings under the same parent share it, or it begins with inline markup.
+`07-structured-writing-conventions` also teaches, at the same place, the titles that serve with a leading `#` (a `.` or `#` in the title) and that a title containing `::` is referred to as written.
 Asciidoctor calls this a custom ID; the samples use that name and do not describe it as a stable target.
 The samples do not call it an alias, because 别名 is already the field for another name of the thing a heading names.
 
@@ -522,8 +523,13 @@ A qualified address adds parents only until it names one heading, and may go up 
 `::` is already AsciiDoc's description list separator and does not occur in ordinary titles, so it costs no punctuation a title might use.
 
 An ID declared on a heading is a second address for the same heading.
-An author declares one only where the title cannot serve: two headings under the same parent share a title, or the title itself contains `#` or `::`.
+An author declares one only where the title cannot serve: two headings under the same parent share a title, or the title begins with inline markup.
+Asciidoctor substitutes inline markup into an xref's target before it builds the link, so `` xref:#`book.adoc` 的职责[] `` binds in the projection but links to `#<code>book.adoc</code> 的职责`, which no rewrite can recover.
 No heading declares an ID so that a reference keeps working after the title changes; a reader of the projection reporting the old title as unbound is how the author finds every reference that must be reconsidered.
+
+Other titles serve as addresses even where they look like they would not.
+Asciidoctor reads an xref macro's target with no `#` as a document path when it ends in `.adoc` or its last `.` is not followed by `/`, so `xref:版本 v1.2[]` names a file; a leading `#` makes the target an address in this document, so a title with a version number or a decimal is written `xref:#版本 v1.2[]`, and a title containing `#` is written the same way, `xref:#C# 入门[]` (`asciidoc-abundant-tree` book 06, chapter 5).
+A title containing `::`, such as `std::vector`, is matched as a whole string and is referred to as written; it reaches a second heading only where a `std` heading has a `vector` under it.
 
 Which headings a reference reaches is decided by `asciidoc-abundant-tree`, the projection the reader data and the graph tools read.
 Its label space for a book is four predicates on the heading nodes of the graph: `aat:headline` (the title as written), `aat:addressPath` (every `::`-joined suffix of its title path), `aat:addressLabel` (its declared IDs), and `aat:generatedAddressLabel` (its generated ID).
