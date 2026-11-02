@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.10.0 - 2026-11-02
+
+### Changed
+
+- Generated workspaces depend on `asciidoc-abundant-tree` `^0.8.1`.
+- The reader pages front and back matter by the style Asciidoctor reads for each section (`[preface]` gives `preface`), which `asciidoc-abundant-tree` 0.8.1 gives as the section's `asciidoctor.style`. This is a fix as well: the runtime used to read the style from the section's attribute list, where `asciidoc-abundant-tree` 0.8.0 no longer puts it (the author never wrote a name `style`), so with 0.8.0 a preface, an appendix, a glossary or a bibliography was paged as an ordinary chapter.
+- The attributes every sample book shares are written once, in `shared/attributes.adoc`: the book doctype, the table of contents and its depth, section numbers, font icons, experimental macros, the ID rules, and the appendix caption. Each sample book includes that file right after its revision line, with no blank line before it, so the shared attributes are part of the header and attributes Asciidoctor honors only in the header (`toc-title`, `docinfo`, the captions) reach every book. A book's own attributes (`partnums`, `part-signifier`, `upper-book`) follow the include and override the shelf's. Before, a blank line ended the header ahead of the include, and the shared attributes were body attributes (#003).
+
+### Fixed
+
+- A link with no link text whose address is a title that itself contains `::`, such as `xref:std::vector[]`, shows the title whole; it used to be split as if it were a qualified address (std·vector).
+
+### Documentation
+
+- The sample books teach that a title with a `.` or a `#` is referred to with a leading `#`: Asciidoctor reads `xref:版本 v1.2[]` as a document path, while `xref:#版本 v1.2[]` and `xref:#C# 入门[]` are addresses in the book, and the runtime points their links at the heading. A title containing `::` is referred to as written. A custom ID is added only where two headings under the same parent share a title or a title begins with inline markup.
+
+### Upgrading an existing workspace
+
+Create a temporary workspace with `pnpm create asciidoc-multi-book-workspace@0.10.0 tmp-books` and copy its `tools/adoc-books.mjs` over yours. In your `package.json`, set `"asciidoc-abundant-tree": "^0.8.1"` and run `pnpm install`; with `asciidoc-abundant-tree` 0.8.x and the old runtime, front and back matter are paged as chapters. Moving the shared header attributes is optional: move the attributes your books have in common into `shared/attributes.adoc`, and put the include right after each book's revision line with no blank line before it.
+
 ## 0.9.0 - 2026-11-01
 
 ### Changed
