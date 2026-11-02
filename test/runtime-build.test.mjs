@@ -721,6 +721,25 @@ Text.
   assert.doesNotMatch(html, />std·vector</);
 });
 
+test("shared attributes reach every sample book's header, and a book's own entry after the include overrides them", async () => {
+  // create-asciidoc-multi-book-workspace#003：只在文档头生效的属性（toc-title）写进 shared/attributes.adoc，每本样书都要用上；
+  // 书在 include 之后写的同名属性盖过书架的（DESIGN.adoc 的 Shared Attributes）。
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-shared-header-${randomUUID()}`);
+  await initWorkspace({ targetDir: target });
+  const sharedPath = path.join(target, "shared", "attributes.adoc");
+  await writeFile(sharedPath, `${await readFile(sharedPath, "utf8")}:toc-title: 目录\n`, "utf8");
+  const ownPath = path.join(target, "books", "01-starter-book", "book.adoc");
+  const own = await readFile(ownPath, "utf8");
+  await writeFile(ownPath, own.replace("include::../../shared/attributes.adoc[]\n", "include::../../shared/attributes.adoc[]\n:toc-title: 本书目录\n"), "utf8");
+
+  await buildWorkspace(target);
+
+  for (const book of await readdir(path.join(target, "books"))) {
+    const html = await readFile(path.join(target, "build", "html", "books", book, "book.html"), "utf8");
+    assert.match(html, new RegExp(`<div id="toctitle">${book === "01-starter-book" ? "本书目录" : "目录"}</div>`), book);
+  }
+});
+
 test("runtime build leaves xrefs that reach no section, several, or only the document title as Asciidoctor wrote them", async () => {
   // 引用对不对是投影的读者（bookgraph）的解释，不是渲染的事（DESIGN.adoc 的 Division of Labour）：链接只能跳到一处，
   // 恰好一节才改写，其余照 Asciidoctor 写下的样子留着，构建也不因它们失败。

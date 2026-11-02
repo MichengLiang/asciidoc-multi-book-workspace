@@ -1,16 +1,6 @@
 = 日常独立单书
 作者 <author@example.com>
 v0.1, 2026-05
-:doctype: book
-:toc: left
-:toclevels: 3
-:sectnums:
-:icons: font
-:experimental:
-:appendix-caption: 附录
-:idprefix:
-:idseparator: -
-
 include::../../shared/attributes.adoc[]
 
 [preface]

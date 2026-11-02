@@ -1,2 +1,11 @@
+:doctype: book
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:experimental:
+:appendix-caption: 附录
+:idprefix:
+:idseparator: -
 :series-name: AsciiDoc 多本书工作区示例
 :source-format: AsciiDoc

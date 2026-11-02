@@ -81,7 +81,6 @@ const requiredPatterns = new Map([
       "= 结构化书写约定标本",
       ":partnums:",
       ":part-signifier: Part",
-      ":appendix-caption: 附录",
       "== 凡例",
       "include::frontmatter/conventions.adoc[]",
       "= 从源文档看结构",
@@ -176,6 +175,19 @@ function partCount(bookSource) {
 test("default workspace template keeps the official sample books", async () => {
   const books = await readdir(path.join(templateRoot, "books"));
   assert.deepEqual(books.sort(), expectedBooks);
+});
+
+test("sample books include the shelf's shared attributes inside their header", async () => {
+  // DESIGN.adoc 的 Shared Attributes：书架共有的文档头属性只在 shared/attributes.adoc 写一次；每本书紧跟版本行
+  // include 它、前面不留空行（空行结束文档头），自己的属性写在 include 之后。
+  const shared = await readFile(path.join(templateRoot, "shared", "attributes.adoc"), "utf8");
+  const common = [":doctype: book", ":toc: left", ":toclevels: 3", ":sectnums:", ":icons: font", ":experimental:", ":appendix-caption: 附录", ":idprefix:", ":idseparator: -"];
+  for (const entry of common) assert.match(shared, new RegExp(`^${entry}$`, "m"), `shared/attributes.adoc missing ${entry}`);
+  for (const bookId of expectedBooks) {
+    const lines = (await readFile(path.join(templateRoot, "books", bookId, "book.adoc"), "utf8")).split("\n");
+    assert.equal(lines[3], "include::../../shared/attributes.adoc[]", `${bookId} does not include the shared attributes right after its revision line`);
+    for (const entry of common) assert.equal(lines.includes(entry), false, `${bookId} repeats ${entry}, which the shelf sets once`);
+  }
 });
 
 test("default workspace template satisfies the official sample contract", async () => {

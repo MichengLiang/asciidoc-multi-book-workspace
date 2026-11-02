@@ -46,3 +46,15 @@ p5（木棉工作台）的书架把 07 号书放成 01 号书，逐字节复制�
 里只在文档头生效的属性对每本样书生效（上面的复现可以直接写成测试），而书自己文档头里写的属性仍可被共享属性
 覆盖或覆盖它的顺序要写明——p5 正是靠“后写的覆盖先写的”在共享属性里用 ``:icons!:`` 关掉 07 号书的
 ``:icons: font``（它会从 CDN 拉 Font Awesome）。
+
+## 解决
+
+:提交: 工作包 13.2（git log --grep "Work-Package: 13.2"）
+
+样书的共享属性改为写在文档头里，书架共有的文档头属性写进 ``shared/attributes.adoc`` 一次。
+
+* 八本样书的 ``include::../../shared/attributes.adoc[]`` 紧跟在版本行之后，前面不留空行，于是共享属性是文档头的一部分，只在文档头生效的属性（ ``toc-title`` 、 ``docinfo`` 、各种 caption）对每本书都生效。
+* 八本共有的 ``:doctype: book`` 、 ``:toc: left`` 、 ``:toclevels: 3`` 、 ``:sectnums:`` 、 ``:icons: font`` 、 ``:experimental:`` 、 ``:idprefix:`` 、 ``:idseparator: -`` 与 ``:appendix-caption: 附录`` 移进 ``shared/attributes.adoc`` ，书里删去；只属于某本书的（ ``:partnums:`` 、 ``:part-signifier: Part`` 、 ``:upper-book:`` ）写在 include 之后。文档头里后写的属性盖过先写的，所以书自己的设置盖过书架的；顺序写在 DESIGN.adoc 的「Shared Attributes」。
+* 维护者测试 ``runtime-build.test.mjs`` 新增一条：共享属性里写 ``:toc-title: 目录`` ，每本样书的 HTML 都用上它；一本书在 include 之后写 ``:toc-title: 本书目录`` ，那本书用自己的。
+
+p5 那处偏离（07 号书复制进来以后删掉空行、在共享属性里写 ``:icons!:`` 关掉书里的 ``:icons: font`` ）现在不用了：照新样书的文档头即可，样书里不再写 ``:icons:`` ，要关图标字体就在 p5 自己的 ``shared/attributes.adoc`` 里改，书一字不动。

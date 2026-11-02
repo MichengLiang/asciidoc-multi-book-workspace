@@ -257,6 +257,21 @@ Book-to-book teaching material uses book IDs, paths, prose, or literal examples 
 Catalog links are the workspace navigation surface.
 They are the only default links from `catalog.adoc` to sample book entries, and each sample must have catalog entries that can be removed without editing another sample book.
 
+=== Shared Attributes
+
+`shared/attributes.adoc` holds the document attributes every book of the shelf has in common, written once.
+A shelf changes the look of all its books in that one file.
+
+Each sample book includes it inside its header.
+The include line directly follows the author and revision lines, with no blank line before it: a blank line ends the header, and attributes entered after the header are body attributes.
+Asciidoctor honors some attributes only in the header, among them `toc-title`, `docinfo`, and the captions; a shelf that sets them in `shared/attributes.adoc` reaches its books only if the include is part of the header.
+
+The attributes that belong to one book follow the include, so a book's own setting overrides the shelf's: an attribute entry later in the header replaces an earlier one.
+A book that needs something else writes it in its own header, and a shelf that wants something else for every book changes `shared/attributes.adoc` without editing any book.
+
+The samples share the book doctype, the table of contents and its depth, section numbers, font icons, experimental macros, the ID rules (an empty `idprefix` and `-` as `idseparator`), the appendix caption of the shelf's language, and the series name and source format.
+Settings for parts (`partnums`, `part-signifier`) and for a volume's companion (`upper-book`) belong to the books that have them and stay in their headers.
+
 === Sample Addressing
 
 The sample books are copied into every generated workspace, and authors copy them again when they start a book, so what the samples show is what new books do.
