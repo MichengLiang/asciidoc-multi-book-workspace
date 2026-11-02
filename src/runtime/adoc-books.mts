@@ -135,7 +135,9 @@ interface AbundantSection {
   level?: number;
   ids?: string[];
   title?: string;
-  metadata?: Array<{ attributes?: Record<string, unknown> }>;
+  // 官方读出的节 style（[preface] 的 preface）：aat 0.8.1 起在官方层，不在 metadata 的命名属性里（DESIGN.adoc 的
+  // Build Outputs）。
+  asciidoctor?: { style?: string };
   source?: {
     relativePath?: string;
     span?: {
@@ -528,11 +530,7 @@ function escapeJsonValueForScript(value: unknown): string {
 }
 
 function sectionStyle(section: AbundantSection): string | undefined {
-  for (const metadata of section.metadata ?? []) {
-    const style = metadata.attributes?.style;
-    if (typeof style === "string") return style;
-  }
-  return undefined;
+  return section.asciidoctor?.style;
 }
 
 function firstSectionId(section: AbundantSection): string {
@@ -727,14 +725,16 @@ function bindReferences(
     .filter((entry) => entry.kind === "section")
     .map((entry) => [entry.iri.value, entry]));
   // 地址的名字：选择器是这一节的标题或某个限定地址时，照写下的样子显示，各级标题之间用间隔号；是 ID（作者声明的或生成的）
-  // 时显示标题——ID 是给引用用的第二个地址，不是给读者看的名字。按图上是哪个标签判，不按字符串里有没有 :: 猜。
+  // 时显示标题——ID 是给引用用的第二个地址，不是给读者看的名字。按图上是哪个标签判，不按字符串里有没有 :: 猜：
+  // 标题原文本身带 :: 的（std::vector）是一个标题，原样显示，只有限定地址才按 :: 拆开。
   const located = (iris: Iterable<string>, selector: string): BoundHeading[] => [...iris].flatMap((iri) => {
     const entry = sections.get(iri);
     const id = entry?.node.ids?.[0];
     if (entry === undefined || id === undefined) return [];
     const node = { termType: "iri" as const, value: iri };
-    const named = values(node, "headline").includes(selector) || values(node, "addressPath").includes(selector);
-    return [{ id, shown: named ? selector.split("::").join("·") : entry.node.title ?? id }];
+    if (values(node, "headline").includes(selector)) return [{ id, shown: selector }];
+    if (values(node, "addressPath").includes(selector)) return [{ id, shown: selector.split("::").join("·") }];
+    return [{ id, shown: entry.node.title ?? id }];
   });
   // 别的书指过来的引用在这本书的 label space 里找：图上四个标签谓词的值，按整串相等找拥有者。
   const ownersByLabel = new Map<string, Set<string>>();

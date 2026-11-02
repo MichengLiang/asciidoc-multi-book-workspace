@@ -198,7 +198,7 @@ The generated `package.json` directly lists the AsciiDoc toolchain:
   },
   "devDependencies": {
     "@asciidoctor/core": "^4.1.1",
-    "asciidoc-abundant-tree": "^0.6.0",
+    "asciidoc-abundant-tree": "^0.8.1",
     "asciidoctor-kroki": "^2.0.0"
   }
 }
@@ -209,6 +209,7 @@ The user can inspect and manage the AsciiDoc dependencies directly.
 
 `@asciidoctor/core` is the same major version `asciidoc-abundant-tree` runs on, so the package manager installs one Asciidoctor for both (<<cheap-performance-rules>> says why they must agree).
 `asciidoctor-kroki` 2 is the release line for Asciidoctor.js 4 and requires Node.js 22, which sets the `engines` floor.
+The `asciidoc-abundant-tree` floor is the first release that carries what the runtime reads: 0.8.1 is the first to give a section the style Asciidoctor reads for it (see <<build-outputs>>).
 
 === Official Sample Books
 
@@ -469,6 +470,10 @@ build/html/books/<book-id>/assets/
 ----
 
 The build renders catalog HTML, renders each book HTML, copies shared images, copies book-local assets, injects a catalog home link and dual reader UI into book HTML, and writes the root HTML index.
+The reader pages a book by its top-level sections.
+Sections whose style is `colophon`, `dedication`, `preface`, or `acknowledgments` share one front matter page; a section styled `appendix`, `glossary`, `bibliography`, or `index` gets a back matter page of its kind.
+The style is the one Asciidoctor reads for the section (`[preface]` gives `preface`), which `asciidoc-abundant-tree` gives as the section's `asciidoctor.style`.
+It is not one of the section's named attributes: the author never wrote a name `style`, and since `asciidoc-abundant-tree` 0.8.0 the attribute list's named attributes hold only names the author wrote.
 The copy-source control embeds an abundant-tree source bundle for the current book. The bundle preserves each participating source file, whole, with its path relative to `documentRoot` instead of pretending to be a single reduced AsciiDoc file.
 Default build and check commands do not write expanded ADOC outputs under `build/adoc/`.
 Diagram blocks render as Kroki image URLs by default, so ordinary builds do not depend on the Kroki service at build time.
@@ -523,7 +528,8 @@ A link can lead to one place, so the runtime rewrites only an xref that reaches 
 For such an xref whose fragment names no element in the book HTML, the runtime rewrites `href="#<selector>"` to that heading's HTML ID and replaces Asciidoctor's unresolved link text `[<selector>]` with the name of the address.
 
 When an xref has no link text, the link shows the name of its address.
-A selector that is the heading's title or one of its qualified addresses (its `aat:headline` or an `aat:addressPath`) is shown as written, its titles joined with the interpunct GB/T 15834—2011 sets between a work and its section: `xref:红烧肉::火候[]` shows 红烧肉·火候, and `xref:家常菜::红烧肉::火候[]` all three titles.
+A selector that is the heading's title (its `aat:headline`) is shown as written, whole: a title that itself contains `::`, such as `std::vector`, is one title, not a path.
+A selector that is one of its qualified addresses (an `aat:addressPath` and not its title) is shown with its titles joined with the interpunct GB/T 15834—2011 sets between a work and its section: `xref:红烧肉::火候[]` shows 红烧肉·火候, and `xref:家常菜::红烧肉::火候[]` all three titles.
 The author wrote those titles to name one heading among several sharing its title, and the reader needs them for the same reason; showing the last title alone made every such reference carry its address twice, once as the target and once as link text.
 A selector that is an ID shows the heading's title, as Asciidoctor shows a section it resolves by ID: an ID is a second address for references, not a name for the reader.
 Link text the author writes is shown instead, and is written only where it says something other than the address's name.

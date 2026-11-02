@@ -696,6 +696,31 @@ Text.
   assert.doesNotMatch(sourceHtml, /清蒸鲈鱼::火候"/);
 });
 
+test("runtime shows a title that itself contains :: whole, not as a path", async () => {
+  // 标题原文是 std::vector：它是一个标题（aat:headline），不是 std 下的 vector，链接文字原样显示，不拆成间隔号。
+  const target = path.join(repoRoot, "tmp", "test-fixtures", `runtime-colon-title-${randomUUID()}`);
+  await initWorkspace({ targetDir: target });
+  const chapterPath = path.join(target, "books", "01-starter-book", "chapters", "020-main-flow.adoc");
+  await writeFile(chapterPath, `${await readFile(chapterPath, "utf8")}
+
+=== std::vector
+
+Text.
+
+=== 引用处
+
+见 xref:std::vector[]。
+`, "utf8");
+
+  await buildWorkspace(target);
+
+  const html = await readFile(path.join(target, "build", "html", "books", "01-starter-book", "book.html"), "utf8");
+  const id = html.match(/<h3 id="([^"]+)">(?:[\d.]+ )?std::vector<\/h3>/)?.[1];
+  assert.ok(id);
+  assert.match(html, new RegExp(`<a href="#${id}">std::vector</a>`));
+  assert.doesNotMatch(html, />std·vector</);
+});
+
 test("runtime build leaves xrefs that reach no section, several, or only the document title as Asciidoctor wrote them", async () => {
   // 引用对不对是投影的读者（bookgraph）的解释，不是渲染的事（DESIGN.adoc 的 Division of Labour）：链接只能跳到一处，
   // 恰好一节才改写，其余照 Asciidoctor 写下的样子留着，构建也不因它们失败。
